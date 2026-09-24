@@ -1,0 +1,19 @@
+rules_version='2';
+service cloud.firestore{match /databases/{d}/documents{
+ function admin(){return request.auth!=null&&request.auth.token.email=='admin@meragav.in';}
+ function me(u){return request.auth!=null&&request.auth.uid==u;}
+ function usr(){return get(/databases/$(d)/documents/users/$(request.auth.uid)).data;}
+ match /users/{u}{allow read:if me(u)||admin();allow create:if me(u)&&request.resource.data.status=='pending';allow update,delete:if admin();}
+ match /candidates/{c}{
+  allow read:if resource.data.status=='approved'||me(c)||admin();
+  allow create:if admin()||(me(c)&&request.resource.data.status=='pending');
+  allow update,delete:if admin();}
+ match /claims/{i}{
+  allow read:if resource.data.status=='approved'||me(resource.data.c)||admin();
+  allow create:if me(request.resource.data.c)&&request.resource.data.status=='pending'&&get(/databases/$(d)/documents/candidates/$(request.auth.uid)).data.status=='approved';
+  allow update,delete:if admin();}
+ match /votes/{u}{allow read:if true;allow create:if me(u)&&usr().status=='approved'&&usr().role=='voter';allow delete:if admin();}
+ match /likes/{i}{allow read:if true;allow create:if request.auth!=null&&request.resource.data.u==request.auth.uid;allow delete:if request.auth!=null&&resource.data.u==request.auth.uid;}
+ match /comments/{i}{allow read:if true;allow create:if request.auth!=null&&request.resource.data.uid==request.auth.uid;allow delete:if admin();}
+ match /chat/{i}{allow read:if true;allow create:if request.auth!=null&&request.resource.data.uid==request.auth.uid;allow delete:if admin();}
+}}

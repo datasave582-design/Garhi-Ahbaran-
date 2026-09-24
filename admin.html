@@ -1,0 +1,48 @@
+<!doctype html><html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>एडमिन – गढ़ी अहबरन</title><meta name="theme-color" content="#1f4d3a">
+<link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;800&display=swap" rel="stylesheet">
+<style>
+*{box-sizing:border-box}body{margin:0;font:16px/1.5 Mukta,sans-serif;background:#f4f6f1;color:#1c2420}
+header{background:#1f4d3a;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
+.tabs{display:flex;overflow:auto;background:#fff;border-bottom:1px solid #d8ddd4}.tabs button{border:0;background:0;padding:12px 14px;font:600 15px Mukta;white-space:nowrap;color:#667}.tabs .on{color:#1f4d3a;border-bottom:3px solid #e8871e}
+main{padding:12px;max-width:900px;margin:auto}.box{background:#fff;border:1px solid #e0e5da;border-radius:12px;padding:12px;margin-bottom:10px}
+.r{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}.r img{width:90px;height:90px;object-fit:cover;border-radius:8px}
+button.p,.b{background:#1f4d3a;color:#fff;border:0;border-radius:8px;padding:8px 12px;font:600 14px Mukta;margin:3px 3px 0 0}.b.d{background:#b3261e}.b.o{background:#e8871e}
+input,textarea{width:100%;padding:10px;margin:4px 0 8px;border:1px solid #c9d0c4;border-radius:8px;font:inherit}.tag{font-size:12px;padding:2px 8px;border-radius:10px;background:#fde7c8}
+.bar{height:10px;background:#e8871e;border-radius:5px}#lg{max-width:360px;margin:60px auto}
+</style></head><body>
+<div id="lg" class="box" hidden><h2>एडमिन लॉगिन</h2><input id="em" value="admin@meragav.in"><input id="pw" type="password" placeholder="पासवर्ड"><button class="p" onclick="auth.signInWithEmailAndPassword($('#em').value,$('#pw').value).catch(e=>alert('लॉगिन नहीं हुआ'))">लॉगिन</button></div>
+<div id="ap" hidden>
+<header><b>🏡 गढ़ी अहबरन – एडमिन पैनल</b><button class="b o" onclick="auth.signOut()">लॉगआउट</button></header>
+<div class="tabs" id="tb"></div>
+<main><div id="addf" class="box" hidden><h3>नया प्रत्याशी जोड़ें</h3><input id="an" placeholder="नाम"><input id="as" placeholder="चुनाव चिह्न"><input id="aw" placeholder="वार्ड / मोहल्ला">फोटो <input id="ap1" type="file" accept="image/*">चिह्न की फोटो <input id="ap2" type="file" accept="image/*"><textarea id="am" rows="4" placeholder="घोषणा पत्र – हर वादा नई लाइन में"></textarea><button class="p" onclick="addCand()">जोड़ें (सीधे स्वीकृत)</button></div><div id="lst"></div></main></div>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+<script src="fb.js"></script>
+<script>
+let tab='pend',US=[],CA=[],CLM=[],VS=[],CMT=[],CHT=[],on=0;
+const TB={pend:'⏳ मंज़ूरी',cands:'👥 प्रत्याशी',claims:'✅ वादे पूरे',res:'📊 नतीजे',mod:'🧹 टिप्पणी/चौपाल'};
+$('#tb').innerHTML=Object.keys(TB).map(k=>`<button data-k="${k}" onclick="tab='${k}';draw()">${TB[k]}</button>`).join('');
+auth.onAuthStateChanged(u=>{const ok=u&&u.email=='admin@meragav.in';$('#lg').hidden=ok;$('#ap').hidden=!ok;if(ok&&!on++)start()});
+const sub=(c,f)=>db.collection(c).onSnapshot(s=>{f(s.docs.map(d=>({id:d.id,...d.data()})));draw()},e=>console.error(c,e));
+function start(){sub('users',a=>US=a);sub('candidates',a=>CA=a);sub('claims',a=>CLM=a);sub('votes',a=>VS=a);sub('comments',a=>CMT=a);sub('chat',a=>CHT=a)}
+const nm=id=>(CA.find(c=>c.id==id)||{}).name||'?';
+const H={
+pend:()=>{const p=US.filter(u=>u.status=='pending');return p.map(u=>`<div class="box r"><img src="${u.photo}"><a href="${u.idPhoto}" target="_blank"><img src="${u.idPhoto}"></a><div><b>${esc(u.name)}</b> <span class="tag">${u.role=='candidate'?'प्रत्याशी':'मतदाता'}</span><br>📱 ${esc(u.mobile)} • वार्ड: ${esc(u.ward||'-')}<br><button class="b" onclick="dec('${u.id}','approved')">✔ मंज़ूर</button><button class="b d" onclick="dec('${u.id}','rejected')">✖ अस्वीकार</button></div></div>`).join('')||'<p>कोई आवेदन बाकी नहीं।</p>'},
+cands:()=>CA.map(c=>`<div class="box r"><img src="${c.photo}"><div><b>${esc(c.name)}</b> <span class="tag">${c.status}</span><br>चिह्न: ${esc(c.symbol)} • वोट: ${VS.filter(v=>v.c==c.id).length}<br>
+<button class="b" onclick="ed('${c.id}','name','नाम')">नाम</button><button class="b" onclick="ed('${c.id}','symbol','चिह्न')">चिह्न</button><button class="b" onclick="edW('${c.id}')">घोषणा पत्र</button><button class="b" onclick="ph('${c.id}','photo')">फोटो</button><button class="b" onclick="ph('${c.id}','symImg',120)">चिह्न फोटो</button>
+<button class="b o" onclick="st('${c.id}','${c.status=='approved'?'rejected':'approved'}')">${c.status=='approved'?'छुपाएँ':'दिखाएँ'}</button><button class="b d" onclick="del('candidates','${c.id}')">हटाएँ</button></div></div>`).join('')||'<p>कोई प्रत्याशी नहीं।</p>',
+claims:()=>CLM.slice().sort((a,b)=>(a.status=='pending'?0:1)-(b.status=='pending'?0:1)).map(x=>{const c=CA.find(k=>k.id==x.c)||{};return `<div class="box"><b>${esc(nm(x.c))}</b> <span class="tag">${x.status}</span><br>वादा: ${esc(((c.works||[])[x.i]||{}).t)}<br>दावा: ${esc(x.note)}${x.img?`<br><img src="${x.img}" style="max-width:220px;border-radius:8px">`:''}<br>${x.status!='approved'?`<button class="b" onclick="cst('${x.id}','approved')">✔ सत्यापित</button>`:''}<button class="b d" onclick="cst('${x.id}','rejected')">✖ अस्वीकार</button></div>`}).join('')||'<p>कोई दावा नहीं।</p>',
+res:()=>{const t=VS.length||1,v=US.filter(u=>u.role=='voter'&&u.status=='approved').length;return `<div class="box">स्वीकृत मतदाता: <b>${v}</b> • कुल वोट: <b>${VS.length}</b></div>`+CA.filter(c=>c.status=='approved').map(c=>[c,VS.filter(x=>x.c==c.id).length]).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`<div class="box"><b>${esc(c.name)}</b> — ${n} वोट (${Math.round(n*100/t)}%)<div class="bar" style="width:${n*100/t}%"></div></div>`).join('')},
+mod:()=>[['comments',CMT],['chat',CHT]].map(([k,a])=>`<h3>${k=='chat'?'गाँव चौपाल':'टिप्पणियाँ'}</h3>`+a.map(x=>`<div class="box"><b>${esc(x.name)}</b>: ${esc(x.txt)}<br><button class="b d" onclick="del('${k}','${x.id}')">हटाएँ</button></div>`).join('')).join('')};
+function draw(){document.querySelectorAll('#tb button').forEach(b=>b.classList.toggle('on',b.dataset.k==tab));$('#addf').hidden=tab!='cands';$('#lst').innerHTML=H[tab]()}
+async function dec(id,s){const u=US.find(x=>x.id==id),b=db.batch();b.update(db.collection('users').doc(id),{status:s});if(u.role=='candidate')b.update(db.collection('candidates').doc(id),{status:s});await b.commit()}
+const st=(id,s)=>db.collection('candidates').doc(id).update({status:s}),cst=(id,s)=>db.collection('claims').doc(id).update({status:s});
+async function del(c,id){if(confirm('पक्का हटाएँ?'))await db.collection(c).doc(id).delete()}
+async function ed(id,f,l){const c=CA.find(x=>x.id==id),v=prompt(l,c[f]);if(v)await db.collection('candidates').doc(id).update({[f]:v})}
+async function edW(id){const c=CA.find(x=>x.id==id),v=prompt('वादे ( | से अलग करें; क्रम न बदलें)',(c.works||[]).map(w=>w.t).join(' | '));if(v)await db.collection('candidates').doc(id).update({works:v.split('|').map(s=>s.trim()).filter(Boolean).map(t=>({t}))})}
+function ph(id,f,mx){const i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=async()=>db.collection('candidates').doc(id).update({[f]:await img(i.files[0],mx||320)});i.click()}
+async function addCand(){const g=i=>$('#'+i).value.trim();if(!g('an')||!g('as')||!$('#ap1').files[0])return alert('नाम, चिह्न और फोटो ज़रूरी हैं');
+ await db.collection('candidates').add({status:'approved',name:g('an'),symbol:g('as'),ward:g('aw'),photo:await img($('#ap1').files[0]),symImg:await img($('#ap2').files[0],120),works:g('am').split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t}))});
+ ['an','as','aw','am'].forEach(i=>$('#'+i).value='');alert('जुड़ गया')}
+</script></body></html>

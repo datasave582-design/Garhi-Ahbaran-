@@ -3,6 +3,7 @@ service cloud.firestore{match /databases/{d}/documents{
  function admin(){return request.auth!=null&&request.auth.token.email=='admin@meragav.in';}
  function me(u){return request.auth!=null&&request.auth.uid==u;}
  function usr(){return get(/databases/$(d)/documents/users/$(request.auth.uid)).data;}
+ function vs(k){return !exists(/databases/$(d)/documents/settings/vote)||get(/databases/$(d)/documents/settings/vote).data.get(k,true)!=false;}
  function rp(c){return /databases/$(d)/documents/reacts/$(c+'_'+request.auth.uid);}
  function pre(c,x){return (exists(rp(c))&&get(rp(c)).data.v==x)?1:0;}
  function post(c,x){return (existsAfter(rp(c))&&getAfter(rp(c)).data.v==x)?1:0;}
@@ -11,7 +12,7 @@ service cloud.firestore{match /databases/{d}/documents{
   allow read:if resource.data.status=='approved'||me(c)||admin();
   allow create:if admin()||(me(c)&&request.resource.data.status=='pending');
   allow delete:if admin();
-  allow update:if admin()||(request.auth!=null&&usr().status=='approved'
+  allow update:if admin()||(request.auth!=null
    &&request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes','dislikes'])
    &&request.resource.data.get('likes',0)-resource.data.get('likes',0)==post(c,1)-pre(c,1)
    &&request.resource.data.get('dislikes',0)-resource.data.get('dislikes',0)==post(c,-1)-pre(c,-1));}
@@ -24,12 +25,13 @@ service cloud.firestore{match /databases/{d}/documents{
   allow create:if me(request.resource.data.c)&&request.resource.data.status=='pending'&&get(/databases/$(d)/documents/candidates/$(request.auth.uid)).data.status=='approved';
   allow update,delete:if admin();}
  match /votes/{u}{allow read:if true;
-  allow create:if me(u)&&usr().status=='approved'&&usr().role=='voter'&&request.resource.data.n==0;
-  allow update:if me(u)&&usr().status=='approved'&&usr().role=='voter'&&request.resource.data.diff(resource.data).affectedKeys().hasOnly(['c','n','t'])&&request.resource.data.n==resource.data.get('n',0)+1&&request.resource.data.n<=3&&request.resource.data.c!=resource.data.c;
+  allow create:if me(u)&&usr().status=='approved'&&usr().role=='voter'&&request.resource.data.n==0&&vs('open');
+  allow update:if me(u)&&usr().status=='approved'&&usr().role=='voter'&&request.resource.data.diff(resource.data).affectedKeys().hasOnly(['c','n','t'])&&request.resource.data.n==resource.data.get('n',0)+1&&request.resource.data.n<=3&&request.resource.data.c!=resource.data.c&&vs('open')&&vs('change');
   allow delete:if admin();}
- match /problems/{p}{allow read:if true;allow create:if request.auth!=null&&request.resource.data.uid==request.auth.uid&&usr().status=='approved';allow update:if admin();allow delete:if admin()||(request.auth!=null&&resource.data.uid==request.auth.uid);}
+ match /problems/{p}{allow read:if true;allow create:if request.auth!=null&&request.resource.data.uid==request.auth.uid;allow update:if admin();allow delete:if admin()||(request.auth!=null&&resource.data.uid==request.auth.uid);}
  match /plikes/{i}{allow read:if true;allow create:if request.auth!=null&&request.resource.data.u==request.auth.uid;allow delete:if request.auth!=null&&resource.data.u==request.auth.uid;}
  match /comments/{i}{allow read:if true;allow create:if request.auth!=null&&request.resource.data.uid==request.auth.uid;allow delete:if admin();}
+ match /settings/{s}{allow read:if true;allow write:if admin();}
  match /devices/{i}{allow read:if request.auth!=null;allow create:if request.auth!=null&&request.resource.data.uid==request.auth.uid;allow update,delete:if admin();}
  match /chat/{i}{allow read:if true;allow create:if request.auth!=null&&request.resource.data.uid==request.auth.uid;allow delete:if admin();}
 }}

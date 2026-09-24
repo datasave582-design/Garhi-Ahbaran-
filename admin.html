@@ -2,7 +2,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}body{margin:0;font:16px/1.5 Mukta,sans-serif;background:#f4f6f1;color:#1c2420}
-header{background:#1f4d3a;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center}
+header{background:#1f4d3a;color:#fff;padding:10px 14px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px}
 .tabs{display:flex;overflow:auto;background:#fff;border-bottom:1px solid #d8ddd4}.tabs button{border:0;background:0;padding:12px 14px;font:600 15px Mukta;white-space:nowrap;color:#667}.tabs .on{color:#1f4d3a;border-bottom:3px solid #e8871e}
 main{padding:12px;max-width:900px;margin:auto}.box{background:#fff;border:1px solid #e0e5da;border-radius:12px;padding:12px;margin-bottom:10px}
 .r{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start}.r img{width:90px;height:90px;object-fit:cover;border-radius:8px}
@@ -12,7 +12,7 @@ input,textarea{width:100%;padding:10px;margin:4px 0 8px;border:1px solid #c9d0c4
 </style></head><body>
 <div id="lg" class="box" hidden><h2>एडमिन लॉगिन</h2><input id="em" value="admin@meragav.in"><input id="pw" type="password" placeholder="पासवर्ड"><button class="p" onclick="auth.signInWithEmailAndPassword($('#em').value,$('#pw').value).catch(e=>alert('लॉगिन नहीं हुआ'))">लॉगिन</button></div>
 <div id="ap" hidden>
-<header><b>🏡 गढ़ी अहबरन – एडमिन पैनल</b><button class="b o" onclick="auth.signOut()">लॉगआउट</button></header>
+<header><b>🏡 गढ़ी अहबरन – एडमिन पैनल</b><div><button class="b" id="vo" onclick="tg('open')"></button> <button class="b" id="vt" onclick="tg('change')"></button> <button class="b o" onclick="auth.signOut()">लॉगआउट</button></div></header>
 <div class="tabs" id="tb"></div>
 <main><div id="addf" class="box" hidden><h3>नया प्रत्याशी जोड़ें</h3><input id="an" placeholder="नाम"><select id="asel" onchange="if(this.value)$('#as').value=this.value"></select><input id="as" placeholder="चुनाव चिह्न (वैकल्पिक)"><input id="aw" placeholder="वार्ड / मोहल्ला">फोटो <input id="ap1" type="file" accept="image/*">चिह्न की फोटो <input id="ap2" type="file" accept="image/*"><textarea id="am" rows="4" placeholder="घोषणा पत्र (वैकल्पिक) – हर वादा नई लाइन में"></textarea>घोषणा पत्र की फोटो (वैकल्पिक) <input id="ap3" type="file" accept="image/*"><button class="p" onclick="addCand()">जोड़ें (सीधे स्वीकृत)</button></div><div id="lst"></div></main></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
@@ -21,12 +21,12 @@ input,textarea{width:100%;padding:10px;margin:4px 0 8px;border:1px solid #c9d0c4
 <script src="fb.js"></script>
 <script>
 $('#asel').innerHTML=symOpts();
-let tab='pend',RC=[],PRB=[],US=[],CA=[],CLM=[],VS=[],CMT=[],CHT=[],on=0;
+let ST=[],tab='pend',RC=[],PRB=[],US=[],CA=[],CLM=[],VS=[],CMT=[],CHT=[],on=0;
 const TB={pend:'⏳ मंज़ूरी',cands:'👥 प्रत्याशी',claims:'✅ वादे पूरे',res:'📊 नतीजे',mod:'🧹 टिप्पणी/चौपाल',users:'📱 डिवाइस',prob:'📢 समस्याएँ'};
 $('#tb').innerHTML=Object.keys(TB).map(k=>`<button data-k="${k}" onclick="tab='${k}';draw()">${TB[k]}</button>`).join('');
 auth.onAuthStateChanged(u=>{const ok=u&&u.email=='admin@meragav.in';$('#lg').hidden=ok;$('#ap').hidden=!ok;if(ok&&!on++)start()});
 const sub=(c,f)=>db.collection(c).onSnapshot(s=>{f(s.docs.map(d=>({id:d.id,...d.data()})));draw()},e=>console.error(c,e));
-function start(){sub('users',a=>US=a);sub('candidates',a=>CA=a);sub('claims',a=>CLM=a);sub('votes',a=>VS=a);sub('comments',a=>CMT=a);sub('chat',a=>CHT=a);sub('reacts',a=>RC=a);sub('problems',a=>PRB=a)}
+function start(){sub('users',a=>US=a);sub('candidates',a=>CA=a);sub('claims',a=>CLM=a);sub('votes',a=>VS=a);sub('comments',a=>CMT=a);sub('chat',a=>CHT=a);sub('settings',a=>ST=a);sub('reacts',a=>RC=a);sub('problems',a=>PRB=a)}
 const nm=id=>(CA.find(c=>c.id==id)||{}).name||'?';
 const H={
 pend:()=>{const p=US.filter(u=>u.status=='pending');return p.map(u=>`<div class="box r"><img src="${u.photo}"><a href="${u.idPhoto}" target="_blank"><img src="${u.idPhoto}"></a><div><b>${esc(u.name)}</b> <span class="tag">${u.role=='candidate'?'प्रत्याशी':'मतदाता'}</span><br>📱 ${esc(u.mobile)} • ✉ ${esc(u.email||'-')} • वार्ड: ${esc(u.ward||'-')}<br><button class="b" onclick="dec('${u.id}','approved')">✔ मंज़ूर</button><button class="b d" onclick="dec('${u.id}','rejected')">✖ अस्वीकार</button></div></div>`).join('')||'<p>कोई आवेदन बाकी नहीं।</p>'},
@@ -38,7 +38,9 @@ res:()=>{const t=VS.length||1,v=US.filter(u=>u.role=='voter'&&u.status=='approve
 users:()=>US.map(u=>`<div class="box"><b>${esc(u.name)}</b> <span class="tag">${u.role=='candidate'?'प्रत्याशी':'मतदाता'} • ${u.status}</span><br>📱 ${esc(u.mobile)} • ✉ ${esc(u.email||'-')}<br><button class="b o" onclick="rd('${u.id}')">📱 डिवाइस रीसेट</button>${VS.some(v=>v.id==u.id)?`<button class="b d" onclick="rv('${u.id}')">🗳️ वोट रीसेट</button>`:''}</div>`).join('')||'<p>कोई खाता नहीं।</p>',
 prob:()=>PRB.slice().sort((a,b)=>((b.t&&b.t.seconds)||9e9)-((a.t&&a.t.seconds)||9e9)).map(p=>`<div class="box"><b>${esc(p.title)}</b> <span class="tag">${p.status=='solved'?'समाधान हुआ':'खुली'}</span><br><small>${esc(p.name)} • ${esc(p.ward||'')}</small><p>${esc(p.txt)}</p>${p.img?`<img src="${p.img}" style="max-width:200px;border-radius:8px">`:''}<br><button class="b" onclick="pst('${p.id}','${p.status=='solved'?'open':'solved'}')">${p.status=='solved'?'दोबारा खोलें':'✔ समाधान हुआ'}</button><button class="b d" onclick="del('problems','${p.id}')">हटाएँ</button></div>`).join('')||'<p>कोई समस्या नहीं।</p>',
 mod:()=>[['comments',CMT],['chat',CHT]].map(([k,a])=>`<h3>${k=='chat'?'गाँव चौपाल':'टिप्पणियाँ'}</h3>`+a.map(x=>`<div class="box"><b>${esc(x.name)}</b>: ${esc(x.txt)}<br><button class="b d" onclick="del('${k}','${x.id}')">हटाएँ</button></div>`).join('')).join('')};
-function draw(){document.querySelectorAll('#tb button').forEach(b=>b.classList.toggle('on',b.dataset.k==tab));$('#addf').hidden=tab!='cands';$('#lst').innerHTML=H[tab]()}
+const flag=k=>{const s=ST.find(x=>x.id=='vote');return !(s&&s[k]===false)};
+const tg=async k=>{const on=flag(k);if(confirm((k=='open'?'वोटिंग ':'वोट बदलना ')+(on?'बंद करें?':'चालू करें?')))await db.collection('settings').doc('vote').set({[k]:!on},{merge:true})};
+function draw(){[['vo','open','🗳️ वोटिंग'],['vt','change','🔄 वोट बदलना']].forEach(([i,k,l])=>{const on=flag(k),v=$('#'+i);v.textContent=l+': '+(on?'चालू':'बंद');v.style.background=on?'#1a8a4a':'#b3261e'});document.querySelectorAll('#tb button').forEach(b=>b.classList.toggle('on',b.dataset.k==tab));$('#addf').hidden=tab!='cands';$('#lst').innerHTML=H[tab]()}
 const rv=id=>confirm('इस मतदाता का वोट हटाएँ? वह दोबारा वोट दे सकेगा।')&&db.collection('votes').doc(id).delete();
 async function rd(id){if(!confirm('इस खाते का फोन-लॉक हटाएँ?'))return;const s=await db.collection('devices').where('uid','==',id).get(),b=db.batch();s.forEach(d=>b.delete(d.ref));b.update(db.collection('users').doc(id),{dev:''});await b.commit();alert('डिवाइस रीसेट हो गया')}
 const pst=(id,s)=>db.collection('problems').doc(id).update({status:s});

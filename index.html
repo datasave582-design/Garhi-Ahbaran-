@@ -43,16 +43,16 @@ nav button{flex:1;border:0;background:0;padding:8px 2px 6px;font:600 12px Mukta;
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="fb.js"></script>
 <script>
-let VO=true,CG=true,LD=0,LE=0,DP=null,U=null,P=null,C=[],VS=[],CL=[],CH=[],CM=[],PR=[],PL=[],MYR={},openT='c',unR=null,tab='home',open=null,unCM=null;
+let unP=null,MYP=false,VO=true,CG=true,LD=0,LE=0,DP=null,U=null,P=null,C=[],VS=[],CL=[],CH=[],CM=[],PR=[],PL=[],MYR={},openT='c',unR=null,tab='home',open=null,unCM=null;
 const cnt=id=>VS.filter(v=>v.c==id).length,pl=id=>PL.filter(l=>l.p==id).length,pn=id=>PL.filter(l=>l.p==id&&l.n).map(l=>esc(l.n)),MY=()=>U&&(VS.find(v=>v.id==U.uid)||{}).c;
 const nm=()=>P?P.name:((U&&U.displayName)||'गाँववासी');
 const ST={pending:'समीक्षा में',approved:'स्वीकृत',rejected:'अस्वीकृत'};
 const DID=localStorage.mgd||(localStorage.mgd=(crypto.randomUUID?crypto.randomUUID():Date.now()+''+Math.random()));
-auth.onAuthStateChanged(async u=>{if(sessionStorage.gl){sessionStorage.removeItem('gl');if(!u)alert('लॉगिन पूरा नहीं हुआ (साइट: '+location.hostname+'). ऐप को Firebase Hosting वाले पते (…web.app) से खोलकर देखें।')}U=u;P=null;if(unR){unR();unR=null}MYR={};if(u){try{const dr=db.collection('devices').doc(DID),ds=await dr.get();
+auth.onAuthStateChanged(async u=>{if(sessionStorage.gl){sessionStorage.removeItem('gl');if(!u)alert('लॉगिन पूरा नहीं हुआ (साइट: '+location.hostname+'). ऐप को Firebase Hosting वाले पते (…web.app) से खोलकर देखें।')}U=u;P=null;if(unR){unR();unR=null}MYR={};if(unP){unP();unP=null}MYP=false;if(u){try{const dr=db.collection('devices').doc(DID),ds=await dr.get();
  if(ds.exists&&ds.data().uid!=u.uid){alert('इस फोन पर पहले से दूसरा खाता जुड़ा है। एक फोन पर एक ही खाता चल सकता है।');return auth.signOut()}
  const d=await db.collection('users').doc(u.uid).get();P=d.exists?d.data():null;
  if(P&&P.dev&&P.dev!=DID){P=null;alert('यह खाता दूसरे फोन से जुड़ा है। एडमिन से डिवाइस रीसेट करवाएँ।');return auth.signOut()}
- if(!ds.exists)await dr.set({uid:u.uid,t:FV.serverTimestamp()});unR=db.collection('reacts').where('u','==',u.uid).onSnapshot(x=>{MYR={};x.forEach(d=>MYR[d.data().c]=d.data().v);upd()})}catch(e){console.error(e)}}shell()});
+ if(!ds.exists)await dr.set({uid:u.uid,t:FV.serverTimestamp()});unP=db.collection('likepick').doc(u.uid).onSnapshot(x=>{MYP=x.exists;upd()});unR=db.collection('reacts').where('u','==',u.uid).onSnapshot(x=>{MYR={};x.forEach(d=>MYR[d.data().c]=d.data().v);upd()})}catch(e){console.error(e)}}shell()});
 db.collection('candidates').where('status','==','approved').onSnapshot(s=>{C=s.docs.map(d=>({id:d.id,...d.data()}));LD=1;LE=0;upd()},e=>{LD=1;LE=e.code||'error';upd()});
 db.collection('votes').onSnapshot(s=>{VS=s.docs.map(d=>({id:d.id,...d.data()}));upd()});
 db.collection('settings').doc('vote').onSnapshot(s=>{const d=s.exists?s.data():{};VO=d.open!==false;CG=VO&&d.change!==false;upd()});
@@ -94,8 +94,12 @@ function parts(){if(!$('#mh'))return;if(openT=='p'){const p=PR.find(x=>x.id==ope
  $('#cml').innerHTML=CM.map(x=>`<div><b>${esc(x.name)}</b><br>${esc(x.txt)}</div>`).join('')||'<p class="e">पहली टिप्पणी आप करें।</p>'}
 async function vote(id){if(!U){cls();return go('me')}if(!P){cls();go('me');return alert('वोट देने के लिए पहले मतदाता पंजीकरण करें (वोटर ID की फोटो के साथ)।')}if(P.role!='voter')return alert('सिर्फ मतदाता वोट दे सकते हैं।');if(P.status!='approved')return alert('आपका मतदाता खाता एडमिन की मंज़ूरी में है।');if(!VO&&!VS.some(v=>v.id==U.uid))return alert('अभी वोटिंग बंद है।');const mv=VS.find(v=>v.id==U.uid);if(mv){if(mv.c==id)return;if(!CG)return alert('अभी वोट बदलना बंद है।');if((mv.n||0)>=3)return alert('आप 3 बार वोट बदल चुके हैं। अब वोट लॉक है।');if(!confirm('वोट बदलें? आपके पास '+(3-(mv.n||0))+' बदलाव बचे हैं।'))return}else if(!confirm('पक्का वोट दें? बाद में आप इसे सिर्फ 3 बार बदल सकेंगे।'))return;
  try{await db.collection('votes').doc(U.uid).set({c:id,n:mv?(mv.n||0)+1:0,t:FV.serverTimestamp()});alert(mv?'🔄 आपका वोट बदल गया।':'🎉 आपका वोट दर्ज हो गया। धन्यवाद!')}catch(e){alert('वोट दर्ज नहीं हुआ: '+e.message)}}
-async function react(id,v){if(!U)return needOk();const my=MYR[id]||0,nv=my==v?0:v,b=db.batch(),ref=db.collection('reacts').doc(id+'_'+U.uid);
- nv?b.set(ref,{c:id,u:U.uid,v:nv}):b.delete(ref);b.update(db.collection('candidates').doc(id),{likes:FV.increment((nv==1)-(my==1)),dislikes:FV.increment((nv==-1)-(my==-1))});
+async function react(id,v){if(!U)return needOk();const my=MYR[id]||0,nv=my==v?0:v,ot=Object.keys(MYR).find(k=>MYR[k]==1&&k!=id);
+ if(nv==1&&ot){const o=C.find(x=>x.id==ot);return alert('आप '+(o?o.name:'दूसरे प्रत्याशी')+' को लाइक कर चुके हैं। लाइक सिर्फ एक प्रत्याशी को दे सकते हैं; पहले उनका लाइक हटाएँ। डिसलाइक किसी को भी कर सकते हैं।')}
+ const b=db.batch(),ref=db.collection('reacts').doc(id+'_'+U.uid),pk=db.collection('likepick').doc(U.uid);
+ nv?b.set(ref,{c:id,u:U.uid,v:nv}):b.delete(ref);
+ if(nv==1)b.set(pk,{c:id});else if(my==1&&MYP)b.delete(pk);
+ b.update(db.collection('candidates').doc(id),{likes:FV.increment((nv==1)-(my==1)),dislikes:FV.increment((nv==-1)-(my==-1))});
  try{await b.commit()}catch(e){alert(e.message)}}
 function needOk(){cls();go('me');alert('इसके लिए पहले Gmail से लॉगिन करें।')}
 function togP(){$('#pf').hidden=!$('#pf').hidden}

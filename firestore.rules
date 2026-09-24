@@ -4,6 +4,7 @@ service cloud.firestore{match /databases/{d}/documents{
  function me(u){return request.auth!=null&&request.auth.uid==u;}
  function usr(){return get(/databases/$(d)/documents/users/$(request.auth.uid)).data;}
  function vs(k){return !exists(/databases/$(d)/documents/settings/vote)||get(/databases/$(d)/documents/settings/vote).data.get(k,true)!=false;}
+ function rpk(){return /databases/$(d)/documents/likepick/$(request.auth.uid);}
  function rp(c){return /databases/$(d)/documents/reacts/$(c+'_'+request.auth.uid);}
  function pre(c,x){return (exists(rp(c))&&get(rp(c)).data.v==x)?1:0;}
  function post(c,x){return (existsAfter(rp(c))&&getAfter(rp(c)).data.v==x)?1:0;}
@@ -16,10 +17,16 @@ service cloud.firestore{match /databases/{d}/documents{
    &&request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes','dislikes'])
    &&request.resource.data.get('likes',0)-resource.data.get('likes',0)==post(c,1)-pre(c,1)
    &&request.resource.data.get('dislikes',0)-resource.data.get('dislikes',0)==post(c,-1)-pre(c,-1));}
+ match /likepick/{u}{
+  allow read:if me(u)||admin();
+  allow create:if me(u)&&existsAfter(/databases/$(d)/documents/reacts/$(request.resource.data.c+'_'+u))&&getAfter(/databases/$(d)/documents/reacts/$(request.resource.data.c+'_'+u)).data.v==1;
+  allow delete:if me(u)&&!(existsAfter(/databases/$(d)/documents/reacts/$(resource.data.c+'_'+u))&&getAfter(/databases/$(d)/documents/reacts/$(resource.data.c+'_'+u)).data.v==1);}
  match /reacts/{r}{
   allow read:if admin()||(request.auth!=null&&resource.data.u==request.auth.uid);
-  allow create,update:if request.auth!=null&&request.resource.data.u==request.auth.uid&&r==request.resource.data.c+'_'+request.auth.uid&&(request.resource.data.v==1||request.resource.data.v==-1);
-  allow delete:if request.auth!=null&&(resource.data.u==request.auth.uid||admin());}
+  allow create,update:if request.auth!=null&&request.resource.data.u==request.auth.uid&&r==request.resource.data.c+'_'+request.auth.uid&&(
+   (request.resource.data.v==-1&&(!existsAfter(rpk())||getAfter(rpk()).data.c!=request.resource.data.c))||
+   (request.resource.data.v==1&&existsAfter(rpk())&&getAfter(rpk()).data.c==request.resource.data.c&&(!exists(rpk())||get(rpk()).data.c==request.resource.data.c)));
+  allow delete:if admin()||(request.auth!=null&&resource.data.u==request.auth.uid&&(resource.data.v!=1||!existsAfter(rpk())||getAfter(rpk()).data.c!=resource.data.c));}
  match /claims/{i}{
   allow read:if resource.data.status=='approved'||me(resource.data.c)||admin();
   allow create:if me(request.resource.data.c)&&request.resource.data.status=='pending'&&get(/databases/$(d)/documents/candidates/$(request.auth.uid)).data.status=='approved';

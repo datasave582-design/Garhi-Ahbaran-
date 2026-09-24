@@ -23,7 +23,10 @@ service cloud.firestore{match /databases/{d}/documents{
   allow read:if resource.data.status=='approved'||me(resource.data.c)||admin();
   allow create:if me(request.resource.data.c)&&request.resource.data.status=='pending'&&get(/databases/$(d)/documents/candidates/$(request.auth.uid)).data.status=='approved';
   allow update,delete:if admin();}
- match /votes/{u}{allow read:if true;allow create:if me(u)&&usr().status=='approved'&&usr().role=='voter';allow delete:if admin();}
+ match /votes/{u}{allow read:if true;
+  allow create:if me(u)&&usr().status=='approved'&&usr().role=='voter'&&request.resource.data.n==0;
+  allow update:if me(u)&&usr().status=='approved'&&usr().role=='voter'&&request.resource.data.diff(resource.data).affectedKeys().hasOnly(['c','n','t'])&&request.resource.data.n==resource.data.get('n',0)+1&&request.resource.data.n<=3&&request.resource.data.c!=resource.data.c;
+  allow delete:if admin();}
  match /problems/{p}{allow read:if true;allow create:if request.auth!=null&&request.resource.data.uid==request.auth.uid&&usr().status=='approved';allow update:if admin();allow delete:if admin()||(request.auth!=null&&resource.data.uid==request.auth.uid);}
  match /plikes/{i}{allow read:if true;allow create:if request.auth!=null&&request.resource.data.u==request.auth.uid;allow delete:if request.auth!=null&&resource.data.u==request.auth.uid;}
  match /comments/{i}{allow read:if true;allow create:if request.auth!=null&&request.resource.data.uid==request.auth.uid;allow delete:if admin();}

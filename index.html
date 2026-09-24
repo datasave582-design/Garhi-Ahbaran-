@@ -43,7 +43,7 @@ nav button{flex:1;border:0;background:0;padding:8px 2px 6px;font:600 12px Mukta;
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="fb.js"></script>
 <script>
-let LD=0,DP=null,U=null,P=null,C=[],VS=[],CL=[],CH=[],CM=[],PR=[],PL=[],MYR={},openT='c',unR=null,tab='home',open=null,unCM=null;
+let LD=0,LE=0,DP=null,U=null,P=null,C=[],VS=[],CL=[],CH=[],CM=[],PR=[],PL=[],MYR={},openT='c',unR=null,tab='home',open=null,unCM=null;
 const cnt=id=>VS.filter(v=>v.c==id).length,pl=id=>PL.filter(l=>l.p==id).length,pn=id=>PL.filter(l=>l.p==id&&l.n).map(l=>esc(l.n)),MY=()=>U&&(VS.find(v=>v.id==U.uid)||{}).c;
 const ST={pending:'समीक्षा में',approved:'स्वीकृत',rejected:'अस्वीकृत'};
 const DID=localStorage.mgd||(localStorage.mgd=(crypto.randomUUID?crypto.randomUUID():Date.now()+''+Math.random()));
@@ -52,7 +52,7 @@ auth.onAuthStateChanged(async u=>{if(sessionStorage.gl){sessionStorage.removeIte
  const d=await db.collection('users').doc(u.uid).get();P=d.exists?d.data():null;
  if(P&&P.dev&&P.dev!=DID){P=null;alert('यह खाता दूसरे फोन से जुड़ा है। एडमिन से डिवाइस रीसेट करवाएँ।');return auth.signOut()}
  if(!ds.exists)await dr.set({uid:u.uid,t:FV.serverTimestamp()});unR=db.collection('reacts').where('u','==',u.uid).onSnapshot(x=>{MYR={};x.forEach(d=>MYR[d.data().c]=d.data().v);upd()})}catch(e){console.error(e)}}shell()});
-db.collection('candidates').where('status','==','approved').onSnapshot(s=>{C=s.docs.map(d=>({id:d.id,...d.data()}));LD=1;upd()});
+db.collection('candidates').where('status','==','approved').onSnapshot(s=>{C=s.docs.map(d=>({id:d.id,...d.data()}));LD=1;LE=0;upd()},e=>{LD=1;LE=e.code||'error';upd()});
 db.collection('votes').onSnapshot(s=>{VS=s.docs.map(d=>({id:d.id,...d.data()}));upd()});
 db.collection('plikes').onSnapshot(s=>{PL=s.docs.map(d=>d.data());upd()});
 db.collection('problems').orderBy('t','desc').limit(50).onSnapshot(s=>{PR=s.docs.map(d=>({id:d.id,...d.data()}));upd()});
@@ -74,7 +74,7 @@ function hero(){const pr=PR.length,sv=PR.filter(p=>p.status=='solved').length;le
  else if(MY())n=`<div class="nu">✅ आपका वोट दर्ज है। धन्यवाद!</div>`;
  else if(P.role=='voter')n=`<div class="nu">🗳️ आपने अभी वोट नहीं दिया। अपना प्रत्याशी चुनें!</div>`;
  return `<div class="hero"><h1>अपना प्रधान चुनें,<br>अपनी आवाज़ उठाएँ</h1><p>ग्राम पंचायत गढ़ी अहबरन</p><div class="st"><div><b>${VS.length}</b>वोट पड़े</div><div><b>${C.length}</b>प्रत्याशी</div><div><b>${pr}</b>समस्याएँ</div><div><b>${sv}</b>हल हुईं</div></div>${n}${DP?` <button class="p o" onclick="DP.prompt();DP=null;upd()">📲 ऐप इंस्टॉल करें</button>`:''}</div>`}
-function list(){if(!LD)return '<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
+function list(){if(!LD)return '<div class="sk"></div><div class="sk"></div><div class="sk"></div>';if(LE)return '<p class="e">⚠️ डेटा लोड नहीं हो पा रहा ('+LE+')।<br>Firebase में Firestore Database बनाएँ और rules publish करें।</p>';
  const q=($('#q').value||'').trim().toLowerCase(),tot=VS.length||1,all=C.slice().sort((a,b)=>cnt(b.id)-cnt(a.id)),md=['🥇','🥈','🥉'];
  const a=all.filter(c=>!q||(c.name+(c.symbol||'')+(c.ward||'')).toLowerCase().includes(q));
  return a.length?a.map(c=>{const n=cnt(c.id),rk=all.indexOf(c),pc=Math.round(n*100/tot),w=(c.works||[]).length,dn=CL.filter(x=>x.c==c.id).length;
@@ -84,13 +84,13 @@ function op(id,t){open=id;openT=t||'c';const md=$('#md');md.hidden=false;md.inne
  if(unCM)unCM();unCM=db.collection('comments').where('c','==',id).onSnapshot(s=>{CM=s.docs.map(d=>d.data()).sort((a,b)=>((a.t&&a.t.seconds)||9e9)-((b.t&&b.t.seconds)||9e9));parts()});parts()}
 function cls(){open=null;$('#md').hidden=true;if(unCM)unCM()}
 function parts(){if(!$('#mh'))return;if(openT=='p'){const p=PR.find(x=>x.id==open);if(!p)return;$('#mh').innerHTML=`<h2 style="margin:0">${esc(p.title)}</h2><small>${esc(p.name)} • ${esc(p.ward||'')}</small><p>${esc(p.txt)}</p>${p.img?`<img class="cimg" src="${p.img}">`:''}<p><button class="p o" onclick="plike('${p.id}')">👍 ${pl(p.id)}</button></p>${pl(p.id)?`<p><small>👍 इन्होंने पसंद किया: ${pn(p.id).join(', ')}</small></p>`:''}`;$('#cml').innerHTML=CM.map(x=>`<div><b>${esc(x.name)}</b><br>${esc(x.txt)}</div>`).join('')||'<p class="e">पहली टिप्पणी आप करें।</p>';return}
- const c=C.find(x=>x.id==open);if(!c)return;const dn=i=>CL.find(x=>x.c==c.id&&x.i==i);const my=MY(),r=MYR[c.id]||0;
+ const c=C.find(x=>x.id==open);if(!c)return;const dn=i=>CL.find(x=>x.c==c.id&&x.i==i);const my=MY(),r=MYR[c.id]||0,mv=(U&&VS.find(v=>v.id==U.uid))||{},left=3-(mv.n||0);
  $('#mh').innerHTML=`<div class="hd"><img src="${c.photo}"><div><h2 style="margin:0">${esc(c.name)}</h2>${c.symbol||c.symImg?`<div>चिह्न: ${esc(c.symbol)} ${c.symImg?`<img class="sy" src="${c.symImg}">`:''}</div>`:''}<div>वार्ड: ${esc(c.ward||'-')}</div></div></div>
- <p><b>${cnt(c.id)} वोट</b> • 👍 ${c.likes||0} • 👎 ${c.dislikes||0}</p><p><button class="p" onclick="vote('${c.id}')" ${my?'disabled':''}>${my==c.id?'✅ आपने इन्हें वोट दिया':my?'आप वोट दे चुके हैं':'🗳️ वोट दें'}</button> <button class="p ${r==1?'o':''}" onclick="react('${c.id}',1)">👍 लाइक</button> <button class="p ${r==-1?'o':''}" onclick="react('${c.id}',-1)">👎 डिसलाइक</button> <button class="p g" onclick="share('${c.id}')">📤 शेयर</button></p>
+ <p><b>${cnt(c.id)} वोट</b> • 👍 ${c.likes||0} • 👎 ${c.dislikes||0}</p><p><button class="p" onclick="vote('${c.id}')" ${my==c.id||(my&&left<=0)?'disabled':''}>${my==c.id?'✅ आपका वोट • '+left+' बदलाव बचे':my?(left>0?'🔄 वोट यहाँ बदलें ('+left+' बचे)':'🔒 वोट लॉक'):'🗳️ वोट दें'}</button> <button class="p ${r==1?'o':''}" onclick="react('${c.id}',1)">👍 लाइक</button> <button class="p ${r==-1?'o':''}" onclick="react('${c.id}',-1)">👎 डिसलाइक</button> <button class="p g" onclick="share('${c.id}')">📤 शेयर</button></p>
  <h3>📜 घोषणा पत्र</h3>${c.mfImg?`<img class="cimg" src="${c.mfImg}" onclick="window.open(this.src)">`:''}${(c.works||[]).map((w,i)=>{const d=dn(i);return `<div class="w"><i>${d?'✔':'○'}</i><div>${esc(w.t)}${d?`<br><span class="tag ok">पूरा हुआ (एडमिन द्वारा सत्यापित)</span><br><small>${esc(d.note)}</small>${d.img?`<img class="cimg" src="${d.img}">`:''}`:''}</div></div>`}).join('')||(c.mfImg?'':'<p>अभी कोई वादा नहीं जुड़ा।</p>')}`;
  $('#cml').innerHTML=CM.map(x=>`<div><b>${esc(x.name)}</b><br>${esc(x.txt)}</div>`).join('')||'<p class="e">पहली टिप्पणी आप करें।</p>'}
-async function vote(id){if(!U){cls();return go('me')}if(!P||P.role!='voter'||P.status!='approved')return alert('वोट के लिए मतदाता खाता एडमिन से स्वीकृत होना ज़रूरी है।');if(MY())return;if(!confirm('वोट अंतिम है, बदला नहीं जा सकेगा। पक्का वोट दें?'))return;
- try{await db.collection('votes').doc(U.uid).set({c:id,t:FV.serverTimestamp()});alert('🎉 आपका वोट दर्ज हो गया। धन्यवाद!')}catch(e){alert('वोट दर्ज नहीं हुआ: '+e.message)}}
+async function vote(id){if(!U){cls();return go('me')}if(!P||P.role!='voter'||P.status!='approved')return alert('वोट के लिए मतदाता खाता एडमिन से स्वीकृत होना ज़रूरी है।');const mv=VS.find(v=>v.id==U.uid);if(mv){if(mv.c==id)return;if((mv.n||0)>=3)return alert('आप 3 बार वोट बदल चुके हैं। अब वोट लॉक है।');if(!confirm('वोट बदलें? आपके पास '+(3-(mv.n||0))+' बदलाव बचे हैं।'))return}else if(!confirm('पक्का वोट दें? बाद में आप इसे सिर्फ 3 बार बदल सकेंगे।'))return;
+ try{await db.collection('votes').doc(U.uid).set({c:id,n:mv?(mv.n||0)+1:0,t:FV.serverTimestamp()});alert(mv?'🔄 आपका वोट बदल गया।':'🎉 आपका वोट दर्ज हो गया। धन्यवाद!')}catch(e){alert('वोट दर्ज नहीं हुआ: '+e.message)}}
 async function react(id,v){if(!U||!P||P.status!='approved')return needOk();const my=MYR[id]||0,nv=my==v?0:v,b=db.batch(),ref=db.collection('reacts').doc(id+'_'+U.uid);
  nv?b.set(ref,{c:id,u:U.uid,v:nv}):b.delete(ref);b.update(db.collection('candidates').doc(id),{likes:FV.increment((nv==1)-(my==1)),dislikes:FV.increment((nv==-1)-(my==-1))});
  try{await b.commit()}catch(e){alert(e.message)}}

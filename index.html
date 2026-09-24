@@ -2,40 +2,48 @@
 <link rel="manifest" href="manifest.json"><meta name="theme-color" content="#1f4d3a"><link rel="apple-touch-icon" href="icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
-:root{--g:#1f4d3a;--s:#e8871e;--bg:#f4f6f1;--ink:#1c2420}*{box-sizing:border-box}
-body{margin:0;font:16px/1.5 Mukta,sans-serif;background:var(--bg);color:var(--ink)}
-header{position:sticky;top:0;z-index:5;background:var(--g);color:#fff;padding:8px 12px;padding-top:calc(8px + env(safe-area-inset-top));display:flex;gap:10px;align-items:center}
-header b{font-size:20px;font-weight:800;white-space:nowrap}header input{flex:1;min-width:0;border:0;border-radius:20px;padding:8px 14px;font:inherit}
-main{padding:12px 12px 90px;max-width:720px;margin:auto}
-nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid #d8ddd4;padding-bottom:env(safe-area-inset-bottom)}
-nav button{flex:1;border:0;background:0;padding:10px;font:600 14px Mukta;color:#667}nav button.on{color:var(--g);border-top:3px solid var(--s)}
-.card{display:flex;gap:12px;align-items:center;background:#fff;border-radius:12px;padding:10px;margin-bottom:10px;border:1px solid #e0e5da;cursor:pointer}
-.card>img{width:64px;height:64px;border-radius:50%;object-fit:cover;background:#ddd}.card h3{margin:0;font-size:18px}.card p{margin:0;font-size:14px;color:#556}
-.v{margin-left:auto;text-align:center}.v b{display:block;font-size:24px;color:var(--g)}.sy{width:22px;height:22px;vertical-align:middle;object-fit:cover}
-.e{text-align:center;color:#778;padding:30px}
-button.p{background:var(--g);color:#fff;border:0;border-radius:8px;padding:10px 16px;font:600 16px Mukta}button.o{background:var(--s)}
-input,select,textarea{width:100%;padding:10px;margin:4px 0 10px;border:1px solid #c9d0c4;border-radius:8px;font:inherit;background:#fff}
-label{font-weight:600;font-size:14px}.box{background:#fff;border-radius:12px;padding:14px;border:1px solid #e0e5da;margin-bottom:12px}
+:root{--g:#14513e;--g2:#0d3a2c;--s:#f2a72e;--bg:#f6f4ee;--ink:#1d2a24;--mu:#66736c;--ln:#e4e0d4;--rad:14px}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+body{margin:0;font:16px/1.55 Mukta,sans-serif;background:var(--bg);color:var(--ink)}
+header{position:sticky;top:0;z-index:5;background:var(--g);color:#fff;padding:10px 12px;padding-top:calc(10px + env(safe-area-inset-top));display:flex;gap:10px;align-items:center}
+header::after{content:"";position:absolute;left:0;right:0;bottom:-10px;height:10px;background:conic-gradient(from 135deg at top,var(--s) 0 90deg,transparent 0) 0 0/20px 10px repeat-x}
+.br{font-weight:800;font-size:19px;white-space:nowrap}header input{flex:1;min-width:0;border:0;border-radius:999px;padding:9px 16px;font:inherit;margin:0}
+main{padding:24px 14px 100px;max-width:720px;margin:auto}
+.hero{background:var(--g2);color:#fff;border-radius:var(--rad);padding:20px 18px;margin-bottom:16px}.hero h1{margin:0;font-size:24px;line-height:1.3;font-weight:800}.hero p{margin:6px 0 14px;opacity:.85}
+.st{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:14px}.st div{background:#ffffff14;border-radius:10px;padding:8px 2px;text-align:center;font-size:12px}.st b{display:block;font-size:22px;color:var(--s)}
+.nu{background:#ffffff1f;border-radius:10px;padding:10px 12px;font-weight:600;margin-bottom:8px}
+.card{display:flex;gap:12px;background:#fff;border-radius:var(--rad);padding:12px;margin-bottom:12px;border:1px solid var(--ln);cursor:pointer;transition:transform .15s}.card:active{transform:scale(.985)}
+.av{position:relative;flex:none}.av img{width:72px;height:72px;border-radius:var(--rad);object-fit:cover;background:#ddd;display:block}.md1{position:absolute;right:-6px;bottom:-6px;font-size:20px}
+.in{flex:1;min-width:0}.in h3{margin:0;font-size:18px}.sm{margin:4px 0 0;font-size:13px;color:var(--mu)}
+.chip{display:inline-block;font-size:12px;font-weight:600;background:#fdeccb;color:#7a4b00;border-radius:999px;padding:1px 10px;margin-right:6px}.chip.g{background:#dcebe5;color:var(--g)}
+.pb{height:8px;background:#ece8dc;border-radius:99px;overflow:hidden;margin-top:8px}.pb i{display:block;height:100%;background:var(--s);border-radius:99px;transition:width .6s}
+.sk{height:96px;border-radius:var(--rad);margin-bottom:12px;background:linear-gradient(90deg,#ece8dc 25%,#f6f4ee 50%,#ece8dc 75%) 0 0/200% 100%;animation:sh 1.2s infinite}@keyframes sh{to{background-position:-200% 0}}
+.sy{width:20px;height:20px;border-radius:5px;vertical-align:middle;object-fit:cover;margin-right:4px}.e{text-align:center;color:var(--mu);padding:40px 10px}
+button.p{background:var(--g);color:#fff;border:0;border-radius:999px;padding:10px 18px;font:700 15px Mukta;margin:2px 0}button.o{background:var(--s);color:#3b2600}button.g{background:#fff;color:var(--g);border:1.5px solid var(--g)}button:disabled{opacity:.55}
+input,select,textarea{width:100%;padding:11px 12px;margin:4px 0 12px;border:1.5px solid var(--ln);border-radius:10px;font:inherit;background:#fff}input:focus,select:focus,textarea:focus{outline:0;border-color:var(--g)}
+label{font-weight:600;font-size:14px;color:var(--mu)}.box{background:#fff;border-radius:var(--rad);padding:16px;border:1px solid var(--ln);margin-bottom:14px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:#fff;border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom);z-index:6}
+nav button{flex:1;border:0;background:0;padding:8px 2px 6px;font:600 12px Mukta;color:var(--mu);display:flex;flex-direction:column;align-items:center}nav button i{font-style:normal;font-size:22px;line-height:1.3}nav button.on{color:var(--g)}nav button.on i{background:#fdeccb;border-radius:99px;padding:0 16px}
 .md{position:fixed;inset:0;background:#0007;z-index:10;display:flex;align-items:flex-end}.md[hidden]{display:none}
-.sh{background:var(--bg);width:100%;max-width:720px;margin:auto;max-height:92vh;overflow:auto;border-radius:16px 16px 0 0;padding:14px}
-.x{float:right;border:0;background:#fff;border-radius:50%;width:34px;height:34px;font-size:18px}
-.hd{display:flex;gap:12px;align-items:center}.hd img{width:80px;height:80px;border-radius:12px;object-fit:cover}
+.sh{background:var(--bg);width:100%;max-width:720px;margin:auto;max-height:92vh;overflow:auto;border-radius:20px 20px 0 0;padding:16px}.x{float:right;border:0;background:#fff;border-radius:50%;width:36px;height:36px;font-size:18px}
+.hd{display:flex;gap:12px;align-items:center}.hd img{width:84px;height:84px;border-radius:var(--rad);object-fit:cover}
 .w{display:flex;gap:8px;padding:8px 0;border-bottom:1px dashed #ccd}.w i{font-style:normal;color:#1a8a4a;font-weight:800}
-.tag{font-size:12px;padding:2px 8px;border-radius:10px;background:#fde7c8}.ok{background:#cdeedb}
-.msgs>div{background:#fff;border-radius:10px;padding:8px 12px;margin-bottom:8px}.msgs small{color:#778}
-.bar{position:fixed;left:0;right:0;bottom:calc(52px + env(safe-area-inset-bottom));display:flex;gap:8px;padding:8px 12px;background:var(--bg)}.bar input{margin:0}
-.cimg{max-width:100%;border-radius:8px;margin-top:6px}
+.tag{font-size:12px;padding:2px 10px;border-radius:99px;background:#fdeccb}.ok{background:#cdeedb}
+.msgs>div{background:#fff;border-radius:var(--rad);padding:8px 12px;margin-bottom:8px;border:1px solid var(--ln)}.msgs small{color:var(--mu)}
+.bar{position:fixed;left:0;right:0;bottom:calc(62px + env(safe-area-inset-bottom));display:flex;gap:8px;padding:8px 12px;background:var(--bg)}.bar input{margin:0}.cimg{max-width:100%;border-radius:10px;margin-top:6px}
+#ts{position:fixed;left:50%;bottom:calc(80px + env(safe-area-inset-bottom));transform:translate(-50%,20px);background:#1d2a24;color:#fff;padding:10px 18px;border-radius:99px;opacity:0;pointer-events:none;transition:.25s;max-width:90%;text-align:center;z-index:20;font-size:14px}#ts.on{opacity:1;transform:translate(-50%,0)}
+@media(prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
 </style></head><body>
-<header><b>🏡 गढ़ी अहबरन<small style="display:block;font:400 11px Mukta;opacity:.85">ग्राम पंचायत गढ़ी अहबरन</small></b><input id="q" placeholder="प्रत्याशी / चिह्न / वार्ड खोजें" oninput="go('home')"></header>
+<header><div class="br">🏡 गढ़ी अहबरन</div><input id="q" placeholder="🔍 प्रत्याशी / चिह्न / वार्ड खोजें" oninput="go('home')"></header>
 <main id="m"></main>
-<nav><button data-t="home" onclick="go('home')">🗳️ प्रत्याशी</button><button data-t="chat" onclick="go('chat')">💬 गाँव चौपाल</button><button data-t="prob" onclick="go('prob')">📢 समस्याएँ</button><button data-t="me" onclick="go('me')">👤 मेरा खाता</button></nav>
+<nav><button data-t="home" onclick="go('home')"><i>🗳️</i>प्रत्याशी</button><button data-t="prob" onclick="go('prob')"><i>📢</i>समस्याएँ</button><button data-t="chat" onclick="go('chat')"><i>💬</i>चौपाल</button><button data-t="me" onclick="go('me')"><i>👤</i>मेरा खाता</button></nav><div id="ts"></div>
 <div id="md" class="md" hidden></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="fb.js"></script>
 <script>
-let U=null,P=null,C=[],VS=[],CL=[],CH=[],CM=[],PR=[],PL=[],MYR={},openT='c',unR=null,tab='home',open=null,unCM=null;
+let LD=0,DP=null,U=null,P=null,C=[],VS=[],CL=[],CH=[],CM=[],PR=[],PL=[],MYR={},openT='c',unR=null,tab='home',open=null,unCM=null;
 const cnt=id=>VS.filter(v=>v.c==id).length,pl=id=>PL.filter(l=>l.p==id).length,pn=id=>PL.filter(l=>l.p==id&&l.n).map(l=>esc(l.n)),MY=()=>U&&(VS.find(v=>v.id==U.uid)||{}).c;
 const ST={pending:'समीक्षा में',approved:'स्वीकृत',rejected:'अस्वीकृत'};
 const DID=localStorage.mgd||(localStorage.mgd=(crypto.randomUUID?crypto.randomUUID():Date.now()+''+Math.random()));
@@ -44,7 +52,7 @@ auth.onAuthStateChanged(async u=>{if(sessionStorage.gl){sessionStorage.removeIte
  const d=await db.collection('users').doc(u.uid).get();P=d.exists?d.data():null;
  if(P&&P.dev&&P.dev!=DID){P=null;alert('यह खाता दूसरे फोन से जुड़ा है। एडमिन से डिवाइस रीसेट करवाएँ।');return auth.signOut()}
  if(!ds.exists)await dr.set({uid:u.uid,t:FV.serverTimestamp()});unR=db.collection('reacts').where('u','==',u.uid).onSnapshot(x=>{MYR={};x.forEach(d=>MYR[d.data().c]=d.data().v);upd()})}catch(e){console.error(e)}}shell()});
-db.collection('candidates').where('status','==','approved').onSnapshot(s=>{C=s.docs.map(d=>({id:d.id,...d.data()}));upd()});
+db.collection('candidates').where('status','==','approved').onSnapshot(s=>{C=s.docs.map(d=>({id:d.id,...d.data()}));LD=1;upd()});
 db.collection('votes').onSnapshot(s=>{VS=s.docs.map(d=>({id:d.id,...d.data()}));upd()});
 db.collection('plikes').onSnapshot(s=>{PL=s.docs.map(d=>d.data());upd()});
 db.collection('problems').orderBy('t','desc').limit(50).onSnapshot(s=>{PR=s.docs.map(d=>({id:d.id,...d.data()}));upd()});
@@ -52,31 +60,43 @@ db.collection('claims').where('status','==','approved').onSnapshot(s=>{CL=s.docs
 db.collection('chat').orderBy('t').limitToLast(60).onSnapshot(s=>{CH=s.docs.map(d=>d.data());upd()});
 function go(t){tab=t;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==t));shell()}
 function shell(){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==tab));
- if(tab=='home')m.innerHTML='<div id="lst"></div>';
+ if(tab=='home')m.innerHTML='<div id="hero"></div><div id="lst"></div>';
  else if(tab=='chat')m.innerHTML='<div id="cmsg" class="msgs"></div><div class="bar"><input id="ci" placeholder="सबके लिए संदेश लिखें"><button class="p" onclick="sendChat()">भेजें</button></div><div style="height:60px"></div>';
  else if(tab=='prob')m.innerHTML=`<div class="box"><button class="p" onclick="togP()">➕ अपनी समस्या दर्ज करें</button><div id="pf" hidden><label>समस्या का शीर्षक</label><input id="pt"><label>विवरण</label><textarea id="px" rows="4"></textarea><label>फोटो (वैकल्पिक)</label><input id="pi" type="file" accept="image/*"><button class="p" onclick="addP()">भेजें</button></div></div><div id="plst"></div>`;
  else meView();upd()}
-function upd(){if(!$('#m'))return;if(tab=='home')$('#lst').innerHTML=list();if(tab=='chat')chatMsgs();if(tab=='prob'&&$('#plst'))$('#plst').innerHTML=plist();if(open)parts()}
-function list(){const q=($('#q').value||'').trim().toLowerCase();
- const a=C.filter(c=>!q||(c.name+c.symbol+(c.ward||'')).toLowerCase().includes(q)).sort((a,b)=>cnt(b.id)-cnt(a.id));
- return a.length?a.map(c=>`<div class="card" onclick="op('${c.id}')"><img src="${c.photo}"><div><h3>${esc(c.name)}</h3><p>चिह्न: ${esc(c.symbol)} ${c.symImg?`<img class="sy" src="${c.symImg}">`:''}</p><p>${CL.filter(x=>x.c==c.id).length}/${(c.works||[]).length} वादे पूरे • 👍 ${c.likes||0} 👎 ${c.dislikes||0}</p></div><div class="v"><b>${cnt(c.id)}</b><small>वोट</small></div></div>`).join(''):'<p class="e">कोई प्रत्याशी नहीं मिला।</p>'}
+function upd(){if(!$('#m'))return;if(tab=='home'){$('#hero').innerHTML=hero();$('#lst').innerHTML=list()}if(tab=='chat')chatMsgs();if(tab=='prob'&&$('#plst'))$('#plst').innerHTML=plist();if(open)parts()}
+window.alert=m=>{const t=$('#ts');t.textContent=m;t.classList.add('on');clearTimeout(window._t);window._t=setTimeout(()=>t.classList.remove('on'),4000)};
+addEventListener('beforeinstallprompt',e=>{e.preventDefault();DP=e;upd()});
+function hero(){const pr=PR.length,sv=PR.filter(p=>p.status=='solved').length;let n='';
+ if(!U)n=`<button class="p o" onclick="go('me')">🔐 Gmail से जुड़ें और वोट दें</button>`;
+ else if(!P)n=`<button class="p o" onclick="go('me')">📝 रजिस्ट्रेशन पूरा करें</button>`;
+ else if(P.status!='approved')n=`<div class="nu">⏳ आपका खाता एडमिन की मंज़ूरी में है</div>`;
+ else if(MY())n=`<div class="nu">✅ आपका वोट दर्ज है। धन्यवाद!</div>`;
+ else if(P.role=='voter')n=`<div class="nu">🗳️ आपने अभी वोट नहीं दिया। अपना प्रत्याशी चुनें!</div>`;
+ return `<div class="hero"><h1>अपना प्रधान चुनें,<br>अपनी आवाज़ उठाएँ</h1><p>ग्राम पंचायत गढ़ी अहबरन</p><div class="st"><div><b>${VS.length}</b>वोट पड़े</div><div><b>${C.length}</b>प्रत्याशी</div><div><b>${pr}</b>समस्याएँ</div><div><b>${sv}</b>हल हुईं</div></div>${n}${DP?` <button class="p o" onclick="DP.prompt();DP=null;upd()">📲 ऐप इंस्टॉल करें</button>`:''}</div>`}
+function list(){if(!LD)return '<div class="sk"></div><div class="sk"></div><div class="sk"></div>';
+ const q=($('#q').value||'').trim().toLowerCase(),tot=VS.length||1,all=C.slice().sort((a,b)=>cnt(b.id)-cnt(a.id)),md=['🥇','🥈','🥉'];
+ const a=all.filter(c=>!q||(c.name+(c.symbol||'')+(c.ward||'')).toLowerCase().includes(q));
+ return a.length?a.map(c=>{const n=cnt(c.id),rk=all.indexOf(c),pc=Math.round(n*100/tot),w=(c.works||[]).length,dn=CL.filter(x=>x.c==c.id).length;
+ return `<div class="card" onclick="op('${c.id}')"><div class="av"><img src="${c.photo}">${n&&rk<3?`<span class="md1">${md[rk]}</span>`:''}</div><div class="in"><h3>${esc(c.name)}</h3><p class="sm">${c.symImg?`<img class="sy" src="${c.symImg}">`:''}${c.symbol?`<span class="chip">${esc(c.symbol)}</span>`:''}${c.ward?`<span class="chip g">${esc(c.ward)}</span>`:''}</p><div class="pb"><i style="width:${pc}%"></i></div><p class="sm">${n} वोट (${pc}%) • 👍 ${c.likes||0} 👎 ${c.dislikes||0}${w?` • ✅ ${dn}/${w} वादे`:''}</p></div></div>`}).join(''):'<p class="e">🔍<br>कोई प्रत्याशी नहीं मिला।</p>'}
+function share(id,t){const c=t=='p'?PR.find(x=>x.id==id):C.find(x=>x.id==id);if(!c)return;const tx=t=='p'?'📢 गढ़ी अहबरन की समस्या: '+c.title:'🗳️ गढ़ी अहबरन प्रधान चुनाव – प्रत्याशी '+c.name+(c.symbol?' ('+c.symbol+')':''),u=location.origin+location.pathname;if(navigator.share)navigator.share({title:'गढ़ी अहबरन',text:tx,url:u}).catch(()=>{});else window.open('https://wa.me/?text='+encodeURIComponent(tx+'\n'+u))}
 function op(id,t){open=id;openT=t||'c';const md=$('#md');md.hidden=false;md.innerHTML=`<div class="sh"><button class="x" onclick="cls()">✕</button><div id="mh"></div><h3>💬 टिप्पणियाँ</h3><div id="cml" class="msgs"></div><input id="cti" placeholder="अपनी राय लिखें"><button class="p" onclick="addC()">टिप्पणी करें</button><div style="height:20px"></div></div>`;
  if(unCM)unCM();unCM=db.collection('comments').where('c','==',id).onSnapshot(s=>{CM=s.docs.map(d=>d.data()).sort((a,b)=>((a.t&&a.t.seconds)||9e9)-((b.t&&b.t.seconds)||9e9));parts()});parts()}
 function cls(){open=null;$('#md').hidden=true;if(unCM)unCM()}
 function parts(){if(!$('#mh'))return;if(openT=='p'){const p=PR.find(x=>x.id==open);if(!p)return;$('#mh').innerHTML=`<h2 style="margin:0">${esc(p.title)}</h2><small>${esc(p.name)} • ${esc(p.ward||'')}</small><p>${esc(p.txt)}</p>${p.img?`<img class="cimg" src="${p.img}">`:''}<p><button class="p o" onclick="plike('${p.id}')">👍 ${pl(p.id)}</button></p>${pl(p.id)?`<p><small>👍 इन्होंने पसंद किया: ${pn(p.id).join(', ')}</small></p>`:''}`;$('#cml').innerHTML=CM.map(x=>`<div><b>${esc(x.name)}</b><br>${esc(x.txt)}</div>`).join('')||'<p class="e">पहली टिप्पणी आप करें।</p>';return}
  const c=C.find(x=>x.id==open);if(!c)return;const dn=i=>CL.find(x=>x.c==c.id&&x.i==i);const my=MY(),r=MYR[c.id]||0;
- $('#mh').innerHTML=`<div class="hd"><img src="${c.photo}"><div><h2 style="margin:0">${esc(c.name)}</h2><div>चिह्न: ${esc(c.symbol)} ${c.symImg?`<img class="sy" src="${c.symImg}">`:''}</div><div>वार्ड: ${esc(c.ward||'-')}</div></div></div>
- <p><b>${cnt(c.id)} वोट</b> • 👍 ${c.likes||0} • 👎 ${c.dislikes||0}</p><p><button class="p" onclick="vote('${c.id}')" ${my?'disabled':''}>${my==c.id?'✅ आपने इन्हें वोट दिया':my?'आप वोट दे चुके हैं':'🗳️ वोट दें'}</button> <button class="p ${r==1?'o':''}" onclick="react('${c.id}',1)">👍 लाइक</button> <button class="p ${r==-1?'o':''}" onclick="react('${c.id}',-1)">👎 डिसलाइक</button></p>
- <h3>📜 घोषणा पत्र</h3>${(c.works||[]).map((w,i)=>{const d=dn(i);return `<div class="w"><i>${d?'✔':'○'}</i><div>${esc(w.t)}${d?`<br><span class="tag ok">पूरा हुआ (एडमिन द्वारा सत्यापित)</span><br><small>${esc(d.note)}</small>${d.img?`<img class="cimg" src="${d.img}">`:''}`:''}</div></div>`}).join('')||'<p>अभी कोई वादा नहीं जुड़ा।</p>'}`;
+ $('#mh').innerHTML=`<div class="hd"><img src="${c.photo}"><div><h2 style="margin:0">${esc(c.name)}</h2>${c.symbol||c.symImg?`<div>चिह्न: ${esc(c.symbol)} ${c.symImg?`<img class="sy" src="${c.symImg}">`:''}</div>`:''}<div>वार्ड: ${esc(c.ward||'-')}</div></div></div>
+ <p><b>${cnt(c.id)} वोट</b> • 👍 ${c.likes||0} • 👎 ${c.dislikes||0}</p><p><button class="p" onclick="vote('${c.id}')" ${my?'disabled':''}>${my==c.id?'✅ आपने इन्हें वोट दिया':my?'आप वोट दे चुके हैं':'🗳️ वोट दें'}</button> <button class="p ${r==1?'o':''}" onclick="react('${c.id}',1)">👍 लाइक</button> <button class="p ${r==-1?'o':''}" onclick="react('${c.id}',-1)">👎 डिसलाइक</button> <button class="p g" onclick="share('${c.id}')">📤 शेयर</button></p>
+ <h3>📜 घोषणा पत्र</h3>${c.mfImg?`<img class="cimg" src="${c.mfImg}" onclick="window.open(this.src)">`:''}${(c.works||[]).map((w,i)=>{const d=dn(i);return `<div class="w"><i>${d?'✔':'○'}</i><div>${esc(w.t)}${d?`<br><span class="tag ok">पूरा हुआ (एडमिन द्वारा सत्यापित)</span><br><small>${esc(d.note)}</small>${d.img?`<img class="cimg" src="${d.img}">`:''}`:''}</div></div>`}).join('')||(c.mfImg?'':'<p>अभी कोई वादा नहीं जुड़ा।</p>')}`;
  $('#cml').innerHTML=CM.map(x=>`<div><b>${esc(x.name)}</b><br>${esc(x.txt)}</div>`).join('')||'<p class="e">पहली टिप्पणी आप करें।</p>'}
 async function vote(id){if(!U){cls();return go('me')}if(!P||P.role!='voter'||P.status!='approved')return alert('वोट के लिए मतदाता खाता एडमिन से स्वीकृत होना ज़रूरी है।');if(MY())return;if(!confirm('वोट अंतिम है, बदला नहीं जा सकेगा। पक्का वोट दें?'))return;
- try{await db.collection('votes').doc(U.uid).set({c:id,t:FV.serverTimestamp()})}catch(e){alert('वोट दर्ज नहीं हुआ: '+e.message)}}
+ try{await db.collection('votes').doc(U.uid).set({c:id,t:FV.serverTimestamp()});alert('🎉 आपका वोट दर्ज हो गया। धन्यवाद!')}catch(e){alert('वोट दर्ज नहीं हुआ: '+e.message)}}
 async function react(id,v){if(!U||!P||P.status!='approved')return needOk();const my=MYR[id]||0,nv=my==v?0:v,b=db.batch(),ref=db.collection('reacts').doc(id+'_'+U.uid);
  nv?b.set(ref,{c:id,u:U.uid,v:nv}):b.delete(ref);b.update(db.collection('candidates').doc(id),{likes:FV.increment((nv==1)-(my==1)),dislikes:FV.increment((nv==-1)-(my==-1))});
  try{await b.commit()}catch(e){alert(e.message)}}
 function needOk(){if(!U){cls();return go('me')}alert('इसके लिए आपका खाता एडमिन से स्वीकृत होना ज़रूरी है।')}
 function togP(){$('#pf').hidden=!$('#pf').hidden}
-function plist(){return PR.map(p=>`<div class="box"><b>${esc(p.title)}</b> ${p.status=='solved'?'<span class="tag ok">समाधान हुआ</span>':''}<br><small>${esc(p.name)} • ${esc(p.ward||'')}</small><p>${esc(p.txt)}</p>${p.img?`<img class="cimg" src="${p.img}">`:''}<div><button class="p ${U&&PL.some(l=>l.p==p.id&&l.u==U.uid)?'o':''}" onclick="plike('${p.id}')">👍 ${pl(p.id)}</button> <button class="p" onclick="op('${p.id}','p')">💬 टिप्पणी</button></div>${pl(p.id)?`<small>👍 ${pn(p.id).slice(0,3).join(', ')}${pl(p.id)>3?' और '+(pl(p.id)-3)+' लोग':''}</small>`:''}</div>`).join('')||'<p class="e">अभी कोई समस्या दर्ज नहीं।</p>'}
+function plist(){return PR.map(p=>`<div class="box"><b>${esc(p.title)}</b> ${p.status=='solved'?'<span class="tag ok">समाधान हुआ</span>':''}<br><small>${esc(p.name)} • ${esc(p.ward||'')}</small><p>${esc(p.txt)}</p>${p.img?`<img class="cimg" src="${p.img}">`:''}<div><button class="p ${U&&PL.some(l=>l.p==p.id&&l.u==U.uid)?'o':''}" onclick="plike('${p.id}')">👍 ${pl(p.id)}</button> <button class="p" onclick="op('${p.id}','p')">💬 टिप्पणी</button> <button class="p g" onclick="share('${p.id}','p')">📤</button></div>${pl(p.id)?`<small>👍 ${pn(p.id).slice(0,3).join(', ')}${pl(p.id)>3?' और '+(pl(p.id)-3)+' लोग':''}</small>`:''}</div>`).join('')||'<p class="e">अभी कोई समस्या दर्ज नहीं।</p>'}
 async function plike(id){if(!U||!P||P.status!='approved')return needOk();const r=db.collection('plikes').doc(id+'_'+U.uid);try{PL.some(l=>l.p==id&&l.u==U.uid)?await r.delete():await r.set({p:id,u:U.uid,n:P.name})}catch(e){alert(e.message)}}
 async function addP(){if(!U||!P||P.status!='approved')return needOk();const t=$('#pt').value.trim(),x=$('#px').value.trim();if(!t||!x)return alert('शीर्षक और विवरण लिखें।');
  await db.collection('problems').add({uid:U.uid,name:P.name,ward:P.ward||'',title:t,txt:x,img:await img($('#pi').files[0],600),status:'open',t:FV.serverTimestamp()});$('#pt').value=$('#px').value=$('#pi').value='';togP()}
@@ -88,7 +108,7 @@ function meView(){
  if(!P){m.innerHTML=`<div class="box"><h2>रजिस्ट्रेशन</h2><p><small>✉ ${esc(U.email)}</small></p><label>आप कौन हैं?</label><select id="rl" onchange="$('#cf2').hidden=this.value!='candidate'"><option value="voter">मतदाता</option><option value="candidate">प्रधान प्रत्याशी</option></select>
  <label>पूरा नाम</label><input id="nm" value="${esc(U.displayName||'')}"><label>मोबाइल नंबर (10 अंक)</label><input id="mb" type="tel" maxlength="10"><label>वार्ड / मोहल्ला</label><input id="wd">
  <label>अपनी फोटो</label><input id="ph" type="file" accept="image/*"><label>पहचान पत्र की फोटो (आधार / वोटर ID)</label><input id="idp" type="file" accept="image/*">
- <div id="cf2" hidden><label>चुनाव चिह्न का नाम</label><input id="sy"><label>चुनाव चिह्न की फोटो</label><input id="syi" type="file" accept="image/*"><label>घोषणा पत्र (हर वादा नई लाइन में)</label><textarea id="mf" rows="5"></textarea></div>
+ <div id="cf2" hidden><label>चुनाव चिह्न चुनें (वैकल्पिक)</label><select id="sysel" onchange="if(this.value)$('#sy').value=this.value">${symOpts()}</select><label>चुनाव चिह्न का नाम (वैकल्पिक)</label><input id="sy"><label>चुनाव चिह्न की फोटो (वैकल्पिक)</label><input id="syi" type="file" accept="image/*"><label>घोषणा पत्र (वैकल्पिक) – हर वादा नई लाइन में</label><textarea id="mf" rows="5"></textarea><label>घोषणा पत्र की फोटो (वैकल्पिक)</label><input id="mfi" type="file" accept="image/*"></div>
  <button class="p" onclick="reg()">रजिस्टर करें</button> <button class="p o" onclick="auth.signOut()">लॉगआउट</button><p><small>रजिस्ट्रेशन एडमिन की मंज़ूरी के बाद ही चालू होगा।</small></p></div>`;return}
  m.innerHTML=`<div class="box"><div class="hd"><img src="${P.photo}"><div><h2 style="margin:0">${esc(P.name)}</h2><div>${P.role=='candidate'?'प्रत्याशी':'मतदाता'} • ${esc(P.mobile)}</div><span class="tag ${P.status=='approved'?'ok':''}">${ST[P.status]||P.status}</span></div></div><p></p><button class="p" onclick="auth.signOut()">लॉगआउट</button></div><div id="cp"></div>`;
  if(P.role=='candidate'&&P.status=='approved')candPanel()}
@@ -99,11 +119,11 @@ async function glogin(){if(/FBAN|FBAV|Instagram|Line\/|; wv\)/.test(navigator.us
  try{if(SAME_AUTH){sessionStorage.gl=1;await auth.signInWithRedirect(p)}else await auth.signInWithPopup(p)}catch(e){sessionStorage.removeItem('gl');if(e.code!='auth/popup-closed-by-user'&&e.code!='auth/cancelled-popup-request')alert('लॉगिन नहीं हुआ: '+(e.code||e.message))}}
 auth.getRedirectResult().catch(e=>alert('लॉगिन नहीं हुआ: '+(e.code||e.message)));
 async function reg(){const g=i=>$('#'+i).value.trim(),f=i=>$('#'+i).files[0],r=g('rl'),mb=g('mb');
- if(!/^\d{10}$/.test(mb)||!g('nm')||!f('ph')||!f('idp'))return alert('नाम, 10 अंक का मोबाइल, फोटो और पहचान पत्र ज़रूरी हैं।');
- if(r=='candidate'&&(!g('sy')||!g('mf')))return alert('चुनाव चिह्न और घोषणा पत्र भरें।');
+ if(!/^\d{10}$/.test(mb)||!g('nm')||!f('ph')||!f('idp'))return alert('नाम, 10 अंक का मोबाइल, अपनी फोटो और पहचान पत्र ज़रूरी हैं।');
+
  try{const uid=U.uid,photo=await img(f('ph')),idp=await img(f('idp'),700);
  await db.collection('users').doc(uid).set({role:r,status:'pending',name:g('nm'),mobile:mb,email:U.email,dev:DID,ward:g('wd'),photo,idPhoto:idp,t:FV.serverTimestamp()});
- if(r=='candidate')await db.collection('candidates').doc(uid).set({status:'pending',name:g('nm'),symbol:g('sy'),symImg:await img(f('syi'),120),photo,ward:g('wd'),works:g('mf').split('\n').map(x=>x.trim()).filter(Boolean).map(t=>({t}))});
+ if(r=='candidate')await db.collection('candidates').doc(uid).set({status:'pending',name:g('nm'),symbol:g('sy'),symImg:await img(f('syi'),120),mfImg:await img(f('mfi'),800),photo,ward:g('wd'),works:g('mf').split('\n').map(x=>x.trim()).filter(Boolean).map(t=>({t}))});
  P=(await db.collection('users').doc(uid).get()).data();alert('रजिस्ट्रेशन हो गया! एडमिन की मंज़ूरी का इंतज़ार करें।');shell()}catch(e){alert(e.message)}}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 go('home');

@@ -14,12 +14,13 @@ input,textarea{width:100%;padding:10px;margin:4px 0 8px;border:1px solid #c9d0c4
 <div id="ap" hidden>
 <header><b>🏡 गढ़ी अहबरन – एडमिन पैनल</b><button class="b o" onclick="auth.signOut()">लॉगआउट</button></header>
 <div class="tabs" id="tb"></div>
-<main><div id="addf" class="box" hidden><h3>नया प्रत्याशी जोड़ें</h3><input id="an" placeholder="नाम"><input id="as" placeholder="चुनाव चिह्न"><input id="aw" placeholder="वार्ड / मोहल्ला">फोटो <input id="ap1" type="file" accept="image/*">चिह्न की फोटो <input id="ap2" type="file" accept="image/*"><textarea id="am" rows="4" placeholder="घोषणा पत्र – हर वादा नई लाइन में"></textarea><button class="p" onclick="addCand()">जोड़ें (सीधे स्वीकृत)</button></div><div id="lst"></div></main></div>
+<main><div id="addf" class="box" hidden><h3>नया प्रत्याशी जोड़ें</h3><input id="an" placeholder="नाम"><select id="asel" onchange="if(this.value)$('#as').value=this.value"></select><input id="as" placeholder="चुनाव चिह्न (वैकल्पिक)"><input id="aw" placeholder="वार्ड / मोहल्ला">फोटो <input id="ap1" type="file" accept="image/*">चिह्न की फोटो <input id="ap2" type="file" accept="image/*"><textarea id="am" rows="4" placeholder="घोषणा पत्र (वैकल्पिक) – हर वादा नई लाइन में"></textarea>घोषणा पत्र की फोटो (वैकल्पिक) <input id="ap3" type="file" accept="image/*"><button class="p" onclick="addCand()">जोड़ें (सीधे स्वीकृत)</button></div><div id="lst"></div></main></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="fb.js"></script>
 <script>
+$('#asel').innerHTML=symOpts();
 let tab='pend',RC=[],PRB=[],US=[],CA=[],CLM=[],VS=[],CMT=[],CHT=[],on=0;
 const TB={pend:'⏳ मंज़ूरी',cands:'👥 प्रत्याशी',claims:'✅ वादे पूरे',res:'📊 नतीजे',mod:'🧹 टिप्पणी/चौपाल',users:'📱 डिवाइस',prob:'📢 समस्याएँ'};
 $('#tb').innerHTML=Object.keys(TB).map(k=>`<button data-k="${k}" onclick="tab='${k}';draw()">${TB[k]}</button>`).join('');
@@ -30,7 +31,7 @@ const nm=id=>(CA.find(c=>c.id==id)||{}).name||'?';
 const H={
 pend:()=>{const p=US.filter(u=>u.status=='pending');return p.map(u=>`<div class="box r"><img src="${u.photo}"><a href="${u.idPhoto}" target="_blank"><img src="${u.idPhoto}"></a><div><b>${esc(u.name)}</b> <span class="tag">${u.role=='candidate'?'प्रत्याशी':'मतदाता'}</span><br>📱 ${esc(u.mobile)} • ✉ ${esc(u.email||'-')} • वार्ड: ${esc(u.ward||'-')}<br><button class="b" onclick="dec('${u.id}','approved')">✔ मंज़ूर</button><button class="b d" onclick="dec('${u.id}','rejected')">✖ अस्वीकार</button></div></div>`).join('')||'<p>कोई आवेदन बाकी नहीं।</p>'},
 cands:()=>CA.map(c=>`<div class="box r"><img src="${c.photo}"><div><b>${esc(c.name)}</b> <span class="tag">${c.status}</span><br>चिह्न: ${esc(c.symbol)} • वोट: ${VS.filter(v=>v.c==c.id).length} • 👍 ${c.likes||0} 👎 ${c.dislikes||0}<br><button class="b" onclick="who('${c.id}')">👁 किसने लाइक/डिसलाइक किया</button><br>
-<button class="b" onclick="ed('${c.id}','name','नाम')">नाम</button><button class="b" onclick="ed('${c.id}','symbol','चिह्न')">चिह्न</button><button class="b" onclick="edW('${c.id}')">घोषणा पत्र</button><button class="b" onclick="ph('${c.id}','photo')">फोटो</button><button class="b" onclick="ph('${c.id}','symImg',120)">चिह्न फोटो</button>
+<button class="b" onclick="ed('${c.id}','name','नाम')">नाम</button><button class="b" onclick="ed('${c.id}','symbol','चिह्न')">चिह्न</button><button class="b" onclick="edW('${c.id}')">घोषणा पत्र</button><button class="b" onclick="ph('${c.id}','photo')">फोटो</button><button class="b" onclick="ph('${c.id}','mfImg',800)">घोषणा पत्र फोटो</button><button class="b" onclick="ph('${c.id}','symImg',120)">चिह्न फोटो</button>
 <button class="b o" onclick="st('${c.id}','${c.status=='approved'?'rejected':'approved'}')">${c.status=='approved'?'छुपाएँ':'दिखाएँ'}</button><button class="b d" onclick="del('candidates','${c.id}')">हटाएँ</button></div></div>`).join('')||'<p>कोई प्रत्याशी नहीं।</p>',
 claims:()=>CLM.slice().sort((a,b)=>(a.status=='pending'?0:1)-(b.status=='pending'?0:1)).map(x=>{const c=CA.find(k=>k.id==x.c)||{};return `<div class="box"><b>${esc(nm(x.c))}</b> <span class="tag">${x.status}</span><br>वादा: ${esc(((c.works||[])[x.i]||{}).t)}<br>दावा: ${esc(x.note)}${x.img?`<br><img src="${x.img}" style="max-width:220px;border-radius:8px">`:''}<br>${x.status!='approved'?`<button class="b" onclick="cst('${x.id}','approved')">✔ सत्यापित</button>`:''}<button class="b d" onclick="cst('${x.id}','rejected')">✖ अस्वीकार</button></div>`}).join('')||'<p>कोई दावा नहीं।</p>',
 res:()=>{const t=VS.length||1,v=US.filter(u=>u.role=='voter'&&u.status=='approved').length;return `<div class="box">स्वीकृत मतदाता: <b>${v}</b> • कुल वोट: <b>${VS.length}</b></div>`+CA.filter(c=>c.status=='approved').map(c=>[c,VS.filter(x=>x.c==c.id).length]).sort((a,b)=>b[1]-a[1]).map(([c,n])=>`<div class="box"><b>${esc(c.name)}</b> — ${n} वोट (${Math.round(n*100/t)}%)<div class="bar" style="width:${n*100/t}%"></div></div>`).join('')},
@@ -47,7 +48,7 @@ async function del(c,id){if(confirm('पक्का हटाएँ?'))await db
 async function ed(id,f,l){const c=CA.find(x=>x.id==id),v=prompt(l,c[f]);if(v)await db.collection('candidates').doc(id).update({[f]:v})}
 async function edW(id){const c=CA.find(x=>x.id==id),v=prompt('वादे ( | से अलग करें; क्रम न बदलें)',(c.works||[]).map(w=>w.t).join(' | '));if(v)await db.collection('candidates').doc(id).update({works:v.split('|').map(s=>s.trim()).filter(Boolean).map(t=>({t}))})}
 function ph(id,f,mx){const i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=async()=>db.collection('candidates').doc(id).update({[f]:await img(i.files[0],mx||320)});i.click()}
-async function addCand(){const g=i=>$('#'+i).value.trim();if(!g('an')||!g('as')||!$('#ap1').files[0])return alert('नाम, चिह्न और फोटो ज़रूरी हैं');
- await db.collection('candidates').add({status:'approved',name:g('an'),symbol:g('as'),ward:g('aw'),photo:await img($('#ap1').files[0]),symImg:await img($('#ap2').files[0],120),works:g('am').split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t}))});
+async function addCand(){const g=i=>$('#'+i).value.trim();if(!g('an')||!$('#ap1').files[0])return alert('नाम और फोटो ज़रूरी हैं (चिह्न और घोषणा पत्र वैकल्पिक हैं)');
+ await db.collection('candidates').add({status:'approved',name:g('an'),symbol:g('as'),ward:g('aw'),photo:await img($('#ap1').files[0]),symImg:await img($('#ap2').files[0],120),mfImg:await img($('#ap3').files[0],800),works:g('am').split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t}))});
  ['an','as','aw','am'].forEach(i=>$('#'+i).value='');alert('जुड़ गया')}
 </script></body></html>

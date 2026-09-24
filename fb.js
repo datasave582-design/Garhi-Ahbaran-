@@ -1,4 +1,5 @@
-firebase.initializeApp({apiKey:"AIzaSyDofStHVzO_D6VBQ8dHHEodgIWmKXOoSE8",authDomain:"meragav-bdc89.firebaseapp.com",projectId:"meragav-bdc89",storageBucket:"meragav-bdc89.firebasestorage.app",messagingSenderId:"1040183992371",appId:"1:1040183992371:web:ac8e1a7dd22cec0f000346",measurementId:"G-N46V6452ZJ"});
+const SAME_AUTH=/\.(web\.app|firebaseapp\.com)$/.test(location.hostname);
+firebase.initializeApp({apiKey:"AIzaSyDofStHVzO_D6VBQ8dHHEodgIWmKXOoSE8",authDomain:(SAME_AUTH?location.hostname:"meragav-bdc89.firebaseapp.com"),projectId:"meragav-bdc89",storageBucket:"meragav-bdc89.firebasestorage.app",messagingSenderId:"1040183992371",appId:"1:1040183992371:web:ac8e1a7dd22cec0f000346",measurementId:"G-N46V6452ZJ"});
 const auth=firebase.auth(),db=firebase.firestore(),FV=firebase.firestore.FieldValue;
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));

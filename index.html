@@ -39,7 +39,7 @@ let U=null,P=null,C=[],VS=[],CL=[],CH=[],CM=[],PR=[],PL=[],MYR={},openT='c',unR=
 const cnt=id=>VS.filter(v=>v.c==id).length,pl=id=>PL.filter(l=>l.p==id).length,pn=id=>PL.filter(l=>l.p==id&&l.n).map(l=>esc(l.n)),MY=()=>U&&(VS.find(v=>v.id==U.uid)||{}).c;
 const ST={pending:'समीक्षा में',approved:'स्वीकृत',rejected:'अस्वीकृत'};
 const DID=localStorage.mgd||(localStorage.mgd=(crypto.randomUUID?crypto.randomUUID():Date.now()+''+Math.random()));
-auth.onAuthStateChanged(async u=>{U=u;P=null;if(unR){unR();unR=null}MYR={};if(u){try{const dr=db.collection('devices').doc(DID),ds=await dr.get();
+auth.onAuthStateChanged(async u=>{if(sessionStorage.gl){sessionStorage.removeItem('gl');if(!u)alert('लॉगिन पूरा नहीं हुआ (साइट: '+location.hostname+'). ऐप को Firebase Hosting वाले पते (…web.app) से खोलकर देखें।')}U=u;P=null;if(unR){unR();unR=null}MYR={};if(u){try{const dr=db.collection('devices').doc(DID),ds=await dr.get();
  if(ds.exists&&ds.data().uid!=u.uid){alert('इस फोन पर पहले से दूसरा खाता जुड़ा है। एक फोन पर एक ही खाता चल सकता है।');return auth.signOut()}
  const d=await db.collection('users').doc(u.uid).get();P=d.exists?d.data():null;
  if(P&&P.dev&&P.dev!=DID){P=null;alert('यह खाता दूसरे फोन से जुड़ा है। एडमिन से डिवाइस रीसेट करवाएँ।');return auth.signOut()}
@@ -95,7 +95,9 @@ function meView(){
 async function candPanel(){const c=(await db.collection('candidates').doc(U.uid).get()).data(),cs=await db.collection('claims').where('c','==',U.uid).get(),cl=cs.docs.map(d=>d.data());
  $('#cp').innerHTML=`<div class="box"><h3>मेरे वादे</h3><label>काम की फोटो (वैकल्पिक)</label><input id="cf" type="file" accept="image/*">${(c.works||[]).map((w,i)=>{const x=cl.find(k=>k.i==i);return `<div class="w"><div style="flex:1">${esc(w.t)}</div>${x?`<span class="tag ${x.status=='approved'?'ok':''}">${x.status=='approved'?'पूरा':'एडमिन समीक्षा में'}</span>`:`<button class="p" onclick="claim(${i})">काम हो गया</button>`}</div>`}).join('')}</div>`}
 async function claim(i){const n=prompt('कौन सा काम, कैसे हुआ? (जानकारी लिखें)');if(!n)return;const im=await img($('#cf').files[0],600);await db.collection('claims').add({c:U.uid,i,note:n,img:im,status:'pending',t:FV.serverTimestamp()});alert('एडमिन की मंज़ूरी के बाद यह सबको "पूरा" दिखेगा।');candPanel()}
-async function glogin(){const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});try{await auth.signInWithPopup(p)}catch(e){if(e.code=='auth/popup-blocked'||e.code=='auth/operation-not-supported-in-this-environment')auth.signInWithRedirect(p);else if(e.code!='auth/popup-closed-by-user'&&e.code!='auth/cancelled-popup-request')alert(e.message)}}
+async function glogin(){if(/FBAN|FBAV|Instagram|Line\/|; wv\)/.test(navigator.userAgent))return alert('कृपया इस लिंक को Chrome ब्राउज़र में खोलकर लॉगिन करें।');const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});
+ try{if(SAME_AUTH){sessionStorage.gl=1;await auth.signInWithRedirect(p)}else await auth.signInWithPopup(p)}catch(e){sessionStorage.removeItem('gl');if(e.code!='auth/popup-closed-by-user'&&e.code!='auth/cancelled-popup-request')alert('लॉगिन नहीं हुआ: '+(e.code||e.message))}}
+auth.getRedirectResult().catch(e=>alert('लॉगिन नहीं हुआ: '+(e.code||e.message)));
 async function reg(){const g=i=>$('#'+i).value.trim(),f=i=>$('#'+i).files[0],r=g('rl'),mb=g('mb');
  if(!/^\d{10}$/.test(mb)||!g('nm')||!f('ph')||!f('idp'))return alert('नाम, 10 अंक का मोबाइल, फोटो और पहचान पत्र ज़रूरी हैं।');
  if(r=='candidate'&&(!g('sy')||!g('mf')))return alert('चुनाव चिह्न और घोषणा पत्र भरें।');

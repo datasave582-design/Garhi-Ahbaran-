@@ -28,65 +28,81 @@ label{font-weight:600;font-size:14px}.box{background:#fff;border-radius:12px;pad
 </style></head><body>
 <header><b>🏡 गढ़ी अहबरन<small style="display:block;font:400 11px Mukta;opacity:.85">ग्राम पंचायत गढ़ी अहबरन</small></b><input id="q" placeholder="प्रत्याशी / चिह्न / वार्ड खोजें" oninput="go('home')"></header>
 <main id="m"></main>
-<nav><button data-t="home" onclick="go('home')">🗳️ प्रत्याशी</button><button data-t="chat" onclick="go('chat')">💬 गाँव चौपाल</button><button data-t="me" onclick="go('me')">👤 मेरा खाता</button></nav>
+<nav><button data-t="home" onclick="go('home')">🗳️ प्रत्याशी</button><button data-t="chat" onclick="go('chat')">💬 गाँव चौपाल</button><button data-t="prob" onclick="go('prob')">📢 समस्याएँ</button><button data-t="me" onclick="go('me')">👤 मेरा खाता</button></nav>
 <div id="md" class="md" hidden></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script src="fb.js"></script>
 <script>
-let U=null,P=null,C=[],VS=[],LS=[],CL=[],CH=[],CM=[],tab='home',open=null,unCM=null,MC=[];
-const cnt=id=>VS.filter(v=>v.c==id).length,lk=id=>LS.filter(l=>l.c==id).length,MY=()=>U&&(VS.find(v=>v.id==U.uid)||{}).c;
+let U=null,P=null,C=[],VS=[],CL=[],CH=[],CM=[],PR=[],PL=[],MYR={},openT='c',unR=null,tab='home',open=null,unCM=null;
+const cnt=id=>VS.filter(v=>v.c==id).length,pl=id=>PL.filter(l=>l.p==id).length,pn=id=>PL.filter(l=>l.p==id&&l.n).map(l=>esc(l.n)),MY=()=>U&&(VS.find(v=>v.id==U.uid)||{}).c;
 const ST={pending:'समीक्षा में',approved:'स्वीकृत',rejected:'अस्वीकृत'};
-auth.onAuthStateChanged(async u=>{U=u;P=null;if(u){try{const d=await db.collection('users').doc(u.uid).get();P=d.exists?d.data():null}catch(e){}}shell()});
+const DID=localStorage.mgd||(localStorage.mgd=(crypto.randomUUID?crypto.randomUUID():Date.now()+''+Math.random()));
+auth.onAuthStateChanged(async u=>{U=u;P=null;if(unR){unR();unR=null}MYR={};if(u){try{const dr=db.collection('devices').doc(DID),ds=await dr.get();
+ if(ds.exists&&ds.data().uid!=u.uid){alert('इस फोन पर पहले से दूसरा खाता जुड़ा है। एक फोन पर एक ही खाता चल सकता है।');return auth.signOut()}
+ const d=await db.collection('users').doc(u.uid).get();P=d.exists?d.data():null;
+ if(P&&P.dev&&P.dev!=DID){P=null;alert('यह खाता दूसरे फोन से जुड़ा है। एडमिन से डिवाइस रीसेट करवाएँ।');return auth.signOut()}
+ if(!ds.exists)await dr.set({uid:u.uid,t:FV.serverTimestamp()});unR=db.collection('reacts').where('u','==',u.uid).onSnapshot(x=>{MYR={};x.forEach(d=>MYR[d.data().c]=d.data().v);upd()})}catch(e){console.error(e)}}shell()});
 db.collection('candidates').where('status','==','approved').onSnapshot(s=>{C=s.docs.map(d=>({id:d.id,...d.data()}));upd()});
 db.collection('votes').onSnapshot(s=>{VS=s.docs.map(d=>({id:d.id,...d.data()}));upd()});
-db.collection('likes').onSnapshot(s=>{LS=s.docs.map(d=>d.data());upd()});
+db.collection('plikes').onSnapshot(s=>{PL=s.docs.map(d=>d.data());upd()});
+db.collection('problems').orderBy('t','desc').limit(50).onSnapshot(s=>{PR=s.docs.map(d=>({id:d.id,...d.data()}));upd()});
 db.collection('claims').where('status','==','approved').onSnapshot(s=>{CL=s.docs.map(d=>({id:d.id,...d.data()}));upd()});
 db.collection('chat').orderBy('t').limitToLast(60).onSnapshot(s=>{CH=s.docs.map(d=>d.data());upd()});
 function go(t){tab=t;document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==t));shell()}
 function shell(){document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t==tab));
  if(tab=='home')m.innerHTML='<div id="lst"></div>';
  else if(tab=='chat')m.innerHTML='<div id="cmsg" class="msgs"></div><div class="bar"><input id="ci" placeholder="सबके लिए संदेश लिखें"><button class="p" onclick="sendChat()">भेजें</button></div><div style="height:60px"></div>';
+ else if(tab=='prob')m.innerHTML=`<div class="box"><button class="p" onclick="togP()">➕ अपनी समस्या दर्ज करें</button><div id="pf" hidden><label>समस्या का शीर्षक</label><input id="pt"><label>विवरण</label><textarea id="px" rows="4"></textarea><label>फोटो (वैकल्पिक)</label><input id="pi" type="file" accept="image/*"><button class="p" onclick="addP()">भेजें</button></div></div><div id="plst"></div>`;
  else meView();upd()}
-function upd(){if(!$('#m'))return;if(tab=='home')$('#lst').innerHTML=list();if(tab=='chat')chatMsgs();if(open)parts()}
+function upd(){if(!$('#m'))return;if(tab=='home')$('#lst').innerHTML=list();if(tab=='chat')chatMsgs();if(tab=='prob'&&$('#plst'))$('#plst').innerHTML=plist();if(open)parts()}
 function list(){const q=($('#q').value||'').trim().toLowerCase();
  const a=C.filter(c=>!q||(c.name+c.symbol+(c.ward||'')).toLowerCase().includes(q)).sort((a,b)=>cnt(b.id)-cnt(a.id));
- return a.length?a.map(c=>`<div class="card" onclick="op('${c.id}')"><img src="${c.photo}"><div><h3>${esc(c.name)}</h3><p>चिह्न: ${esc(c.symbol)} ${c.symImg?`<img class="sy" src="${c.symImg}">`:''}</p><p>${CL.filter(x=>x.c==c.id).length}/${(c.works||[]).length} वादे पूरे • ❤ ${lk(c.id)}</p></div><div class="v"><b>${cnt(c.id)}</b><small>वोट</small></div></div>`).join(''):'<p class="e">कोई प्रत्याशी नहीं मिला।</p>'}
-function op(id){open=id;const md=$('#md');md.hidden=false;md.innerHTML=`<div class="sh"><button class="x" onclick="cls()">✕</button><div id="mh"></div><h3>💬 टिप्पणियाँ</h3><div id="cml" class="msgs"></div><input id="cti" placeholder="अपनी राय लिखें"><button class="p" onclick="addC()">टिप्पणी करें</button><div style="height:20px"></div></div>`;
+ return a.length?a.map(c=>`<div class="card" onclick="op('${c.id}')"><img src="${c.photo}"><div><h3>${esc(c.name)}</h3><p>चिह्न: ${esc(c.symbol)} ${c.symImg?`<img class="sy" src="${c.symImg}">`:''}</p><p>${CL.filter(x=>x.c==c.id).length}/${(c.works||[]).length} वादे पूरे • 👍 ${c.likes||0} 👎 ${c.dislikes||0}</p></div><div class="v"><b>${cnt(c.id)}</b><small>वोट</small></div></div>`).join(''):'<p class="e">कोई प्रत्याशी नहीं मिला।</p>'}
+function op(id,t){open=id;openT=t||'c';const md=$('#md');md.hidden=false;md.innerHTML=`<div class="sh"><button class="x" onclick="cls()">✕</button><div id="mh"></div><h3>💬 टिप्पणियाँ</h3><div id="cml" class="msgs"></div><input id="cti" placeholder="अपनी राय लिखें"><button class="p" onclick="addC()">टिप्पणी करें</button><div style="height:20px"></div></div>`;
  if(unCM)unCM();unCM=db.collection('comments').where('c','==',id).onSnapshot(s=>{CM=s.docs.map(d=>d.data()).sort((a,b)=>((a.t&&a.t.seconds)||9e9)-((b.t&&b.t.seconds)||9e9));parts()});parts()}
 function cls(){open=null;$('#md').hidden=true;if(unCM)unCM()}
-function parts(){const c=C.find(x=>x.id==open);if(!c||!$('#mh'))return;const dn=i=>CL.find(x=>x.c==c.id&&x.i==i);const my=MY(),liked=U&&LS.some(l=>l.c==c.id&&l.u==U.uid);
+function parts(){if(!$('#mh'))return;if(openT=='p'){const p=PR.find(x=>x.id==open);if(!p)return;$('#mh').innerHTML=`<h2 style="margin:0">${esc(p.title)}</h2><small>${esc(p.name)} • ${esc(p.ward||'')}</small><p>${esc(p.txt)}</p>${p.img?`<img class="cimg" src="${p.img}">`:''}<p><button class="p o" onclick="plike('${p.id}')">👍 ${pl(p.id)}</button></p>${pl(p.id)?`<p><small>👍 इन्होंने पसंद किया: ${pn(p.id).join(', ')}</small></p>`:''}`;$('#cml').innerHTML=CM.map(x=>`<div><b>${esc(x.name)}</b><br>${esc(x.txt)}</div>`).join('')||'<p class="e">पहली टिप्पणी आप करें।</p>';return}
+ const c=C.find(x=>x.id==open);if(!c)return;const dn=i=>CL.find(x=>x.c==c.id&&x.i==i);const my=MY(),r=MYR[c.id]||0;
  $('#mh').innerHTML=`<div class="hd"><img src="${c.photo}"><div><h2 style="margin:0">${esc(c.name)}</h2><div>चिह्न: ${esc(c.symbol)} ${c.symImg?`<img class="sy" src="${c.symImg}">`:''}</div><div>वार्ड: ${esc(c.ward||'-')}</div></div></div>
- <p><b>${cnt(c.id)} वोट</b> • ❤ ${lk(c.id)}</p><p><button class="p" onclick="vote('${c.id}')" ${my?'disabled':''}>${my==c.id?'✅ आपने इन्हें वोट दिया':my?'आप वोट दे चुके हैं':'🗳️ वोट दें'}</button> <button class="p o" onclick="like('${c.id}')">${liked?'💔 लाइक हटाएँ':'❤ लाइक'}</button></p>
+ <p><b>${cnt(c.id)} वोट</b> • 👍 ${c.likes||0} • 👎 ${c.dislikes||0}</p><p><button class="p" onclick="vote('${c.id}')" ${my?'disabled':''}>${my==c.id?'✅ आपने इन्हें वोट दिया':my?'आप वोट दे चुके हैं':'🗳️ वोट दें'}</button> <button class="p ${r==1?'o':''}" onclick="react('${c.id}',1)">👍 लाइक</button> <button class="p ${r==-1?'o':''}" onclick="react('${c.id}',-1)">👎 डिसलाइक</button></p>
  <h3>📜 घोषणा पत्र</h3>${(c.works||[]).map((w,i)=>{const d=dn(i);return `<div class="w"><i>${d?'✔':'○'}</i><div>${esc(w.t)}${d?`<br><span class="tag ok">पूरा हुआ (एडमिन द्वारा सत्यापित)</span><br><small>${esc(d.note)}</small>${d.img?`<img class="cimg" src="${d.img}">`:''}`:''}</div></div>`}).join('')||'<p>अभी कोई वादा नहीं जुड़ा।</p>'}`;
  $('#cml').innerHTML=CM.map(x=>`<div><b>${esc(x.name)}</b><br>${esc(x.txt)}</div>`).join('')||'<p class="e">पहली टिप्पणी आप करें।</p>'}
 async function vote(id){if(!U){cls();return go('me')}if(!P||P.role!='voter'||P.status!='approved')return alert('वोट के लिए मतदाता खाता एडमिन से स्वीकृत होना ज़रूरी है।');if(MY())return;if(!confirm('वोट अंतिम है, बदला नहीं जा सकेगा। पक्का वोट दें?'))return;
  try{await db.collection('votes').doc(U.uid).set({c:id,t:FV.serverTimestamp()})}catch(e){alert('वोट दर्ज नहीं हुआ: '+e.message)}}
-async function like(id){if(!U){cls();return go('me')}const r=db.collection('likes').doc(id+'_'+U.uid);try{LS.some(l=>l.c==id&&l.u==U.uid)?await r.delete():await r.set({c:id,u:U.uid})}catch(e){alert(e.message)}}
+async function react(id,v){if(!U||!P||P.status!='approved')return needOk();const my=MYR[id]||0,nv=my==v?0:v,b=db.batch(),ref=db.collection('reacts').doc(id+'_'+U.uid);
+ nv?b.set(ref,{c:id,u:U.uid,v:nv}):b.delete(ref);b.update(db.collection('candidates').doc(id),{likes:FV.increment((nv==1)-(my==1)),dislikes:FV.increment((nv==-1)-(my==-1))});
+ try{await b.commit()}catch(e){alert(e.message)}}
+function needOk(){if(!U){cls();return go('me')}alert('इसके लिए आपका खाता एडमिन से स्वीकृत होना ज़रूरी है।')}
+function togP(){$('#pf').hidden=!$('#pf').hidden}
+function plist(){return PR.map(p=>`<div class="box"><b>${esc(p.title)}</b> ${p.status=='solved'?'<span class="tag ok">समाधान हुआ</span>':''}<br><small>${esc(p.name)} • ${esc(p.ward||'')}</small><p>${esc(p.txt)}</p>${p.img?`<img class="cimg" src="${p.img}">`:''}<div><button class="p ${U&&PL.some(l=>l.p==p.id&&l.u==U.uid)?'o':''}" onclick="plike('${p.id}')">👍 ${pl(p.id)}</button> <button class="p" onclick="op('${p.id}','p')">💬 टिप्पणी</button></div>${pl(p.id)?`<small>👍 ${pn(p.id).slice(0,3).join(', ')}${pl(p.id)>3?' और '+(pl(p.id)-3)+' लोग':''}</small>`:''}</div>`).join('')||'<p class="e">अभी कोई समस्या दर्ज नहीं।</p>'}
+async function plike(id){if(!U||!P||P.status!='approved')return needOk();const r=db.collection('plikes').doc(id+'_'+U.uid);try{PL.some(l=>l.p==id&&l.u==U.uid)?await r.delete():await r.set({p:id,u:U.uid,n:P.name})}catch(e){alert(e.message)}}
+async function addP(){if(!U||!P||P.status!='approved')return needOk();const t=$('#pt').value.trim(),x=$('#px').value.trim();if(!t||!x)return alert('शीर्षक और विवरण लिखें।');
+ await db.collection('problems').add({uid:U.uid,name:P.name,ward:P.ward||'',title:t,txt:x,img:await img($('#pi').files[0],600),status:'open',t:FV.serverTimestamp()});$('#pt').value=$('#px').value=$('#pi').value='';togP()}
 async function addC(){const t=$('#cti').value.trim();if(!t)return;if(!U||!P){cls();return go('me')}await db.collection('comments').add({c:open,uid:U.uid,name:P.name,txt:t,t:FV.serverTimestamp()});$('#cti').value=''}
 function chatMsgs(){const b=$('#cmsg');if(!b)return;b.innerHTML=CH.map(x=>`<div><b>${esc(x.name)}</b> ${x.role=='candidate'?'<span class="tag">प्रत्याशी</span>':''}<br>${esc(x.txt)}</div>`).join('')||'<p class="e">चौपाल खाली है। बात शुरू करें!</p>';window.scrollTo(0,document.body.scrollHeight)}
 async function sendChat(){const t=$('#ci').value.trim();if(!t)return;if(!U||!P)return go('me');await db.collection('chat').add({uid:U.uid,name:P.name,role:P.role,txt:t,t:FV.serverTimestamp()});$('#ci').value=''}
 function meView(){
- if(!U||!P){m.innerHTML=`<div class="box"><h2>लॉगिन</h2><label>मोबाइल नंबर</label><input id="lm" type="tel" maxlength="10"><label>पासवर्ड</label><input id="lp" type="password"><button class="p" onclick="login()">लॉगिन</button></div>
- <div class="box"><h2>नया रजिस्ट्रेशन</h2><label>आप कौन हैं?</label><select id="rl" onchange="$('#cf2').hidden=this.value!='candidate'"><option value="voter">मतदाता</option><option value="candidate">प्रधान प्रत्याशी</option></select>
- <label>पूरा नाम</label><input id="nm"><label>मोबाइल नंबर (10 अंक)</label><input id="mb" type="tel" maxlength="10"><label>पासवर्ड (6+ अक्षर)</label><input id="pw" type="password"><label>वार्ड / मोहल्ला</label><input id="wd">
+ if(!U){m.innerHTML=`<div class="box" style="text-align:center"><h2>लॉगिन करें</h2><p>वोट, टिप्पणी और चौपाल के लिए अपने Gmail से लॉगिन करें।</p><button class="p" onclick="glogin()">🔐 Google (Gmail) से लॉगिन</button><p><small>एक फोन पर एक ही खाता चलेगा।</small></p></div>`;return}
+ if(!P){m.innerHTML=`<div class="box"><h2>रजिस्ट्रेशन</h2><p><small>✉ ${esc(U.email)}</small></p><label>आप कौन हैं?</label><select id="rl" onchange="$('#cf2').hidden=this.value!='candidate'"><option value="voter">मतदाता</option><option value="candidate">प्रधान प्रत्याशी</option></select>
+ <label>पूरा नाम</label><input id="nm" value="${esc(U.displayName||'')}"><label>मोबाइल नंबर (10 अंक)</label><input id="mb" type="tel" maxlength="10"><label>वार्ड / मोहल्ला</label><input id="wd">
  <label>अपनी फोटो</label><input id="ph" type="file" accept="image/*"><label>पहचान पत्र की फोटो (आधार / वोटर ID)</label><input id="idp" type="file" accept="image/*">
  <div id="cf2" hidden><label>चुनाव चिह्न का नाम</label><input id="sy"><label>चुनाव चिह्न की फोटो</label><input id="syi" type="file" accept="image/*"><label>घोषणा पत्र (हर वादा नई लाइन में)</label><textarea id="mf" rows="5"></textarea></div>
- <button class="p" onclick="reg()">रजिस्टर करें</button><p><small>रजिस्ट्रेशन एडमिन की मंज़ूरी के बाद ही चालू होगा।</small></p></div>`;return}
+ <button class="p" onclick="reg()">रजिस्टर करें</button> <button class="p o" onclick="auth.signOut()">लॉगआउट</button><p><small>रजिस्ट्रेशन एडमिन की मंज़ूरी के बाद ही चालू होगा।</small></p></div>`;return}
  m.innerHTML=`<div class="box"><div class="hd"><img src="${P.photo}"><div><h2 style="margin:0">${esc(P.name)}</h2><div>${P.role=='candidate'?'प्रत्याशी':'मतदाता'} • ${esc(P.mobile)}</div><span class="tag ${P.status=='approved'?'ok':''}">${ST[P.status]||P.status}</span></div></div><p></p><button class="p" onclick="auth.signOut()">लॉगआउट</button></div><div id="cp"></div>`;
  if(P.role=='candidate'&&P.status=='approved')candPanel()}
 async function candPanel(){const c=(await db.collection('candidates').doc(U.uid).get()).data(),cs=await db.collection('claims').where('c','==',U.uid).get(),cl=cs.docs.map(d=>d.data());
  $('#cp').innerHTML=`<div class="box"><h3>मेरे वादे</h3><label>काम की फोटो (वैकल्पिक)</label><input id="cf" type="file" accept="image/*">${(c.works||[]).map((w,i)=>{const x=cl.find(k=>k.i==i);return `<div class="w"><div style="flex:1">${esc(w.t)}</div>${x?`<span class="tag ${x.status=='approved'?'ok':''}">${x.status=='approved'?'पूरा':'एडमिन समीक्षा में'}</span>`:`<button class="p" onclick="claim(${i})">काम हो गया</button>`}</div>`}).join('')}</div>`}
 async function claim(i){const n=prompt('कौन सा काम, कैसे हुआ? (जानकारी लिखें)');if(!n)return;const im=await img($('#cf').files[0],600);await db.collection('claims').add({c:U.uid,i,note:n,img:im,status:'pending',t:FV.serverTimestamp()});alert('एडमिन की मंज़ूरी के बाद यह सबको "पूरा" दिखेगा।');candPanel()}
-async function login(){try{await auth.signInWithEmailAndPassword(mail($('#lm').value.trim()),$('#lp').value)}catch(e){alert('मोबाइल या पासवर्ड गलत है')}}
+async function glogin(){const p=new firebase.auth.GoogleAuthProvider();p.setCustomParameters({prompt:'select_account'});try{await auth.signInWithPopup(p)}catch(e){if(e.code=='auth/popup-blocked'||e.code=='auth/operation-not-supported-in-this-environment')auth.signInWithRedirect(p);else if(e.code!='auth/popup-closed-by-user'&&e.code!='auth/cancelled-popup-request')alert(e.message)}}
 async function reg(){const g=i=>$('#'+i).value.trim(),f=i=>$('#'+i).files[0],r=g('rl'),mb=g('mb');
- if(!/^\d{10}$/.test(mb)||g('pw').length<6||!g('nm')||!f('ph')||!f('idp'))return alert('नाम, 10 अंक का मोबाइल, 6+ अक्षर पासवर्ड, फोटो और पहचान पत्र ज़रूरी हैं।');
+ if(!/^\d{10}$/.test(mb)||!g('nm')||!f('ph')||!f('idp'))return alert('नाम, 10 अंक का मोबाइल, फोटो और पहचान पत्र ज़रूरी हैं।');
  if(r=='candidate'&&(!g('sy')||!g('mf')))return alert('चुनाव चिह्न और घोषणा पत्र भरें।');
- try{const cr=await auth.createUserWithEmailAndPassword(mail(mb),g('pw')),uid=cr.user.uid,photo=await img(f('ph')),idp=await img(f('idp'),700);
- await db.collection('users').doc(uid).set({role:r,status:'pending',name:g('nm'),mobile:mb,ward:g('wd'),photo,idPhoto:idp,t:FV.serverTimestamp()});
- if(r=='candidate')await db.collection('candidates').doc(uid).set({status:'pending',name:g('nm'),symbol:g('sy'),symImg:await img(f('syi'),120),photo,ward:g('wd'),works:g('mf').split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t}))});
- P=(await db.collection('users').doc(uid).get()).data();alert('रजिस्ट्रेशन हो गया! एडमिन की मंज़ूरी का इंतज़ार करें।');shell()}catch(e){alert(e.code=='auth/email-already-in-use'?'यह मोबाइल पहले से रजिस्टर है':e.message)}}
+ try{const uid=U.uid,photo=await img(f('ph')),idp=await img(f('idp'),700);
+ await db.collection('users').doc(uid).set({role:r,status:'pending',name:g('nm'),mobile:mb,email:U.email,dev:DID,ward:g('wd'),photo,idPhoto:idp,t:FV.serverTimestamp()});
+ if(r=='candidate')await db.collection('candidates').doc(uid).set({status:'pending',name:g('nm'),symbol:g('sy'),symImg:await img(f('syi'),120),photo,ward:g('wd'),works:g('mf').split('\n').map(x=>x.trim()).filter(Boolean).map(t=>({t}))});
+ P=(await db.collection('users').doc(uid).get()).data();alert('रजिस्ट्रेशन हो गया! एडमिन की मंज़ूरी का इंतज़ार करें।');shell()}catch(e){alert(e.message)}}
 if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js');
 go('home');
 </script></body></html>

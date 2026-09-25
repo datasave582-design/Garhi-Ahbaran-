@@ -58,6 +58,29 @@ service cloud.firestore {
       allow delete: if isAdmin() || isOwner(uid);
     }
 
+    // Village social feed posts. Public to read; only owner/admin can edit/delete.
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
+    // Post Likes are private: a user can read/write only their own reaction.
+    match /postLikes/{likeId} {
+      allow read: if signedIn() && resource.data.u == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.u == request.auth.uid;
+      allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
+    }
+
+    // Post comments are public, while edits/deletes are limited to the author/admin.
+    match /postComments/{commentId} {
+      allow read: if true;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow update: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+    }
+
     match /comments/{commentId} {
       allow read: if true;
       allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
@@ -65,17 +88,26 @@ service cloud.firestore {
       allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
 
+    // Reactions are PRIVATE: a user can only read their own Like/Dislike.
     match /reacts/{reactionId} {
-      allow read: if true;
+      allow read: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
       allow create, update: if signedIn() && request.resource.data.u == request.auth.uid;
       allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
     }
 
+    // Problem Likes are PRIVATE too. Do not expose counts or names to other users.
     match /plikes/{likeId} {
-      allow read: if true;
+      allow read: if signedIn() && resource.data.u == request.auth.uid;
       allow create: if signedIn() && request.resource.data.u == request.auth.uid;
       allow update: if signedIn() && request.resource.data.u == request.auth.uid;
       allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
+    }
+
+    // The selected candidate Like is private to the owner.
+    match /likepick/{uid} {
+      allow read: if isOwner(uid) || isAdmin();
+      allow create, update: if isOwner(uid);
+      allow delete: if isOwner(uid) || isAdmin();
     }
 
     match /chat/{messageId} {

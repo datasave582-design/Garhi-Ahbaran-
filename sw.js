@@ -1,4 +1,4 @@
-const V='mg20';
+const V='mg22';
 const ASSETS=['./','./index.html','./fb.js','./manifest.json','./icon-192.png','./icon-512.png'];
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(V).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));

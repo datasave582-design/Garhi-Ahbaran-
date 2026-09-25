@@ -8,10 +8,10 @@ service cloud.firestore{match /databases/{d}/documents{
  function rp(c){return /databases/$(d)/documents/reacts/$(c+'_'+request.auth.uid);}
  function pre(c,x){return (exists(rp(c))&&get(rp(c)).data.v==x)?1:0;}
  function post(c,x){return (existsAfter(rp(c))&&getAfter(rp(c)).data.v==x)?1:0;}
- match /users/{u}{allow read:if me(u)||admin();allow create:if me(u)&&request.resource.data.status=='pending';allow update:if admin()||(me(u)&&request.resource.data.diff(resource.data).affectedKeys().hasOnly(['photo','profileStatus']));allow delete:if admin();}
+ match /users/{u}{allow read:if me(u)||admin();allow create:if me(u)&&request.resource.data.status=='pending'&&request.resource.data.photo!=''&&request.resource.data.idPhoto!='';allow update:if admin()||(me(u)&&request.resource.data.diff(resource.data).affectedKeys().hasOnly(['photo','profileStatus','name','mobile','ward','idPhoto']));allow delete:if admin();}
  match /candidates/{c}{
   allow read:if resource.data.status=='approved'||me(c)||admin();
-  allow create:if admin()||(me(c)&&request.resource.data.status=='pending');
+  allow create:if admin()||(me(c)&&request.resource.data.status=='pending'&&get(/databases/$(d)/documents/users/$(request.auth.uid)).data.idPhoto!=''&&request.resource.data.photo!='');
   allow delete:if admin();
   allow update:if admin()||(request.auth!=null
    &&request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likes','dislikes'])

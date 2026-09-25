@@ -3,6 +3,9 @@ const CFG={apiKey:"AIzaSyDofStHVzO_D6VBQ8dHHEodgIWmKXOoSE8",authDomain:(SAME_AUT
 // admin पेज का लॉगिन अलग रखा है ताकि यूज़र-ऐप का लॉगिन/लॉगआउट उसे न छेड़े
 const app=/admin/.test(location.pathname)?firebase.initializeApp(CFG,"admin"):firebase.initializeApp(CFG);
 const auth=app.auth(),db=app.firestore(),FV=firebase.firestore.FieldValue;
+// Login ko device par tab tak persistent rakho jab tak user khud logout na kare.
+const AUTH_PERSISTENCE=firebase.auth.Auth.Persistence.LOCAL;
+auth.setPersistence(AUTH_PERSISTENCE).catch(e=>console.error('Auth persistence:',e));
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const mail=m=>m+'@meragav.in';

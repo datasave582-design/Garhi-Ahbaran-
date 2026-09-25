@@ -1,5 +1,5 @@
 <!doctype html><html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover"><title>गढ़ी अहबरन – ग्राम पंचायत प्रधान चुनाव</title>
-<link rel="manifest" href="manifest.json"><meta name="theme-color" content="#1f4d3a"><link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="./manifest.json"><meta name="theme-color" content="#1f4d3a"><link rel="apple-touch-icon" href="./icon-192.png">
 <link rel="preconnect" href="https://www.gstatic.com" crossorigin><link rel="preconnect" href="https://fonts.googleapis.com"><link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 :root{--g:#14513e;--g2:#0d3a2c;--s:#f2a72e;--bg:#f6f4ee;--ink:#1d2a24;--mu:#66736c;--ln:#e4e0d4;--rad:14px}
@@ -36,13 +36,13 @@ nav button{flex:1;border:0;background:0;padding:8px 2px 6px;font:600 12px Mukta;
 .online{display:flex;gap:10px;overflow:auto;padding:4px 0 12px}.ou{min-width:76px;text-align:center;cursor:pointer}.ou img{width:54px;height:54px;border-radius:50%;object-fit:cover;border:3px solid #cdeedb}.ou small{display:block;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.loginChoices{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:12px 0}.loginCard{border:1px solid #d8e2dc;background:#fff;color:var(--g);border-radius:12px;padding:11px 8px;text-align:left;font:inherit;cursor:pointer;box-shadow:0 3px 10px #0000000b}.loginCard b{display:block;font-size:15px}.loginCard small{display:block;color:var(--mu);font-size:11px;line-height:1.35;margin-top:3px}.loginCard.voter{border-color:#d8b55b}.loginCard.cand{border-color:#d99b83}.loginCard:active{transform:scale(.98)}@media(max-width:520px){.loginChoices{grid-template-columns:1fr}.loginCard{display:flex;align-items:center;gap:10px}.loginCard small{margin-top:0}}.dot{display:inline-block;width:9px;height:9px;background:#19a463;border-radius:50%;margin-right:4px}.prof{display:flex;gap:14px;align-items:center}.prof img{width:88px;height:88px;border-radius:50%;object-fit:cover;border:3px solid #dcebe5}.status{background:#fff8e7;border:1px solid #f0d89b;border-radius:10px;padding:8px 10px;margin-top:8px}.dmhead{display:flex;gap:10px;align-items:center;padding:8px 0}.dmhead img{width:44px;height:44px;border-radius:50%;object-fit:cover}.bubble{max-width:82%;padding:9px 12px;border-radius:15px;margin:6px 0;background:#fff;border:1px solid var(--ln)}.bubble.me{margin-left:auto;background:#dcebe5}.muted{color:var(--mu);font-size:12px}
 </style></head><body>
 <header><div class="br">🏡 गढ़ी अहबरन</div><input id="q" placeholder="🔍 प्रत्याशी / चिह्न / वार्ड खोजें" oninput="go('home')"></header>
-<main id="m"></main><div id="net" class="net">इंटरनेट कनेक्शन नहीं है। दोबारा कनेक्ट होने पर ऐप अपने आप चलेगा।</div><div id="load"><div class="loadbox"><img class="loadlogo" src="icon-192.png" alt="गढ़ी अहबरन"><div class="spin"></div><div style="margin-top:8px;color:var(--mu);font-size:13px">ऐप लोड हो रहा है…</div></div></div>
+<main id="m"></main><div id="net" class="net">इंटरनेट कनेक्शन नहीं है। दोबारा कनेक्ट होने पर ऐप अपने आप चलेगा।</div><div id="load"><div class="loadbox"><img class="loadlogo" src="./icon-192.png" alt="गढ़ी अहबरन"><div class="spin"></div><div style="margin-top:8px;color:var(--mu);font-size:13px">ऐप लोड हो रहा है…</div></div></div>
 <nav><button data-t="home" onclick="go('home')"><i>🗳️</i>प्रत्याशी</button><button data-t="prob" onclick="go('prob')"><i>📢</i>समस्याएँ</button><button data-t="chat" onclick="go('chat')"><i>💬</i>चैट</button><button data-t="me" onclick="go('me')"><i>👤</i>मेरा खाता</button></nav><div id="ts"></div>
 <div id="md" class="md" hidden></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
-<script src="fb.js"></script>
+<script src="./fb.js"></script>
 <script>
 let unP=null,MYP=false,VO=true,CG=true,LD=0,LE=0,DP=null,U=null,P=null,C=[],VS=[],CL=[],CH=[],CM=[],PR=[],PL=[],MYR={},openT='c',unR=null,tab='home',open=null,unCM=null;
 let PRES=[],DMS=[],dmUser=null,dmUn=null,presTimer=null;
@@ -50,11 +50,19 @@ const cnt=id=>VS.filter(v=>v.c==id).length,pl=id=>PL.filter(l=>l.p==id).length,p
 const nm=()=>P?P.name:((U&&U.displayName)||'गाँववासी');
 const ST={pending:'समीक्षा में',approved:'स्वीकृत',rejected:'अस्वीकृत'};
 const DID=localStorage.mgd||(localStorage.mgd=(crypto.randomUUID?crypto.randomUUID():Date.now()+''+Math.random()));
-auth.onAuthStateChanged(async u=>{U=u;P=null;if(unR){unR();unR=null}MYR={};if(unP){unP();unP=null}MYP=false;if(!u){clearInterval(presTimer);presTimer=null;document.getElementById('load')?.classList.add('hide');shell();return}try{const dr=db.collection('devices').doc(DID),ds=await dr.get();
+// Boot the visible app shell immediately. Firebase/network must never be able to keep
+// the whole UI behind the loading screen. Authentication and Firestore can finish later.
+let bootHidden=false;
+function hideLoader(){if(bootHidden)return;bootHidden=true;document.getElementById('load')?.classList.add('hide')}
+try{shell();hideLoader()}catch(e){console.error('Shell boot:',e)}
+setTimeout(()=>{hideLoader();if(!U)try{shell()}catch(e){}},8000);
+window.addEventListener('error',e=>{console.error('App error:',e.error||e.message)});
+window.addEventListener('unhandledrejection',e=>{console.error('Unhandled:',e.reason)});
+auth.onAuthStateChanged(async u=>{U=u;P=null;if(unR){unR();unR=null}MYR={};if(unP){unP();unP=null}MYP=false;if(!u){clearInterval(presTimer);presTimer=null;hideLoader();shell();return}try{const dr=db.collection('devices').doc(DID),ds=await dr.get();
  if(ds.exists&&ds.data().uid!=u.uid){alert('इस फोन पर पहले से दूसरा खाता जुड़ा है। एक फोन पर एक ही खाता चल सकता है।');return auth.signOut()}
  const d=await db.collection('users').doc(u.uid).get();P=d.exists?d.data():null;if(P)db.collection('profiles').doc(u.uid).set({uid:u.uid,name:P.name,photo:P.photo||'',status:P.profileStatus||'ऑनलाइन हूँ',role:P.role||'user',updatedAt:FV.serverTimestamp()},{merge:true}).catch(()=>{});
  if(P&&P.dev&&P.dev!=DID){P=null;alert('यह खाता दूसरे फोन से जुड़ा है। एडमिन से डिवाइस रीसेट करवाएँ।');return auth.signOut()}
- if(!ds.exists)await dr.set({uid:u.uid,t:FV.serverTimestamp()});startPresence();unP=db.collection('likepick').doc(u.uid).onSnapshot(x=>{MYP=x.exists;upd()},e=>console.error('likepick:',e));unR=db.collection('reacts').where('u','==',u.uid).onSnapshot(x=>{MYR={};x.forEach(d=>{MYR[d.data().c]=d.data().v});upd()},e=>console.error('reacts:',e));}catch(e){console.error('Auth/profile:',e);toast('कनेक्शन/प्रोफाइल लोड नहीं हो सकी।');}const lr=localStorage.getItem('loginRole');if(lr){localStorage.removeItem('loginRole');if(!P&&lr=='voter')return shell(),go('regv');if(!P&&lr=='candidate')return shell(),go('reg');}document.getElementById('load')?.classList.add('hide');shell()});
+ if(!ds.exists)await dr.set({uid:u.uid,t:FV.serverTimestamp()});startPresence();unP=db.collection('likepick').doc(u.uid).onSnapshot(x=>{MYP=x.exists;upd()},e=>console.error('likepick:',e));unR=db.collection('reacts').where('u','==',u.uid).onSnapshot(x=>{MYR={};x.forEach(d=>{MYR[d.data().c]=d.data().v});upd()},e=>console.error('reacts:',e));}catch(e){console.error('Auth/profile:',e);toast('कनेक्शन/प्रोफाइल लोड नहीं हो सकी।');}const lr=localStorage.getItem('loginRole');if(lr){localStorage.removeItem('loginRole');if(!P&&lr=='voter')return shell(),go('regv');if(!P&&lr=='candidate')return shell(),go('reg');}hideLoader();shell()});
 db.collection('candidates').where('status','==','approved').onSnapshot(s=>{C=s.docs.map(d=>({id:d.id,...d.data()}));LD=1;LE=0;upd()},e=>{LD=1;LE=e.code||'error';upd()});
 db.collection('votes').onSnapshot(s=>{VS=s.docs.map(d=>({id:d.id,...d.data()}));upd()});
 db.collection('settings').doc('vote').onSnapshot(s=>{const d=s.exists?s.data():{};VO=d.open!==false;CG=VO&&d.change!==false;upd()});
@@ -158,6 +166,6 @@ async function reg(role){const g=i=>$('#'+i)?$('#'+i).value.trim():'',f=i=>$('#'
  if(role=='candidate'){P=(await db.collection('users').doc(uid).get()).data()}
  alert('आवेदन भेज दिया! एडमिन की मंज़ूरी के बाद ही यह सार्वजनिक/वोट के लिए मान्य होगा।');go('me')}catch(e){alert(e.message)}}
 const netEl=document.getElementById('net');function netState(){netEl.classList.toggle('on',!navigator.onLine)}window.addEventListener('online',netState);window.addEventListener('offline',netState);netState();
-if('serviceWorker' in navigator)navigator.serviceWorker.register('sw.js').catch(e=>console.error('SW:',e));
+if('serviceWorker' in navigator)navigator.serviceWorker.register('./sw.js',{updateViaCache:'none'}).then(r=>r.update()).catch(e=>console.error('SW:',e));
 go('home');
 </script></body></html>

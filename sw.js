@@ -1,4 +1,24 @@
-const V='mg19';
-self.addEventListener('install',e=>{e.waitUntil(caches.open(V).then(c=>c.addAll(['./','index.html','fb.js','manifest.json','icon-192.png','icon-512.png'])));self.skipWaiting()});
-self.addEventListener('activate',e=>e.waitUntil(caches.keys().then(k=>Promise.all(k.filter(x=>x!=V).map(x=>caches.delete(x))))));
-self.addEventListener('fetch',e=>{if(e.request.method!='GET'||new URL(e.request.url).pathname.startsWith('/__/')||!e.request.url.startsWith(self.location.origin))return;e.respondWith(fetch(e.request).then(r=>{const c=r.clone();caches.open(V).then(x=>x.put(e.request,c));return r}).catch(()=>caches.match(e.request)))});
+const V='mg20';
+const ASSETS=['./','./index.html','./fb.js','./manifest.json','./icon-192.png','./icon-512.png'];
+self.addEventListener('install',event=>{
+  event.waitUntil(caches.open(V).then(cache=>cache.addAll(ASSETS)).then(()=>self.skipWaiting()));
+});
+self.addEventListener('activate',event=>{
+  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==V).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));
+});
+self.addEventListener('fetch',event=>{
+  if(event.request.method!=='GET') return;
+  const url=new URL(event.request.url);
+  if(url.origin!==self.location.origin || url.pathname.startsWith('/__/')) return;
+  if(event.request.mode==='navigate'){
+    event.respondWith(fetch(event.request).then(response=>{
+      if(response.ok){const copy=response.clone();caches.open(V).then(c=>c.put('./index.html',copy)).catch(()=>{});}
+      return response;
+    }).catch(()=>caches.match('./index.html')));
+    return;
+  }
+  event.respondWith(fetch(event.request).then(response=>{
+    if(response.ok){const copy=response.clone();caches.open(V).then(c=>c.put(event.request,copy)).catch(()=>{});}
+    return response;
+  }).catch(()=>caches.match(event.request)));
+});

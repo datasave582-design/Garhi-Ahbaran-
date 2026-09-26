@@ -21,12 +21,12 @@ input,textarea{width:100%;padding:10px;margin:4px 0 8px;border:1px solid #c9d0c4
 <script src="fb.js"></script>
 <script>
 $('#asel').innerHTML=symOpts();
-let ST=[],tab='pend',RC=[],PRB=[],US=[],CA=[],CLM=[],VS=[],CMT=[],CHT=[],on=0;
-const TB={pend:'⏳ मंज़ूरी',cands:'👥 प्रत्याशी',claims:'✅ वादे पूरे',res:'📊 नतीजे',mod:'🧹 टिप्पणी/चौपाल',users:'📱 डिवाइस',prob:'📢 समस्याएँ'};
+let ST=[],tab='pend',RC=[],PRB=[],US=[],CA=[],CLM=[],VS=[],CMT=[],CHT=[],VSUR=[],on=0;
+const TB={pend:'⏳ मंज़ूरी',cands:'👥 प्रत्याशी',claims:'✅ वादे पूरे',res:'📊 नतीजे',mod:'🧹 टिप्पणी/चौपाल',users:'📱 डिवाइस',prob:'📢 समस्याएँ',survey:'📋 ग्राम सर्वे'};
 $('#tb').innerHTML=Object.keys(TB).map(k=>`<button data-k="${k}" onclick="tab='${k}';draw()">${TB[k]}</button>`).join('');
 auth.onAuthStateChanged(u=>{const ok=u&&u.email=='admin@meragav.in';$('#lg').hidden=ok;$('#ap').hidden=!ok;if(ok&&!on++)start()});
 const sub=(c,f)=>db.collection(c).onSnapshot(s=>{f(s.docs.map(d=>({id:d.id,...d.data()})));draw()},e=>console.error(c,e));
-function start(){sub('users',a=>US=a);sub('candidates',a=>CA=a);sub('claims',a=>CLM=a);sub('votes',a=>VS=a);sub('comments',a=>CMT=a);sub('chat',a=>CHT=a);sub('settings',a=>ST=a);sub('reacts',a=>RC=a);sub('problems',a=>PRB=a)}
+function start(){sub('users',a=>US=a);sub('candidates',a=>CA=a);sub('claims',a=>CLM=a);sub('votes',a=>VS=a);sub('comments',a=>CMT=a);sub('chat',a=>CHT=a);sub('settings',a=>ST=a);sub('reacts',a=>RC=a);sub('problems',a=>PRB=a);sub('villageSurveys',a=>VSUR=a)}
 const nm=id=>(CA.find(c=>c.id==id)||{}).name||'?';
 const H={
 pend:()=>{const pv=US.filter(u=>u.status=='pending'&&u.role=='voter'),pc=CA.filter(c=>c.status=='pending');
@@ -41,6 +41,32 @@ res:()=>{const v=US.filter(u=>u.role=='voter'&&u.status=='approved').length;retu
 users:()=>US.map(u=>`<div class="box"><b>${esc(u.name)}</b> <span class="tag">${u.role=='candidate'?'प्रत्याशी':'मतदाता'} • ${u.status}</span><br>📱 ${esc(u.mobile)} • ✉ ${esc(u.email||'-')}<br><button class="b o" onclick="rd('${u.id}')">📱 डिवाइस रीसेट</button>${VS.some(v=>v.id==u.id)?`<button class="b d" onclick="rv('${u.id}')">🗳️ वोट रीसेट</button>`:''}</div>`).join('')||'<p>कोई खाता नहीं।</p>',
 prob:()=>PRB.slice().sort((a,b)=>((b.t&&b.t.seconds)||9e9)-((a.t&&a.t.seconds)||9e9)).map(p=>`<div class="box"><b>${esc(p.title)}</b> <span class="tag">${p.status=='solved'?'समाधान हुआ':'खुली'}</span><br><small>${esc(p.name)} • ${esc(p.ward||'')}</small><p>${esc(p.txt)}</p>${p.img?`<img src="${p.img}" style="max-width:200px;border-radius:8px">`:''}<br><button class="b" onclick="pst('${p.id}','${p.status=='solved'?'open':'solved'}')">${p.status=='solved'?'दोबारा खोलें':'✔ समाधान हुआ'}</button><button class="b d" onclick="del('problems','${p.id}')">हटाएँ</button></div>`).join('')||'<p>कोई समस्या नहीं।</p>',
 mod:()=>[['comments',CMT],['chat',CHT]].map(([k,a])=>`<h3>${k=='chat'?'गाँव चौपाल':'टिप्पणियाँ'}</h3>`+a.map(x=>`<div class="box"><b>${esc(x.name)}</b>: ${esc(x.txt)}<br><button class="b d" onclick="del('${k}','${x.id}')">हटाएँ</button></div>`).join('')).join('')};
+
+H.survey=()=>{
+ const totalFamilies=VSUR.length;
+ const totalChildren=VSUR.reduce((n,x)=>n+Number(x.children||0),0);
+ const totalYouth=VSUR.reduce((n,x)=>n+Number(x.unemployed||0),0);
+ const freq={}; VSUR.forEach(x=>[...(x.basic||[]),...(x.needs||[]),...(x.farm||[])].forEach(v=>freq[v]=(freq[v]||0)+1));
+ const top=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,10);
+ const rows=VSUR.slice().sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).map(x=>`<tr><td>${esc(x.surveyId||x.id)}</td><td>${esc(x.name||'-')}<br>📱 ${esc(x.mobile||'-')}</td><td>${esc(x.ward||'-')}</td><td>${x.members||0}</td><td>${x.children||0}</td><td>${x.unemployed||0}</td><td><button class="b" onclick="surveyView('${x.id}')">देखें</button></td></tr>`).join('');
+ return `<div class="box"><h2>📋 ग्राम सर्वे रिपोर्ट</h2>
+ <div class="r"><div class="box"><b>कुल परिवार</b><h2>${totalFamilies}</h2></div><div class="box"><b>कुल बच्चे</b><h2>${totalChildren}</h2></div><div class="box"><b>बेरोजगार युवा</b><h2>${totalYouth}</h2></div></div>
+ <h3>सबसे अधिक दर्ज आवश्यकताएँ</h3>${top.map(x=>`<div style="margin:6px 0">${esc(x[0])} <b>(${x[1]})</b><div class="bar" style="width:${Math.max(4,Math.min(100,x[1]*100/Math.max(1,totalFamilies)))}%"></div></div>`).join('')||'<p>अभी कोई सर्वे नहीं।</p>'}
+ <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"><button class="b" onclick="exportSurveys()">⬇️ CSV रिपोर्ट</button><button class="b" onclick="window.print()">🖨️ प्रिंट</button></div>
+ <div style="overflow:auto"><table class="sv-table"><tr><th>Survey ID</th><th>परिवार/मोबाइल</th><th>वार्ड</th><th>सदस्य</th><th>बच्चे</th><th>बेरोजगार</th><th></th></tr>${rows||'<tr><td colspan="7">कोई सर्वे नहीं</td></tr>'}</table></div></div>`;
+};
+function surveyView(id){
+ const x=VSUR.find(a=>a.id==id); if(!x)return;
+ const a=k=>(x[k]||[]).join(', ')||'-';
+ alert(`Survey: ${x.surveyId||x.id}\nनाम: ${x.name||'-'}\nमोबाइल: ${x.mobile||'-'}\nवार्ड: ${x.ward||'-'}\nकुल सदस्य: ${x.members||0} | पुरुष: ${x.male||0} | महिला: ${x.female||0} | बच्चे: ${x.children||0} | बुजुर्ग: ${x.elderly||0}\nस्कूल बच्चे: ${x.school||0} | ड्रॉपआउट: ${x.dropout||0} | बेरोजगार युवा: ${x.unemployed||0}\n\nदस्तावेज: ${a('docs')}\nशिक्षा/युवा/महिला: ${a('needs')}\nकिसान/पशुपालन: ${a('farm')}\nमूलभूत/स्वास्थ्य/खेल: ${a('basic')}\n\nप्राथमिकता: ${x.priority||'-'}\nसुझाव: ${x.suggestion||'-'}`);
+}
+function csvCell(v){return '"'+String(v??'').replace(/"/g,'""').replace(/\n/g,' ')+'"'}
+function exportSurveys(){
+ const head=['Survey ID','Name','Mobile','Ward','Members','Male','Female','Children','Elderly','School Children','Dropout','Unemployed Youth','Documents','Needs','Farm','Basic','Priority','Suggestion'];
+ const lines=[head.map(csvCell).join(',')].concat(VSUR.map(x=>[x.surveyId,x.name,x.mobile,x.ward,x.members,x.male,x.female,x.children,x.elderly,x.school,x.dropout,x.unemployed,(x.docs||[]).join(' | '),(x.needs||[]).join(' | '),(x.farm||[]).join(' | '),(x.basic||[]).join(' | '),x.priority,x.suggestion].map(csvCell).join(',')));
+ const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='garhi-ahbaran-village-survey.csv';a.click();URL.revokeObjectURL(u);
+}
+
 const flag=k=>{const s=ST.find(x=>x.id=='vote');return !(s&&s[k]===false)};
 const tg=async k=>{const on=flag(k);if(confirm((k=='open'?'वोटिंग ':'वोट बदलना ')+(on?'बंद करें?':'चालू करें?')))await db.collection('settings').doc('vote').set({[k]:!on},{merge:true})};
 function draw(){[['vo','open','🗳️ वोटिंग'],['vt','change','🔄 वोट बदलना']].forEach(([i,k,l])=>{const on=flag(k),v=$('#'+i);v.textContent=l+': '+(on?'चालू':'बंद');v.style.background=on?'#1a8a4a':'#b3261e'});document.querySelectorAll('#tb button').forEach(b=>b.classList.toggle('on',b.dataset.k==tab));$('#addf').hidden=tab!='cands';$('#lst').innerHTML=H[tab]()}

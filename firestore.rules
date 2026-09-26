@@ -145,6 +145,17 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+
+    // ग्राम सुविधा सर्वे: सार्वजनिक create, केवल एडमिन read/update/delete.
+    // mobileHash document ID एक ही मोबाइल के लिए deterministic ID है, इसलिए duplicate
+    // create Firestore के स्तर पर already-exists से रुकता है।
+    match /villageSurveys/{surveyId} {
+      allow create: if request.resource.data.mobileHash == surveyId
+        && request.resource.data.name is string
+        && request.resource.data.mobile is string;
+      allow read, update, delete: if isAdmin();
+    }
+
     match /devices/{deviceId} {
       allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
       allow create: if signedIn() && request.resource.data.uid == request.auth.uid;

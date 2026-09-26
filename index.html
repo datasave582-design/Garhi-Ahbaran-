@@ -251,20 +251,13 @@ const Survey={
   close(){document.getElementById('surveyPanel').style.display='none'},
   checked(n){return [...document.querySelectorAll('input[name="'+n+'"]:checked')].map(x=>x.value)},
   val(id){return (document.getElementById(id)?.value||'').trim()},
-  hash(s){
-    // Secure-context crypto.subtle is not available when this HTML is opened directly
-    // as a local file, so use a deterministic browser-safe hash for the survey key.
-    let h1=0x811c9dc5,h2=0x01000193;
-    for(let i=0;i<s.length;i++){const c=s.charCodeAt(i);h1^=c;h1=Math.imul(h1,16777619);h2^=(c+i);h2=Math.imul(h2,2246822519)}
-    return (h1>>>0).toString(16).padStart(8,'0')+(h2>>>0).toString(16).padStart(8,'0');
-  },
+  async hash(s){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(s));return [...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('')},
   async save(){
     const mobile=this.val('sv_mobile').replace(/\D/g,'');
     const name=this.val('sv_name');
     if(!name||!/^[6-9]\d{9}$/.test(mobile))return alert('नाम और सही 10 अंकों का मोबाइल नंबर भरें।');
     if(!document.getElementById('sv_consent').checked)return alert('कृपया सर्वे उपयोग की सहमति दें।');
-    let mobileHash;
-    try{ mobileHash=this.hash(mobile); }catch(e){ return alert('मोबाइल नंबर की जाँच नहीं हो पाई। कृपया फिर कोशिश करें।'); }
+    const mobileHash=await this.hash(mobile);
     const data={
       surveyId:'SV-'+Date.now().toString(36).toUpperCase(),
       name,mobile,ward:this.val('sv_ward'),
@@ -276,8 +269,7 @@ const Survey={
       createdAt:firebase.firestore.FieldValue.serverTimestamp()
     };
     try{
-      if(!db || typeof db.collection!=='function') throw new Error('Firebase Firestore उपलब्ध नहीं है।');
-      await db.collection('villageSurveys').doc(mobileHash).create(data);
+      await db.collection('villageSurveys').doc(mobileHash).set(data);
       alert('सर्वे सफलतापूर्वक जमा हो गया। धन्यवाद!');
       document.querySelectorAll('#surveyPanel input[type=text],#surveyPanel input[type=tel],#surveyPanel input[type=number],#surveyPanel textarea').forEach(x=>x.value='');
       document.querySelectorAll('#surveyPanel input[type=checkbox]').forEach(x=>x.checked=false);

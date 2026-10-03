@@ -113,7 +113,8 @@ service cloud.firestore {
     match /chat/{messageId} {
       allow read: if true;
       allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
-      allow update, delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow update: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid && request.resource.data.uid == resource.data.uid);
+      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
 
     match /directChats/{chatId} {
@@ -128,7 +129,7 @@ service cloud.firestore {
         allow create: if signedIn()
           && request.resource.data.from == request.auth.uid
           && request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.members;
-        allow update: if signedIn() && request.auth.uid == resource.data.from;
+        allow update: if signedIn() && request.auth.uid == resource.data.from && request.resource.data.from == resource.data.from;
         allow delete: if isAdmin() || (signedIn() && request.auth.uid == resource.data.from);
       }
     }

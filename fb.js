@@ -1,5 +1,7 @@
 const SAME_AUTH=/\.(web\.app|firebaseapp\.com)$/.test(location.hostname);
-const CFG={apiKey:"AIzaSyDofStHVzO_D6VBQ8dHHEodgIWmKXOoSE8",authDomain:(SAME_AUTH?location.hostname:"meragav-bdc89.firebaseapp.com"),projectId:"meragav-bdc89",storageBucket:"meragav-bdc89.firebasestorage.app",messagingSenderId:"1040183992371",appId:"1:1040183992371:web:ac8e1a7dd22cec0f000346",measurementId:"G-N46V6452ZJ"};
+const DEFAULT_CFG={apiKey:"AIzaSyDofStHVzO_D6VBQ8dHHEodgIWmKXOoSE8",authDomain:(SAME_AUTH?location.hostname:"meragav-bdc89.firebaseapp.com"),projectId:"meragav-bdc89",storageBucket:"meragav-bdc89.firebasestorage.app",messagingSenderId:"1040183992371",appId:"1:1040183992371:web:ac8e1a7dd22cec0f000346",measurementId:"G-N46V6452ZJ"};
+let CFG=DEFAULT_CFG;
+try{const saved=JSON.parse(localStorage.getItem("garhiFirebaseConfig")||"null");if(saved&&saved.apiKey&&saved.projectId)CFG={...DEFAULT_CFG,...saved}}catch(e){console.warn("Saved Firebase config ignored",e)}
 // admin पेज का लॉगिन अलग रखा है ताकि यूज़र-ऐप का लॉगिन/लॉगआउट उसे न छेड़े
 const app=/admin/.test(location.pathname)?firebase.initializeApp(CFG,"admin"):firebase.initializeApp(CFG);
 const auth=app.auth(),db=app.firestore(),FV=firebase.firestore.FieldValue;

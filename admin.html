@@ -1,4 +1,4 @@
-<!doctype html><html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>एडमिन – गढ़ी अहबरन</title><meta name="theme-color" content="#1f4d3a">
+<!doctype html><html lang="hi"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title id="adminTitle">एडमिन पैनल</title><meta name="theme-color" content="#1f4d3a">
 <link href="https://fonts.googleapis.com/css2?family=Mukta:wght@400;600;800&display=swap" rel="stylesheet">
 <style>
 *{box-sizing:border-box}body{margin:0;font:16px/1.5 Mukta,sans-serif;background:#f4f6f1;color:#1c2420}
@@ -12,9 +12,38 @@ input,textarea{width:100%;padding:10px;margin:4px 0 8px;border:1px solid #c9d0c4
 </style></head><body>
 <div id="lg" class="box" hidden><h2>एडमिन लॉगिन</h2><input id="em" value="admin@meragav.in"><input id="pw" type="password" placeholder="पासवर्ड"><button class="p" onclick="auth.signInWithEmailAndPassword($('#em').value,$('#pw').value).catch(e=>alert('लॉगिन नहीं हुआ'))">लॉगिन</button></div>
 <div id="ap" hidden>
-<header><b>🏡 गढ़ी अहबरन – एडमिन पैनल</b><div><button class="b" id="vo" onclick="tg('open')"></button> <button class="b" id="vt" onclick="tg('change')"></button> <button class="b o" onclick="auth.signOut()">लॉगआउट</button></div></header>
+<header><b id="adminBrand">🏡 गढ़ी अहबरन – एडमिन पैनल</b><div><button class="b" id="vo" onclick="tg('open')"></button> <button class="b" id="vt" onclick="tg('change')"></button> <button class="b o" onclick="auth.signOut()">लॉगआउट</button></div></header>
 <div class="tabs" id="tb"></div>
-<main><div id="addf" class="box" hidden><h3>नया प्रत्याशी जोड़ें</h3><input id="an" placeholder="नाम"><select id="asel" onchange="if(this.value)$('#as').value=this.value"></select><input id="as" placeholder="चुनाव चिह्न (वैकल्पिक)"><input id="aw" placeholder="वार्ड / मोहल्ला">फोटो <input id="ap1" type="file" accept="image/*">चिह्न की फोटो <input id="ap2" type="file" accept="image/*"><textarea id="am" rows="4" placeholder="घोषणा पत्र (वैकल्पिक) – हर वादा नई लाइन में"></textarea>घोषणा पत्र की फोटो (वैकल्पिक) <input id="ap3" type="file" accept="image/*"><button class="p" onclick="addCand()">जोड़ें (सीधे स्वीकृत)</button></div><div id="lst"></div></main></div>
+<main><div id="settingsBox" class="box" hidden>
+<h2>⚙️ ऐप सेटिंग्स</h2>
+<p class="tag">इन सेटिंग्स को केवल Admin बदल सकता है। Firebase बदलने के बाद ऐप reload होगा और नया project इस्तेमाल करेगा।</p>
+<label>ग्राम पंचायत का नाम</label><input id="setPanchayat" placeholder="जैसे: गढ़ी अहबरन">
+<label>पंचायत / ऐप लोगो</label><input id="setLogo" type="file" accept="image/*">
+<div id="logoPreview" style="margin:6px 0"></div>
+<button class="b" onclick="saveBrand()">💾 नाम/लोगो सेव करें</button> <button class="b o" onclick="toggleHomeElection()">🗳️ Home Vote/Pratyashi ON/OFF</button>
+<label style="display:flex;gap:8px;align-items:center;margin:12px 0"><input id="setHomeElection" type="checkbox" style="width:auto"> 🗳️ Home page पर Vote / Pratyashi दिखाएँ</label><hr style="border:0;border-top:1px solid #ddd;margin:14px 0">
+<h3>📋 Survey Field Manager</h3>
+<p style="font-size:13px;color:#667">यहाँ से Survey में field को ON/OFF करें। नया custom field जोड़ें या field हटाएँ। बदलाव save होते ही users के survey में लागू होंगे।</p>
+<div id="surveyFieldManager"></div>
+<div class="r" style="margin-top:8px"><input id="newSfLabel" placeholder="नया field नाम, जैसे: गैस कनेक्शन" style="flex:1;min-width:220px"><select id="newSfType" style="padding:9px;border:1px solid #c9d0c4;border-radius:8px"><option value="text">Text</option><option value="number">Number</option></select><button class="b" onclick="addSurveyField()">➕ Field जोड़ें</button></div>
+<button class="b" onclick="saveSurveyFields()">💾 Survey Fields सेव करें</button>
+<div id="sfStatus" style="font-size:13px;margin-top:6px"></div><hr style="border:0;border-top:1px solid #ddd;margin:14px 0">
+<h3>🔥 Firebase Configuration</h3>
+<p style="font-size:13px;color:#667">नए Firebase project की Web App configuration यहाँ paste करें। नीचे सभी fields editable हैं।</p>
+<label>apiKey</label><input id="fc_apiKey">
+<label>authDomain</label><input id="fc_authDomain">
+<label>projectId</label><input id="fc_projectId">
+<label>storageBucket</label><input id="fc_storageBucket">
+<label>messagingSenderId</label><input id="fc_messagingSenderId">
+<label>appId</label><input id="fc_appId">
+<label>measurementId (optional)</label><input id="fc_measurementId">
+<div class="r">
+<button class="b" onclick="testFirebaseConfig()">🔎 Test Connection</button>
+<button class="b o" onclick="applyFirebaseConfig()">🔄 Test & Apply</button>
+<button class="b d" onclick="resetFirebaseConfig()">↩️ Default Firebase</button>
+</div>
+<div id="fcStatus" style="margin-top:8px;font-size:13px"></div>
+</div><div id="addf" class="box" hidden><h3>नया प्रत्याशी जोड़ें</h3><input id="an" placeholder="नाम"><select id="asel" onchange="if(this.value)$('#as').value=this.value"></select><input id="as" placeholder="चुनाव चिह्न (वैकल्पिक)"><input id="aw" placeholder="वार्ड / मोहल्ला">फोटो <input id="ap1" type="file" accept="image/*">चिह्न की फोटो <input id="ap2" type="file" accept="image/*"><textarea id="am" rows="4" placeholder="घोषणा पत्र (वैकल्पिक) – हर वादा नई लाइन में"></textarea>घोषणा पत्र की फोटो (वैकल्पिक) <input id="ap3" type="file" accept="image/*"><button class="p" onclick="addCand()">जोड़ें (सीधे स्वीकृत)</button></div><div id="lst"></div></main></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -22,11 +51,12 @@ input,textarea{width:100%;padding:10px;margin:4px 0 8px;border:1px solid #c9d0c4
 <script>
 $('#asel').innerHTML=symOpts();
 let ST=[],tab='pend',RC=[],PRB=[],US=[],CA=[],CLM=[],VS=[],CMT=[],CHT=[],VSUR=[],on=0;
-const TB={pend:'⏳ मंज़ूरी',cands:'👥 प्रत्याशी',claims:'✅ वादे पूरे',res:'📊 नतीजे',mod:'🧹 टिप्पणी/चौपाल',users:'📱 डिवाइस',prob:'📢 समस्याएँ',survey:'📋 ग्राम सर्वे'};
+const TB={pend:'⏳ मंज़ूरी',cands:'👥 प्रत्याशी',claims:'✅ वादे पूरे',res:'📊 नतीजे',mod:'🧹 टिप्पणी/चौपाल',users:'📱 डिवाइस',prob:'📢 समस्याएँ',survey:'📋 ग्राम सर्वे',settings:'⚙️ सेटिंग्स'};
 $('#tb').innerHTML=Object.keys(TB).map(k=>`<button data-k="${k}" onclick="tab='${k}';draw()">${TB[k]}</button>`).join('');
 auth.onAuthStateChanged(u=>{const ok=u&&u.email=='admin@meragav.in';$('#lg').hidden=ok;$('#ap').hidden=!ok;if(ok&&!on++)start()});
 const sub=(c,f)=>db.collection(c).onSnapshot(s=>{f(s.docs.map(d=>({id:d.id,...d.data()})));draw()},e=>console.error(c,e));
-function start(){sub('users',a=>US=a);sub('candidates',a=>CA=a);sub('claims',a=>CLM=a);sub('votes',a=>VS=a);sub('comments',a=>CMT=a);sub('chat',a=>CHT=a);sub('settings',a=>ST=a);sub('reacts',a=>RC=a);sub('problems',a=>PRB=a);sub('villageSurveys',a=>VSUR=a)}
+function start(){
+ sub('users',a=>US=a);sub('candidates',a=>CA=a);sub('claims',a=>CLM=a);sub('votes',a=>VS=a);sub('comments',a=>CMT=a);sub('chat',a=>CHT=a);sub('settings',a=>{ST=a;const b=currentBrand();$('#adminBrand').textContent='🏡 '+b.name+' – एडमिन पैनल';document.title='एडमिन – '+b.name;draw()});sub('reacts',a=>RC=a);sub('problems',a=>PRB=a);sub('villageSurveys',a=>VSUR=a)}
 const nm=id=>(CA.find(c=>c.id==id)||{}).name||'?';
 const H={
 pend:()=>{const pv=US.filter(u=>u.status=='pending'&&u.role=='voter'),pc=CA.filter(c=>c.status=='pending');
@@ -42,11 +72,13 @@ users:()=>US.map(u=>`<div class="box"><b>${esc(u.name)}</b> <span class="tag">${
 prob:()=>PRB.slice().sort((a,b)=>((b.t&&b.t.seconds)||9e9)-((a.t&&a.t.seconds)||9e9)).map(p=>`<div class="box"><b>${esc(p.title)}</b> <span class="tag">${p.status=='solved'?'समाधान हुआ':'खुली'}</span><br><small>${esc(p.name)} • ${esc(p.ward||'')}</small><p>${esc(p.txt)}</p>${p.img?`<img src="${p.img}" style="max-width:200px;border-radius:8px">`:''}<br><button class="b" onclick="pst('${p.id}','${p.status=='solved'?'open':'solved'}')">${p.status=='solved'?'दोबारा खोलें':'✔ समाधान हुआ'}</button><button class="b d" onclick="del('problems','${p.id}')">हटाएँ</button></div>`).join('')||'<p>कोई समस्या नहीं।</p>',
 mod:()=>[['comments',CMT],['chat',CHT]].map(([k,a])=>`<h3>${k=='chat'?'गाँव चौपाल':'टिप्पणियाँ'}</h3>`+a.map(x=>`<div class="box"><b>${esc(x.name)}</b>: ${esc(x.txt)}<br><button class="b d" onclick="del('${k}','${x.id}')">हटाएँ</button></div>`).join('')).join('')};
 
+H.settings=()=>'';
 H.survey=()=>{
  const totalFamilies=VSUR.length;
  const totalChildren=VSUR.reduce((n,x)=>n+Number(x.children||0),0);
  const totalYouth=VSUR.reduce((n,x)=>n+Number(x.unemployed||0),0);
- const freq={}; VSUR.forEach(x=>[...(x.basic||[]),...(x.needs||[]),...(x.farm||[])].forEach(v=>freq[v]=(freq[v]||0)+1));
+ 
+  const freq={}; VSUR.forEach(x=>[...(x.basic||[]),...(x.needs||[]),...(x.farm||[])].forEach(v=>freq[v]=(freq[v]||0)+1));
  const top=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,10);
  const rows=VSUR.slice().sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).map(x=>`<tr><td>${esc(x.surveyId||x.id)}</td><td>${esc(x.name||'-')}<br>📱 ${esc(x.mobile||'-')}</td><td>${esc(x.ward||'-')}</td><td>${x.members||0}</td><td>${x.children||0}</td><td>${x.unemployed||0}</td><td><button class="b" onclick="surveyView('${x.id}')">देखें</button></td></tr>`).join('');
  return `<div class="box"><h2>📋 ग्राम सर्वे रिपोर्ट</h2>
@@ -55,21 +87,130 @@ H.survey=()=>{
  <div style="display:flex;gap:6px;flex-wrap:wrap;margin:10px 0"><button class="b" onclick="exportSurveys()">⬇️ CSV रिपोर्ट</button><button class="b" onclick="window.print()">🖨️ प्रिंट</button></div>
  <div style="overflow:auto"><table class="sv-table"><tr><th>Survey ID</th><th>परिवार/मोबाइल</th><th>वार्ड</th><th>सदस्य</th><th>बच्चे</th><th>बेरोजगार</th><th></th></tr>${rows||'<tr><td colspan="7">कोई सर्वे नहीं</td></tr>'}</table></div></div>`;
 };
+function cfText(x){const c=x.customFields||{},l=x.customLabels||{};const r=Object.keys(c).filter(k=>String(c[k]).trim()).map(k=>(l[k]||k)+': '+c[k]);return r.length?'\nअतिरिक्त जानकारी: '+r.join(' | ')+'\n':''}
 function surveyView(id){
  const x=VSUR.find(a=>a.id==id); if(!x)return;
  const a=k=>(x[k]||[]).join(', ')||'-';
- alert(`Survey: ${x.surveyId||x.id}\nनाम: ${x.name||'-'}\nमोबाइल: ${x.mobile||'-'}\nवार्ड: ${x.ward||'-'}\nकुल सदस्य: ${x.members||0} | पुरुष: ${x.male||0} | महिला: ${x.female||0} | बच्चे: ${x.children||0} | बुजुर्ग: ${x.elderly||0}\nस्कूल बच्चे: ${x.school||0} | ड्रॉपआउट: ${x.dropout||0} | बेरोजगार युवा: ${x.unemployed||0}\n\nदस्तावेज: ${a('docs')}\nशिक्षा/युवा/महिला: ${a('needs')}\nकिसान/पशुपालन: ${a('farm')}\nमूलभूत/स्वास्थ्य/खेल: ${a('basic')}\n\nप्राथमिकता: ${x.priority||'-'}\nसुझाव: ${x.suggestion||'-'}`);
+ alert(`Survey: ${x.surveyId||x.id}\nनाम: ${x.name||'-'}\nमोबाइल: ${x.mobile||'-'}\nवार्ड: ${x.ward||'-'}\nकुल सदस्य: ${x.members||0} | पुरुष: ${x.male||0} | महिला: ${x.female||0} | बच्चे: ${x.children||0} | बुजुर्ग: ${x.elderly||0}\nस्कूल बच्चे: ${x.school||0} | ड्रॉपआउट: ${x.dropout||0} | बेरोजगार युवा: ${x.unemployed||0}\n\nदस्तावेज: ${a('docs')}\nआयुष्मान कार्ड: ${(x.docs||[]).includes('आयुष्मान कार्ड')?'हाँ':'नहीं'} | वोटर कार्ड: ${(x.docs||[]).includes('वोटर कार्ड')?'हाँ':'नहीं'}\nशिक्षा/युवा/महिला: ${a('needs')}\nकिसान/पशुपालन: ${a('farm')}\nमूलभूत/स्वास्थ्य/खेल: ${a('basic')}\n${cfText(x)}\nप्राथमिकता: ${x.priority||'-'}\nसुझाव: ${x.suggestion||'-'}`);
 }
 function csvCell(v){return '"'+String(v??'').replace(/"/g,'""').replace(/\n/g,' ')+'"'}
 function exportSurveys(){
- const head=['Survey ID','Name','Mobile','Ward','Members','Male','Female','Children','Elderly','School Children','Dropout','Unemployed Youth','Documents','Needs','Farm','Basic','Priority','Suggestion'];
- const lines=[head.map(csvCell).join(',')].concat(VSUR.map(x=>[x.surveyId,x.name,x.mobile,x.ward,x.members,x.male,x.female,x.children,x.elderly,x.school,x.dropout,x.unemployed,(x.docs||[]).join(' | '),(x.needs||[]).join(' | '),(x.farm||[]).join(' | '),(x.basic||[]).join(' | '),x.priority,x.suggestion].map(csvCell).join(',')));
+ const head=['Survey ID','Name','Mobile','Ward','Members','Male','Female','Children','Elderly','School Children','Dropout','Unemployed Youth','Documents','Ayushman Card','Voter Card','Sukanya Yojana','Sumangala Yojana','Needs','Farm','Basic','Priority','Suggestion'];
+ const cfIds=[...new Set(VSUR.flatMap(x=>Object.keys(x.customFields||{})))];const cfName=id=>{for(const x of VSUR){const l=(x.customLabels||{})[id];if(l)return l}return id};
+ const lines=[head.concat(cfIds.map(cfName)).map(csvCell).join(',')].concat(VSUR.map(x=>[x.surveyId,x.name,x.mobile,x.ward,x.members,x.male,x.female,x.children,x.elderly,x.school,x.dropout,x.unemployed,(x.docs||[]).join(' | '),(x.docs||[]).includes('आयुष्मान कार्ड')?'हाँ':'नहीं',(x.docs||[]).includes('वोटर कार्ड')?'हाँ':'नहीं',(x.docs||[]).includes('सुकन्या योजना')?'हाँ':'नहीं',(x.docs||[]).includes('सुमंगला योजना')?'हाँ':'नहीं',(x.needs||[]).join(' | '),(x.farm||[]).join(' | '),(x.basic||[]).join(' | '),x.priority,x.suggestion].concat(cfIds.map(id=>(x.customFields||{})[id]??'')).map(csvCell).join(',')));
  const blob=new Blob(['\ufeff'+lines.join('\n')],{type:'text/csv;charset=utf-8'}),u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download='garhi-ahbaran-village-survey.csv';a.click();URL.revokeObjectURL(u);
 }
 
 const flag=k=>{const s=ST.find(x=>x.id=='vote');return !(s&&s[k]===false)};
 const tg=async k=>{const on=flag(k);if(confirm((k=='open'?'वोटिंग ':'वोट बदलना ')+(on?'बंद करें?':'चालू करें?')))await db.collection('settings').doc('vote').set({[k]:!on},{merge:true})};
-function draw(){[['vo','open','🗳️ वोटिंग'],['vt','change','🔄 वोट बदलना']].forEach(([i,k,l])=>{const on=flag(k),v=$('#'+i);v.textContent=l+': '+(on?'चालू':'बंद');v.style.background=on?'#1a8a4a':'#b3261e'});document.querySelectorAll('#tb button').forEach(b=>b.classList.toggle('on',b.dataset.k==tab));$('#addf').hidden=tab!='cands';$('#lst').innerHTML=H[tab]()}
+
+const DEFAULT_FIREBASE_CONFIG=(()=>{try{return JSON.parse(localStorage.getItem('garhiFirebaseConfig')||'null')}catch(e){return null}})();
+function currentBrand(){const s=ST.find(x=>x.id=='app')||{};return {name:s.panchayatName||'गढ़ी अहबरन',logo:s.logo||'./icon-192.png'};}
+const DEFAULT_ADMIN_SURVEY_FIELDS=[
+{id:'docs_aadhaar',label:'आधार उपलब्ध',group:'docs',type:'checkbox',key:'docs',value:'आधार उपलब्ध',enabled:true},
+{id:'docs_bank',label:'बैंक खाता',group:'docs',type:'checkbox',key:'docs',value:'बैंक खाता',enabled:true},
+{id:'docs_ration',label:'राशन कार्ड',group:'docs',type:'checkbox',key:'docs',value:'राशन कार्ड',enabled:true},
+{id:'docs_income',label:'आय प्रमाण पत्र',group:'docs',type:'checkbox',key:'docs',value:'आय प्रमाण पत्र',enabled:true},
+{id:'docs_caste',label:'जाति प्रमाण पत्र',group:'docs',type:'checkbox',key:'docs',value:'जाति प्रमाण पत्र',enabled:true},
+{id:'docs_residence',label:'निवास प्रमाण पत्र',group:'docs',type:'checkbox',key:'docs',value:'निवास प्रमाण पत्र',enabled:true},
+{id:'docs_job',label:'जॉब कार्ड',group:'docs',type:'checkbox',key:'docs',value:'जॉब कार्ड',enabled:true},
+{id:'docs_farmer',label:'किसान पंजीकरण',group:'docs',type:'checkbox',key:'docs',value:'किसान पंजीकरण',enabled:true},
+{id:'docs_ayushman',label:'आयुष्मान कार्ड',group:'docs',type:'checkbox',key:'docs',value:'आयुष्मान कार्ड',enabled:true},
+{id:'docs_voter',label:'वोटर कार्ड',group:'docs',type:'checkbox',key:'docs',value:'वोटर कार्ड',enabled:true},
+{id:'docs_sukanya',label:'सुकन्या योजना',group:'docs',type:'checkbox',key:'docs',value:'सुकन्या योजना',enabled:true},
+{id:'docs_sumangala',label:'सुमंगला योजना',group:'docs',type:'checkbox',key:'docs',value:'सुमंगला योजना',enabled:true},
+{id:'basic_road',label:'सड़क',group:'basic',type:'checkbox',key:'basic',value:'सड़क',enabled:true},
+{id:'basic_drain',label:'नाली',group:'basic',type:'checkbox',key:'basic',value:'नाली',enabled:true},
+{id:'basic_water',label:'पीने का पानी',group:'basic',type:'checkbox',key:'basic',value:'पीने का पानी',enabled:true},
+{id:'basic_electric',label:'बिजली',group:'basic',type:'checkbox',key:'basic',value:'बिजली',enabled:true},
+{id:'basic_streetlight',label:'स्ट्रीट लाइट',group:'basic',type:'checkbox',key:'basic',value:'स्ट्रीट लाइट',enabled:true},
+{id:'basic_clean',label:'सफाई/कचरा',group:'basic',type:'checkbox',key:'basic',value:'सफाई/कचरा',enabled:true},
+{id:'basic_wifi',label:'इंटरनेट/Wi-Fi',group:'basic',type:'checkbox',key:'basic',value:'इंटरनेट/Wi-Fi',enabled:true},
+{id:'basic_ground',label:'खेल मैदान',group:'basic',type:'checkbox',key:'basic',value:'खेल मैदान',enabled:true},
+{id:'basic_health',label:'स्वास्थ्य सुविधा',group:'basic',type:'checkbox',key:'basic',value:'स्वास्थ्य सुविधा',enabled:true},
+{id:'basic_medicine',label:'दवा उपलब्धता',group:'basic',type:'checkbox',key:'basic',value:'दवा उपलब्धता',enabled:true},
+{id:'basic_ambulance',label:'एम्बुलेंस/आपात सुविधा',group:'basic',type:'checkbox',key:'basic',value:'एम्बुलेंस/आपात सुविधा',enabled:true},
+{id:'basic_sports',label:'खेल सामग्री',group:'basic',type:'checkbox',key:'basic',value:'खेल सामग्री',enabled:true},
+{id:'need_inter',label:'12वीं/इंटर कॉलेज',group:'basic',type:'checkbox',key:'basic',value:'12वीं/इंटर कॉलेज',enabled:true},
+{id:'need_self',label:'स्वरोजगार/लोन मार्गदर्शन',group:'basic',type:'checkbox',key:'basic',value:'स्वरोजगार/लोन मार्गदर्शन',enabled:true},
+{id:'farm_vet',label:'पशु चिकित्सा शिविर',group:'basic',type:'checkbox',key:'basic',value:'पशु चिकित्सा शिविर',enabled:true},
+{id:'need_digital',label:'डिजिटल पढ़ाई',group:'basic',type:'checkbox',key:'basic',value:'डिजिटल पढ़ाई',enabled:true},
+{id:'basic_money',label:'मनी ट्रांसफर',group:'basic',type:'checkbox',key:'basic',value:'मनी ट्रांसफर',enabled:true},
+{id:'basic_pmkisan',label:'पीएम किसान सम्मान निधि',group:'basic',type:'checkbox',key:'basic',value:'पीएम किसान सम्मान निधि',enabled:true}
+];
+let ADMIN_SURVEY_FIELDS=DEFAULT_ADMIN_SURVEY_FIELDS.map(x=>({...x}));
+function renderSurveyFieldManager(){
+ const el=$('#surveyFieldManager'); if(!el)return;
+ el.innerHTML=ADMIN_SURVEY_FIELDS.map((f,i)=>`<div class="box" style="padding:8px;margin:5px 0;display:flex;align-items:center;gap:8px;flex-wrap:wrap"><label style="display:flex;align-items:center;gap:7px;margin:0"><input type="checkbox" ${f.enabled!==false?'checked':''} onchange="ADMIN_SURVEY_FIELDS[${i}].enabled=this.checked" style="width:auto;margin:0"> <b>${esc(f.label)}</b></label><span class="tag">${f.group||'custom'} • ${f.type||'checkbox'}</span>${f.custom?`<button class="b d" onclick="removeSurveyField(${i})">🗑️ हटाएँ</button>`:''}</div>`).join('');
+}
+function loadSurveyFields(){db.collection('settings').doc('surveyFields').get().then(s=>{if(s.exists&&Array.isArray(s.data().fields))ADMIN_SURVEY_FIELDS=s.data().fields;ADMIN_SURVEY_FIELDS=ADMIN_SURVEY_FIELDS.map(x=>{const d=DEFAULT_ADMIN_SURVEY_FIELDS.find(y=>y.id===x.id);return d?{...d,enabled:x.enabled}:x});DEFAULT_ADMIN_SURVEY_FIELDS.forEach(d=>{if(!ADMIN_SURVEY_FIELDS.some(x=>x.id===d.id))ADMIN_SURVEY_FIELDS.push({...d})});const okD=new Set(DEFAULT_ADMIN_SURVEY_FIELDS.map(f=>f.id));ADMIN_SURVEY_FIELDS=ADMIN_SURVEY_FIELDS.filter(x=>x.custom||okD.has(x.id));renderSurveyFieldManager()}).catch(()=>renderSurveyFieldManager())}
+function addSurveyField(){const label=$('#newSfLabel').value.trim();if(!label)return alert('Field का नाम लिखें।');const id='custom_'+Date.now();ADMIN_SURVEY_FIELDS.push({id,label,group:'custom',type:$('#newSfType').value,key:'customFields',custom:true,enabled:true});$('#newSfLabel').value='';renderSurveyFieldManager()}
+function removeSurveyField(i){if(!confirm('यह custom field हटाएँ? पुराने survey data में उसका data रहेगा।'))return;ADMIN_SURVEY_FIELDS.splice(i,1);renderSurveyFieldManager()}
+async function saveSurveyFields(){try{await db.collection('settings').doc('surveyFields').set({fields:ADMIN_SURVEY_FIELDS,updatedAt:FV.serverTimestamp()});$('#sfStatus').textContent='✅ Survey fields सेव हो गए।';setTimeout(()=>$('#sfStatus').textContent='',3000)}catch(e){alert('Save failed: '+e.message)}}
+
+function loadSettingsForm(){
+ loadSurveyFields();
+ const s=ST.find(x=>x.id=='app')||{};
+ $('#setPanchayat').value=s.panchayatName||'गढ़ी अहबरन'; $('#setHomeElection').checked=s.homeElection!==false;
+ $('#logoPreview').innerHTML=s.logo?`<img src="${s.logo}" style="width:72px;height:72px;object-fit:cover;border-radius:12px">`:'';
+ const c=(()=>{try{return JSON.parse(localStorage.getItem('garhiFirebaseConfig')||'{}')}catch(e){return {}}})();
+ ['apiKey','authDomain','projectId','storageBucket','messagingSenderId','appId','measurementId'].forEach(k=>$('#fc_'+k).value=c[k]||'');
+}
+function settingsHtml(){return '';}
+async function saveBrand(){
+ const name=$('#setPanchayat').value.trim();
+ if(!name)return alert('पंचायत का नाम लिखें।');
+ let logo=(ST.find(x=>x.id=='app')||{}).logo||'';
+ const f=$('#setLogo').files[0];
+ if(f)logo=await img(f,512);
+ await db.collection('settings').doc('app').set({panchayatName:name,logo,homeElection:$('#setHomeElection').checked,updatedAt:FV.serverTimestamp()},{merge:true});
+ alert('नाम/लोगो सेव हो गया।');
+}
+async function toggleHomeElection(){const s=ST.find(x=>x.id=='app')||{};const next=s.homeElection===false;await db.collection('settings').doc('app').set({homeElection:next,updatedAt:FV.serverTimestamp()},{merge:true});alert(next?'Home Vote/Pratyashi चालू कर दिया गया।':'Home Vote/Pratyashi बंद कर दिया गया।');} 
+function getFirebaseForm(){
+ const c={};
+ ['apiKey','authDomain','projectId','storageBucket','messagingSenderId','appId','measurementId'].forEach(k=>c[k]=$('#fc_'+k).value.trim());
+ return c;
+}
+function validateFirebase(c){
+ return !!(c.apiKey&&c.authDomain&&c.projectId&&c.storageBucket&&c.messagingSenderId&&c.appId);
+}
+async function testFirebaseConfig(){
+ const c=getFirebaseForm();
+ if(!validateFirebase(c))return $('#fcStatus').textContent='❌ सभी जरूरी Firebase fields भरें।';
+ $('#fcStatus').textContent='⏳ Firebase connection test हो रहा है…';
+ try{
+   const name='test_'+Date.now();
+   const a=firebase.initializeApp(c,name);
+   await a.firestore().collection('__connection_test__').doc('ping').get();
+   await a.delete();
+   $('#fcStatus').textContent='✅ Firebase config valid है और Firestore connection सफल रहा।';
+ }catch(e){
+   $('#fcStatus').textContent='❌ Connection test failed: '+(e.code||e.message||'Unknown error');
+ }
+}
+async function applyFirebaseConfig(){
+ const c=getFirebaseForm();
+ if(!validateFirebase(c))return alert('सभी जरूरी Firebase fields भरें।');
+ $('#fcStatus').textContent='⏳ Test & Apply…';
+ try{
+   const name='test_apply_'+Date.now(),a=firebase.initializeApp(c,name);
+   await a.firestore().collection('__connection_test__').doc('ping').get();
+   await a.delete();
+   localStorage.setItem('garhiFirebaseConfig',JSON.stringify(c));
+   await db.collection('settings').doc('app').set({firebaseProjectId:c.projectId,firebaseUpdatedAt:FV.serverTimestamp()},{merge:true});
+   alert('Firebase connection सफल है। अब ऐप नए Firebase project पर reload होगा। नए project में admin@meragav.in account और Firestore rules मौजूद होने चाहिए।');
+   location.reload();
+ }catch(e){
+   $('#fcStatus').textContent='❌ Apply नहीं हुआ: '+(e.code||e.message||'Unknown error');
+ }
+}
+function resetFirebaseConfig(){
+ if(!confirm('Saved Firebase config हटाकर default project पर लौटें?'))return;
+ localStorage.removeItem('garhiFirebaseConfig');location.reload();
+}
+
+function draw(){[['vo','open','🗳️ वोटिंग'],['vt','change','🔄 वोट बदलना']].forEach(([i,k,l])=>{const on=flag(k),v=$('#'+i);v.textContent=l+': '+(on?'चालू':'बंद');v.style.background=on?'#1a8a4a':'#b3261e'});document.querySelectorAll('#tb button').forEach(b=>b.classList.toggle('on',b.dataset.k==tab));$('#addf').hidden=tab!='cands';$('#settingsBox').hidden=tab!='settings';if(tab=='settings')loadSettingsForm();$('#lst').innerHTML=H[tab]?H[tab]():(tab=='settings'?'':'')}
 async function editVote(uid){const v=VS.find(x=>x.id==uid);if(!v)return;const opts=CA.filter(c=>c.status=='approved').map(c=>c.id+': '+c.name).join('\n');const pick=prompt('नया प्रत्याशी चुनें (ID लिखें):\n'+opts,v.c);if(!pick)return;const id=pick.split(':')[0].trim();if(!CA.some(c=>c.id==id))return alert('गलत प्रत्याशी');await db.collection('votes').doc(uid).update({c:id,t:FV.serverTimestamp()});alert('वोट अपडेट हो गया')}
 const rv=id=>confirm('इस मतदाता का वोट हटाएँ? वह दोबारा वोट दे सकेगा।')&&db.collection('votes').doc(id).delete();
 async function rd(id){if(!confirm('इस खाते का फोन-लॉक हटाएँ?'))return;const s=await db.collection('devices').where('uid','==',id).get(),b=db.batch();s.forEach(d=>b.delete(d.ref));b.update(db.collection('users').doc(id),{dev:''});await b.commit();alert('डिवाइस रीसेट हो गया')}

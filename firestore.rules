@@ -3,8 +3,17 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
+    // signedIn() = असली (Gmail) यूज़र. गेस्ट (anonymous) इसमें शामिल नहीं — गेस्ट सिर्फ चौपाल चैट कर सकता है.
     function signedIn() {
+      return request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
+    }
+
+    function signedInAny() {
       return request.auth != null;
+    }
+
+    function isGuest() {
+      return request.auth != null && request.auth.token.firebase.sign_in_provider == 'anonymous';
     }
 
     function isAdmin() {
@@ -115,8 +124,16 @@ service cloud.firestore {
     match /reacts/{reactionId} {
       allow get: if isAdmin() || (signedIn() && (resource == null || resource.data.u == request.auth.uid));
       allow list: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
-      allow create, update: if signedIn() && request.resource.data.u == request.auth.uid;
-      allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
+      // doc-id = प्रत्याशी_uid → एक यूज़र की एक प्रत्याशी पर एक ही प्रतिक्रिया
+      allow create: if signedIn() && request.resource.data.u == request.auth.uid
+        && reactionId == request.resource.data.c + '_' + request.auth.uid
+        && request.resource.data.v in [1, -1];
+      // Dislike (-1) अंतिम है: उसके बाद बदलाव/हटाना नहीं (सिर्फ एडमिन)
+      allow update: if isAdmin() || (signedIn() && request.resource.data.u == request.auth.uid
+        && resource.data.v == 1
+        && reactionId == request.resource.data.c + '_' + request.auth.uid
+        && request.resource.data.v in [1, -1]);
+      allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid && resource.data.v == 1);
     }
 
     // Problem Likes are PRIVATE too. Do not expose counts or names to other users.
@@ -136,9 +153,12 @@ service cloud.firestore {
 
     match /chat/{messageId} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
-      allow update: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid && request.resource.data.uid == resource.data.uid);
-      allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if signedInAny() && request.resource.data.uid == request.auth.uid
+        && request.resource.data.txt is string && request.resource.data.txt.size() > 0 && request.resource.data.txt.size() <= 1000
+        && (!isGuest() || request.resource.data.role == 'guest');
+      allow update: if isAdmin() || (signedInAny() && resource.data.uid == request.auth.uid && request.resource.data.uid == resource.data.uid
+        && request.resource.data.get('role', '') == resource.data.get('role', ''));
+      allow delete: if isAdmin() || (signedInAny() && resource.data.uid == request.auth.uid);
     }
 
     match /directChats/{chatId} {
@@ -183,9 +203,10 @@ service cloud.firestore {
     }
 
     match /devices/{deviceId} {
-      // resource == null: नया फोन/डिवाइस doc अभी बना नहीं होता; बिना इसके पहली बार लॉगिन पर permission-denied आता था
-      allow read: if isAdmin() || (signedIn() && (resource == null || resource.data.uid == request.auth.uid));
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow read: if isAdmin() || (signedInAny() && (resource == null || resource.data.uid == request.auth.uid));
+      // गेस्ट सिर्फ अपना guest_<फोन-ID> रिकॉर्ड बना सकता है (एक फोन = एक गेस्ट)
+      allow create: if (signedIn() && request.resource.data.uid == request.auth.uid)
+        || (isGuest() && deviceId.matches('guest_.*') && request.resource.data.uid == request.auth.uid && request.resource.data.guest == true);
       allow update: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
       allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }

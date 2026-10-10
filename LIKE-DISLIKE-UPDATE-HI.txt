@@ -1,0 +1,15 @@
+गढ़ी अहबरन ऐप — प्रत्याशी Like/Dislike Count Update
+
+क्या बदला:
+1. प्रत्याशी सूची में Like और Dislike की कुल संख्या दिखेगी।
+2. प्रत्याशी की प्रोफाइल खोलने पर भी दोनों कुल संख्याएँ दिखेंगी।
+3. किसी सामान्य यूज़र को यह नहीं दिखेगा कि Like/Dislike किसने किया। व्यक्तिगत प्रतिक्रिया की Firestore read permission निजी ही रखी गई है।
+4. Service worker cache version बढ़ाया गया है ताकि नया UI अपडेट हो सके।
+
+महत्वपूर्ण तैनाती:
+1. इस ZIP की फाइलें GitHub Pages वाले repository में पुरानी फाइलों की जगह अपलोड करें।
+2. Firebase Console > Firestore Database > Rules में इस ZIP की firestore.rules फाइल के पूरे नियम Publish करें। केवल index.html अपलोड करने से counts सेव नहीं होंगे।
+3. नए Like/Dislike की संख्या अपडेट के बाद गिनी जाएगी। पहले से मौजूद पुराने reactions का aggregate count अपने-आप migrate नहीं होगा।
+4. Firestore Rules Publish करने के बाद ऐप बंद करके दोबारा खोलें; जरूरत हो तो ऐप को refresh करें।
+
+ध्यान दें: Firestore के reactCounts में केवल aggregate संख्या रखी जाती है; नाम/UID नहीं।

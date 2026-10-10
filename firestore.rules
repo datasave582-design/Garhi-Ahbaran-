@@ -102,8 +102,15 @@ service cloud.firestore {
 
     // Reactions are PRIVATE: a user can only read their own Like/Dislike.
     match /reacts/{reactionId} {
-      allow read: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
-      allow create, update: if signedIn() && request.resource.data.u == request.auth.uid;
+      // A signed-in user may get their own reaction doc, or check a missing doc
+      // while creating the first reaction. Lists remain private to owner/admin.
+      allow get: if isAdmin() || (signedIn() && (resource == null || resource.data.u == request.auth.uid));
+      allow list: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.u == request.auth.uid
+        && request.resource.data.v in [-1, 1];
+      allow update: if signedIn() && resource.data.u == request.auth.uid
+        && request.resource.data.u == request.auth.uid
+        && request.resource.data.v in [-1, 1];
       allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
     }
 
@@ -118,7 +125,9 @@ service cloud.firestore {
     // The selected candidate Like is private to the owner.
     match /likepick/{uid} {
       allow read: if isOwner(uid) || isAdmin();
-      allow create, update: if isOwner(uid);
+      allow create, update: if isOwner(uid)
+        && request.resource.data.keys().hasOnly(['c', 'updatedAt'])
+        && request.resource.data.c is string;
       allow delete: if isOwner(uid) || isAdmin();
     }
 

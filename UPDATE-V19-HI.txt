@@ -1,0 +1,20 @@
+गढ़ी अहबरन ऐप — V19 फिक्स
+
+इस अपडेट में:
+1. प्रत्याशी Like/Dislike सेव करने की Firestore transaction ठीक की गई है।
+2. Like/Dislike और कुल संख्या एक transaction में अपडेट होते हैं।
+3. एक खाते का एक समय में एक ही प्रत्याशी Like करने का नियम ऐप में लागू है। Dislike कई प्रत्याशियों को कर सकते हैं।
+4. निजी प्रतिक्रियाओं के दस्तावेज़ पढ़ने के Firestore rules सुधारे गए हैं; प्रतिक्रियाएँ दूसरे यूज़र की सूची में सार्वजनिक नहीं होतीं।
+5. सार्वजनिक चौपाल और निजी चैट के हर संदेश के नीचे तारीख और समय दिखता है।
+6. बाकी मौजूदा ऐप फाइलें/सेक्शन इस अपडेट में रखे गए हैं।
+
+जरूरी इंस्टॉलेशन:
+- ZIP एक्सट्रैक्ट करें। इसमें meragav/ फ़ोल्डर है।
+- अपने GitHub Pages रिपॉजिटरी में meragav/ के अंदर की फाइलें अपलोड/replace करें (या अपने deployment की सही root directory में रखें)।
+- Firebase Console → Firestore Database → Rules में firestore.rules का पूरा कंटेंट paste करके Publish करें।
+- GitHub Pages deploy होने के बाद ऐप को refresh करें। Android पर पुराना cached version दिखे तो ऐप/ब्राउज़र बंद करके फिर खोलें।
+
+ध्यान दें:
+- Firestore rules Publish किए बिना Like/Dislike permission error दे सकते हैं।
+- यह पैकेज कोड में सुधार है; आपके live Firebase/GitHub पर इसे अपने-आप deploy नहीं करता।
+- पुराने गलत/अधूरे aggregate counts हों तो वे स्वतः पूरी तरह reconstruct नहीं होंगे; नई प्रतिक्रियाएँ सही तरीके से count होंगी।

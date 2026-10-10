@@ -68,8 +68,8 @@ service cloud.firestore {
 
     // Post Likes are private: a user can read/write only their own reaction.
     match /postLikes/{likeId} {
-      allow read: if signedIn() && resource.data.u == request.auth.uid;
-      allow create: if signedIn() && request.resource.data.u == request.auth.uid;
+      allow read: if signedIn() && (resource == null || resource.data.u == request.auth.uid);
+      allow create, update: if signedIn() && request.resource.data.u == request.auth.uid;
       allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
     }
 
@@ -91,32 +91,37 @@ service cloud.firestore {
     // Public aggregate counts only; individual reactions remain private.
     match /reactCounts/{candidateId} {
       allow read: if true;
-      allow create, update: if signedIn()
+      // एक बार में सिर्फ ±1 बदलाव मान्य (कोई मनमानी संख्या नहीं डाल सकता); एडमिन recount कर सकता है
+      allow create: if isAdmin() || (signedIn()
+        && request.resource.data.keys().hasOnly(['likes', 'dislikes', 'updatedAt'])
+        && request.resource.data.likes is number
+        && request.resource.data.dislikes is number
+        && request.resource.data.likes >= 0 && request.resource.data.likes <= 1
+        && request.resource.data.dislikes >= 0 && request.resource.data.dislikes <= 1);
+      allow update: if isAdmin() || (signedIn()
         && request.resource.data.keys().hasOnly(['likes', 'dislikes', 'updatedAt'])
         && request.resource.data.likes is number
         && request.resource.data.dislikes is number
         && request.resource.data.likes >= 0
-        && request.resource.data.dislikes >= 0;
+        && request.resource.data.dislikes >= 0
+        && request.resource.data.likes - resource.data.likes <= 1
+        && resource.data.likes - request.resource.data.likes <= 1
+        && request.resource.data.dislikes - resource.data.dislikes <= 1
+        && resource.data.dislikes - request.resource.data.dislikes <= 1);
       allow delete: if isAdmin();
     }
 
     // Reactions are PRIVATE: a user can only read their own Like/Dislike.
     match /reacts/{reactionId} {
-      // A signed-in user may get their own reaction doc, or check a missing doc
-      // while creating the first reaction. Lists remain private to owner/admin.
       allow get: if isAdmin() || (signedIn() && (resource == null || resource.data.u == request.auth.uid));
       allow list: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
-      allow create: if signedIn() && request.resource.data.u == request.auth.uid
-        && request.resource.data.v in [-1, 1];
-      allow update: if signedIn() && resource.data.u == request.auth.uid
-        && request.resource.data.u == request.auth.uid
-        && request.resource.data.v in [-1, 1];
+      allow create, update: if signedIn() && request.resource.data.u == request.auth.uid;
       allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
     }
 
     // Problem Likes are PRIVATE too. Do not expose counts or names to other users.
     match /plikes/{likeId} {
-      allow read: if signedIn() && resource.data.u == request.auth.uid;
+      allow read: if signedIn() && (resource == null || resource.data.u == request.auth.uid);
       allow create: if signedIn() && request.resource.data.u == request.auth.uid;
       allow update: if signedIn() && request.resource.data.u == request.auth.uid;
       allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
@@ -125,9 +130,7 @@ service cloud.firestore {
     // The selected candidate Like is private to the owner.
     match /likepick/{uid} {
       allow read: if isOwner(uid) || isAdmin();
-      allow create, update: if isOwner(uid)
-        && request.resource.data.keys().hasOnly(['c', 'updatedAt'])
-        && request.resource.data.c is string;
+      allow create, update: if isOwner(uid);
       allow delete: if isOwner(uid) || isAdmin();
     }
 
@@ -141,7 +144,8 @@ service cloud.firestore {
     match /directChats/{chatId} {
       allow read: if signedIn() && request.auth.uid in resource.data.members;
       allow create: if signedIn() && request.auth.uid in request.resource.data.members;
-      allow update: if signedIn() && request.auth.uid in resource.data.members;
+      allow update: if signedIn() && request.auth.uid in resource.data.members
+        && request.resource.data.members == resource.data.members;
       allow delete: if isAdmin();
 
       match /messages/{messageId} {
@@ -179,7 +183,8 @@ service cloud.firestore {
     }
 
     match /devices/{deviceId} {
-      allow read: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      // resource == null: नया फोन/डिवाइस doc अभी बना नहीं होता; बिना इसके पहली बार लॉगिन पर permission-denied आता था
+      allow read: if isAdmin() || (signedIn() && (resource == null || resource.data.uid == request.auth.uid));
       allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
       allow update: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
       allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);

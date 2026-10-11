@@ -214,29 +214,30 @@ function parts(){if(!$('#mh'))return;if(openT=='post'){const p=POSTS.find(x=>x.i
 async function vote(id){if(!U){cls();return go('me')}if(!P){cls();go('me');return alert('वोट देने के लिए पहले मतदाता पंजीकरण करें (वोटर ID की फोटो के साथ)।')}if(P.role!='voter')return alert('सिर्फ मतदाता वोट दे सकते हैं।');if(P.status!='approved')return alert('आपका मतदाता खाता एडमिन की मंज़ूरी में है।');if(!VO&&!VS.some(v=>v.id==U.uid))return alert('अभी वोटिंग बंद है।');const mv=myVote;if(mv){if(mv.c==id)return;if(!CG)return alert('अभी वोट बदलना बंद है।');if((mv.n||0)>=3)return alert('आप 3 बार वोट बदल चुके हैं। अब वोट लॉक है।');if(!confirm('वोट बदलें? आपके पास '+(3-(mv.n||0))+' बदलाव बचे हैं।'))return}else if(!confirm('पक्का वोट दें? बाद में आप इसे सिर्फ 3 बार बदल सकेंगे।'))return;
  try{await db.collection('votes').doc(U.uid).set({c:id,n:mv?(mv.n||0)+1:0,t:FV.serverTimestamp()});alert(mv?'🔄 आपका वोट बदल गया।':'🎉 आपका वोट दर्ज हो गया। धन्यवाद!')}catch(e){alert('वोट दर्ज नहीं हुआ: '+e.message)}}
 let reacting=false;
-async function react(id,v){if(!REAL())return needOk();if(reacting)return;
+async function react(id,v){
+ if(!REAL())return needOk();
+ if(reacting)return;
  const my=MYR[id]||0;
- if(my==-1)return alert('आप इस प्रत्याशी को पहले ही Dislike कर चुके हैं। एक प्रत्याशी को Dislike सिर्फ एक बार किया जा सकता है, इसे बदला या हटाया नहीं जा सकता।');
- if(v==-1&&!confirm('एक प्रत्याशी को Dislike सिर्फ एक बार हो सकता है और बाद में हटाया नहीं जा सकेगा। पक्का Dislike करें?'))return;
- const nv=my==v?0:v,ot=Object.keys(MYR).find(k=>MYR[k]==1&&k!=id);
- if(nv==1&&ot){const o=C.find(x=>x.id==ot);return alert('आप '+(o?o.name:'दूसरे प्रत्याशी')+' को पहले ही Like कर चुके हैं। पहले अपना Like हटाएँ या बदलें।')}
+ // Same button again removes the reaction; the opposite button switches it.
+ const nv=my===v?0:v;
+ const ot=Object.keys(MYR).find(k=>MYR[k]===1&&k!==id);
+ if(nv===1&&ot){const o=C.find(x=>x.id===ot);return alert('आप '+(o?o.name:'दूसरे प्रत्याशी')+' को पहले ही Like कर चुके हैं। पहले अपना Like हटाएँ या बदलें।')}
  const ref=db.collection('reacts').doc(id+'_'+U.uid),countRef=db.collection('reactCounts').doc(id),pk=db.collection('likepick').doc(U.uid);
  reacting=true;
  try{
-  /* reacts doc को transaction में READ नहीं करते (नया doc पढ़ने पर rules permission-denied देते थे); पुरानी प्रतिक्रिया MYR से ली जाती है */
   await db.runTransaction(async tx=>{
    const cs=await tx.get(countRef);
    const data=cs.exists?cs.data():{};
    let likes=Number(data.likes||0),dislikes=Number(data.dislikes||0);
-   if(my==1)likes=Math.max(0,likes-1);
-   if(my==-1)dislikes=Math.max(0,dislikes-1);
-   if(nv==1)likes++;
-   if(nv==-1)dislikes++;
+   if(my===1)likes=Math.max(0,likes-1);
+   if(my===-1)dislikes=Math.max(0,dislikes-1);
+   if(nv===1)likes++;
+   if(nv===-1)dislikes++;
    if(nv)tx.set(ref,{c:id,u:U.uid,v:nv,t:FV.serverTimestamp()});else if(my)tx.delete(ref);
    tx.set(countRef,{likes,dislikes,updatedAt:FV.serverTimestamp()});
   });
-  try{if(nv==1)await pk.set({c:id});else if(my==1)await pk.delete()}catch(e){console.error('likepick:',e)}
-  toast(nv==1?'👍 आपका Like सेव हो गया।':nv==-1?'👎 आपका Dislike सेव हो गया।':'आपकी प्रतिक्रिया हटा दी गई।');
+  try{if(nv===1)await pk.set({c:id});else if(my===1)await pk.delete()}catch(e){console.error('likepick:',e)}
+  toast(nv===1?'👍 आपका Like सेव हो गया।':nv===-1?'👎 आपका Dislike सेव हो गया।':my===1?'Like हटा दिया गया।':'Dislike हटा दिया गया।');
  }catch(e){console.error('react:',e);alert('प्रतिक्रिया सेव नहीं हुई: '+(e.code==='permission-denied'?'अनुमति नहीं मिली। एडमिन: नई firestore.rules Publish करें।':(e.message||e)))}
  finally{reacting=false}
 }

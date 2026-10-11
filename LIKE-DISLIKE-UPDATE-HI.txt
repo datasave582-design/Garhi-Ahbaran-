@@ -1,6 +1,9 @@
-गढ़ी अहबरन ऐप — प्रत्याशी Like/Dislike Count Update
+गढ़ी अहबरन ऐप — Like/Unlike और Dislike/Undislike अपडेट
 
 क्या बदला:
+1. Like बटन दूसरी बार दबाने पर Like हटेगा (Unlike)।
+2. Dislike बटन दूसरी बार दबाने पर Dislike हटेगा (Undislike)।
+3. Like से Dislike या Dislike से Like करने पर पुरानी प्रतिक्रिया हटकर नई लागू होगी।
 1. प्रत्याशी सूची में Like और Dislike की कुल संख्या दिखेगी।
 2. प्रत्याशी की प्रोफाइल खोलने पर भी दोनों कुल संख्याएँ दिखेंगी।
 3. किसी सामान्य यूज़र को यह नहीं दिखेगा कि Like/Dislike किसने किया। व्यक्तिगत प्रतिक्रिया की Firestore read permission निजी ही रखी गई है।

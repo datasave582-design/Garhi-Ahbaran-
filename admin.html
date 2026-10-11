@@ -9,6 +9,21 @@ main{padding:12px;max-width:900px;margin:auto}.box{background:#fff;border:1px so
 button.p,.b{background:#1f4d3a;color:#fff;border:0;border-radius:8px;padding:8px 12px;font:600 14px Mukta;margin:3px 3px 0 0}.b.d{background:#b3261e}.b.o{background:#e8871e}
 input,textarea{width:100%;padding:10px;margin:4px 0 8px;border:1px solid #c9d0c4;border-radius:8px;font:inherit}.tag{font-size:12px;padding:2px 8px;border-radius:10px;background:#fde7c8}
 .bar{height:10px;background:#e8871e;border-radius:5px}#lg{max-width:360px;margin:60px auto}
+
+/* V20 polish: clearer admin controls, mobile-friendly tabs and cards */
+body{background:linear-gradient(145deg,#f3f7f2 0%,#eef3ec 100%)}
+header{background:linear-gradient(115deg,#123d2e,#28684c);box-shadow:0 4px 18px #123d2e20}
+.tabs{position:sticky;top:0;z-index:8;box-shadow:0 4px 12px #182d1d0a;scrollbar-width:thin}
+.tabs button{transition:background .18s,color .18s}
+.tabs button:hover,.tabs button.on{background:#f2f8f2}
+main{max-width:1100px;padding:16px}
+.box{border-radius:16px;box-shadow:0 5px 20px #203c2510;border-color:#e2e9df;transition:box-shadow .18s}
+.box:hover{box-shadow:0 8px 24px #203c2517}
+button.p,.b{cursor:pointer;transition:transform .15s,filter .15s;box-shadow:0 2px 5px #102d1b12}
+button.p:hover,.b:hover{filter:brightness(1.07);transform:translateY(-1px)}
+input,textarea{border-color:#d8e0d4}
+input:focus,textarea:focus{outline:2px solid #d7eadb;border-color:#28684c}
+@media(max-width:600px){header{padding:12px}main{padding:10px}.tabs button{padding:10px 12px;font-size:14px}.box{padding:12px;border-radius:13px}.r{gap:7px}.r img{width:72px;height:72px}}
 </style></head><body>
 <div id="lg" class="box" hidden><h2>एडमिन लॉगिन</h2><input id="em" value="admin@meragav.in"><input id="pw" type="password" placeholder="पासवर्ड"><button class="p" onclick="auth.signInWithEmailAndPassword($('#em').value,$('#pw').value).catch(e=>alert('लॉगिन नहीं हुआ'))">लॉगिन</button></div>
 <div id="ap" hidden>

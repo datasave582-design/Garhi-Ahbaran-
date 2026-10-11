@@ -1,0 +1,33 @@
+गढ़ी अहबरन ऐप — V20 अपडेट
+================================
+
+Like / Dislike:
+- Like को दूसरी बार दबाने पर Unlike होगा।
+- Dislike को दूसरी बार दबाने पर Undislike होगा।
+- Like से Dislike या Dislike से Like करने पर प्रतिक्रिया switch होगी।
+- हर प्रत्याशी के कुल Like/Dislike counts transaction में update होते हैं।
+- एक user एक से अधिक प्रत्याशी को Like नहीं कर सकता; अपना पुराना Like हटाकर दूसरे को Like कर सकता है।
+
+Admin panel के मौजूदा नियंत्रण:
+1. मंज़ूरी: pending प्रत्याशी/दावे की समीक्षा और approve/reject।
+2. प्रत्याशी: जोड़ना/संपादित करना/हटाना और reaction count Recount।
+3. वादे पूरे: प्रत्याशी के वादों की स्थिति।
+4. नतीजे: वोटिंग रिकॉर्ड/नतीजे देखना और उपलब्ध admin actions।
+5. टिप्पणी/चौपाल: टिप्पणियाँ और चौपाल चैट moderation।
+6. डिवाइस: user/device records और guest lock reset।
+7. समस्याएँ: ग्राम समस्या पोस्ट की समीक्षा/स्थिति प्रबंधन।
+8. ग्राम सर्वे: survey records देखना।
+9. सेटिंग्स: पंचायत नाम/लोगो, Home Vote/Pratyashi ON/OFF, survey fields ON/OFF/custom fields, Firebase config test/apply/reset।
+10. मोबाइल UI: admin tabs horizontal scroll, responsive cards और improved visual hierarchy।
+
+Deploy:
+1. ZIP extract करें और सभी files repository में पुरानी files के ऊपर upload करें।
+2. Firebase Console → Firestore Database → Rules में firestore.rules का पूरा content publish करें।
+3. GitHub Pages / hosting पर नया deployment पूरा होने दें।
+4. ऐप बंद करके दोबारा खोलें; cache version mg36 है।
+5. Admin email वर्तमान rules के अनुसार admin@meragav.in है। Firebase Auth में इसी email का authorized account होना चाहिए।
+6. Firebase rules publish करना जरूरी है; केवल HTML/JS बदलने से reaction permissions नहीं बदलेंगी।
+
+Security note:
+- Firestore rules app-side UI से अलग सुरक्षा सीमा हैं। Firebase config public client config है; admin authorization rules से enforce होता है।
+- Firebase config को production project से बदलने से पहले backup और rules verify करें।

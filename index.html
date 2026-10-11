@@ -228,28 +228,35 @@ async function vote(id){if(!U){cls();return go('me')}if(!P){cls();go('me');retur
  try{await db.collection('votes').doc(U.uid).set({c:id,n:mv?(mv.n||0)+1:0,t:FV.serverTimestamp()});alert(mv?'🔄 आपका वोट बदल गया।':'🎉 आपका वोट दर्ज हो गया। धन्यवाद!')}catch(e){alert('वोट दर्ज नहीं हुआ: '+e.message)}}
 let reacting=false;
 async function react(id,v){if(!REAL())return needOk();if(reacting)return;
- const my=MYR[id]||0;
- const nv=my==v?0:v,ot=Object.keys(MYR).find(k=>MYR[k]==1&&k!=id);
- if(nv==1&&ot){const o=C.find(x=>x.id==ot);return alert('आप '+(o?o.name:'दूसरे प्रत्याशी')+' को पहले ही Like कर चुके हैं। पहले अपना Like हटाएँ या बदलें।')}
+ const ot=Object.keys(MYR).find(k=>MYR[k]==1&&k!=id);
+ if(v==1&&MYR[id]!=1&&ot){const o=C.find(x=>x.id==ot);return alert('आप '+(o?o.name:'दूसरे प्रत्याशी')+' को पहले ही Like कर चुके हैं। पहले अपना Like हटाएँ या बदलें।')}
  const ref=db.collection('reacts').doc(id+'_'+U.uid),countRef=db.collection('reactCounts').doc(id),pk=db.collection('likepick').doc(U.uid);
  reacting=true;
  try{
-  /* reacts doc को transaction में READ नहीं करते (नया doc पढ़ने पर rules permission-denied देते थे); पुरानी प्रतिक्रिया MYR से ली जाती है */
+  let res=null;
+  /* असली प्रतिक्रिया सर्वर से transaction में पढ़ी जाती है (स्थानीय state पर भरोसा नहीं) — इसलिए एक यूज़र का Like कभी दोबारा नहीं गिना जाता */
   await db.runTransaction(async tx=>{
-   const cs=await tx.get(countRef);
-   const data=cs.exists?cs.data():{};
-   let likes=Number(data.likes||0),dislikes=Number(data.dislikes||0);
-   if(my==1)likes=Math.max(0,likes-1);
-   if(my==-1)dislikes=Math.max(0,dislikes-1);
+   const rs=await tx.get(ref),cs=await tx.get(countRef),ps=await tx.get(pk);
+   const old=rs.exists?(Number(rs.data().v)||0):0,nv=old==v?0:v;
+   if(nv==1&&ps.exists&&ps.data().c!=id){const e=new Error('LIKED_OTHER');e.other=ps.data().c;throw e}
+   const d=cs.exists?cs.data():{};let likes=Number(d.likes||0),dislikes=Number(d.dislikes||0);
+   if(old==1)likes=Math.max(0,likes-1);
+   if(old==-1)dislikes=Math.max(0,dislikes-1);
    if(nv==1)likes++;
    if(nv==-1)dislikes++;
-   if(nv)tx.set(ref,{c:id,u:U.uid,v:nv,t:FV.serverTimestamp()});else if(my)tx.delete(ref);
+   if(nv)tx.set(ref,{c:id,u:U.uid,v:nv,t:FV.serverTimestamp()});else if(old)tx.delete(ref);
    tx.set(countRef,{likes,dislikes,updatedAt:FV.serverTimestamp()});
+   if(nv==1&&!ps.exists)tx.set(pk,{c:id});
+   if(old==1&&nv!=1&&ps.exists)tx.delete(pk);
+   res={old,nv};
   });
-  try{if(nv==1)await pk.set({c:id});else if(my==1)await pk.delete()}catch(e){console.error('likepick:',e)}
-  toast(nv==1?'👍 आपका Like सेव हो गया।':nv==-1?'👎 आपका Dislike सेव हो गया।':'आपकी प्रतिक्रिया हटा दी गई।');
- }catch(e){console.error('react:',e);alert('प्रतिक्रिया सेव नहीं हुई: '+(e.code==='permission-denied'?'अनुमति नहीं मिली। एडमिन: नई firestore.rules Publish करें।':(e.message||e)))}
- finally{reacting=false}
+  if(res.nv)MYR[id]=res.nv;else delete MYR[id];upd();
+  toast(res.nv==1?'👍 आपका Like सेव हो गया।':res.nv==-1?'👎 आपका Dislike सेव हो गया।':'आपकी प्रतिक्रिया हटा दी गई।');
+ }catch(e){
+  console.error('react:',e);
+  if(e&&e.message==='LIKED_OTHER'){const o=C.find(x=>x.id==e.other);alert('आप '+(o?o.name:'दूसरे प्रत्याशी')+' को पहले ही Like कर चुके हैं। पहले अपना Like हटाएँ या बदलें।')}
+  else alert('प्रतिक्रिया सेव नहीं हुई: '+(e.code==='permission-denied'?'अनुमति नहीं मिली। एडमिन: नई firestore.rules Publish करें।':(e.message||e)))
+ }finally{reacting=false}
 }
 function needOk(){cls();go('me');alert(U&&U.isAnonymous?'गेस्ट सिर्फ चौपाल चैट कर सकते हैं। इस सुविधा के लिए Gmail से लॉगिन करें।':'इसके लिए पहले Gmail से लॉगिन करें।')}
 function togP(){$('#pf').hidden=!$('#pf').hidden}

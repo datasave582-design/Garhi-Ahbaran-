@@ -226,12 +226,16 @@ function admTime(t){const d=t&&(t.toDate?t.toDate():(t.seconds?new Date(t.second
 async function recountReacts(){
  if(!confirm('सभी प्रत्याशियों की Like/Dislike गिनती असली reactions से दोबारा बनाएँ?'))return;
  try{
-  const snap=await db.collection('reacts').get(),m={};
-  snap.forEach(d=>{const r=d.data();if(!r.c)return;m[r.c]=m[r.c]||{likes:0,dislikes:0};if(r.v==1)m[r.c].likes++;else if(r.v==-1)m[r.c].dislikes++});
+  const snap=await db.collection('reacts').get(),m={},pick={};
+  snap.forEach(d=>{const r=d.data();if(!r.c)return;m[r.c]=m[r.c]||{likes:0,dislikes:0};if(r.v==1){m[r.c].likes++;if(!pick[r.u])pick[r.u]=r.c}else if(r.v==-1)m[r.c].dislikes++});
   const ids=new Set([...CA.map(c=>c.id),...Object.keys(m)]);
-  const b=db.batch();
-  ids.forEach(id=>{const x=m[id]||{likes:0,dislikes:0};b.set(db.collection('reactCounts').doc(id),{likes:x.likes,dislikes:x.dislikes,updatedAt:FV.serverTimestamp()})});
-  await b.commit();alert('✅ गिनती दोबारा बन गई ('+ids.size+' प्रत्याशी)।');
+  const ops=[];
+  ids.forEach(id=>{const x=m[id]||{likes:0,dislikes:0};ops.push(b=>b.set(db.collection('reactCounts').doc(id),{likes:x.likes,dislikes:x.dislikes,updatedAt:FV.serverTimestamp()}))});
+  const lp=await db.collection('likepick').get();
+  lp.forEach(d=>{if(pick[d.id]!==d.data().c)ops.push(b=>b.delete(d.ref))});
+  Object.keys(pick).forEach(u=>ops.push(b=>b.set(db.collection('likepick').doc(u),{c:pick[u]})));
+  for(let i=0;i<ops.length;i+=400){const b=db.batch();ops.slice(i,i+400).forEach(f=>f(b));await b.commit()}
+  alert('✅ गिनती दोबारा बन गई ('+ids.size+' प्रत्याशी)। जिसने जितनी बार दबाया हो, अब हर यूज़र की सिर्फ एक गिनती है।');
  }catch(e){alert('Recount नहीं हुआ: '+(e.code||e.message)+'\nपहले नई firestore.rules Publish करें।')}
 }
 async function ed(id,f,l){const c=CA.find(x=>x.id==id),v=prompt(l,c[f]);if(v)await db.collection('candidates').doc(id).update({[f]:v})}

@@ -40,6 +40,33 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
+    // ---------- Like/Dislike की जाँच के सहायक नियम ----------
+    function rpath(cid) {
+      return /databases/$(database)/documents/reacts/$(cid + '_' + request.auth.uid);
+    }
+    function lpath() {
+      return /databases/$(database)/documents/likepick/$(request.auth.uid);
+    }
+    // इस यूज़र की प्रतिक्रिया (1 / -1 / 0) लिखने से पहले और बाद में
+    function rBefore(cid) {
+      return exists(rpath(cid)) ? get(rpath(cid)).data.v : 0;
+    }
+    function rAfter(cid) {
+      return existsAfter(rpath(cid)) ? getAfter(rpath(cid)).data.v : 0;
+    }
+    function cnt(v, t) {
+      return v == t ? 1 : 0;
+    }
+    // नई गिनती = पुरानी + बदलाव (0 से नीचे नहीं)
+    function stepOk(newN, oldN, d) {
+      return newN == oldN + d || (oldN + d < 0 && newN == 0);
+    }
+    // एक यूज़र एक समय में सिर्फ एक प्रत्याशी को Like कर सकता है
+    function likeOk(cid) {
+      return existsAfter(lpath()) && getAfter(lpath()).data.c == cid
+        && (!exists(lpath()) || get(lpath()).data.c == cid);
+    }
+
     // ---------- खाते / प्रोफाइल ----------
     match /users/{uid} {
       allow read: if isOwner(uid) || isAdmin();
@@ -142,22 +169,16 @@ service cloud.firestore {
     // सार्वजनिक सिर्फ कुल गिनती
     match /reactCounts/{candidateId} {
       allow read: if true;
+      // गिनती तभी बदल सकती है जब उसी transaction में इस यूज़र की प्रतिक्रिया (reacts/<प्रत्याशी>_<uid>) भी बदली हो,
+      // और बदलाव ठीक उसी के बराबर हो — इसलिए एक यूज़र की एक ही गिनती हो सकती है
       allow create: if isAdmin() || (signedIn()
         && request.resource.data.keys().hasOnly(['likes', 'dislikes', 'updatedAt'])
-        && request.resource.data.likes is number
-        && request.resource.data.dislikes is number
-        && request.resource.data.likes >= 0 && request.resource.data.likes <= 1
-        && request.resource.data.dislikes >= 0 && request.resource.data.dislikes <= 1);
+        && request.resource.data.likes == cnt(rAfter(candidateId), 1)
+        && request.resource.data.dislikes == cnt(rAfter(candidateId), -1));
       allow update: if isAdmin() || (signedIn()
         && request.resource.data.keys().hasOnly(['likes', 'dislikes', 'updatedAt'])
-        && request.resource.data.likes is number
-        && request.resource.data.dislikes is number
-        && request.resource.data.likes >= 0
-        && request.resource.data.dislikes >= 0
-        && request.resource.data.likes - resource.data.likes <= 1
-        && resource.data.likes - request.resource.data.likes <= 1
-        && request.resource.data.dislikes - resource.data.dislikes <= 1
-        && resource.data.dislikes - request.resource.data.dislikes <= 1);
+        && stepOk(request.resource.data.likes, resource.data.likes, cnt(rAfter(candidateId), 1) - cnt(rBefore(candidateId), 1))
+        && stepOk(request.resource.data.dislikes, resource.data.dislikes, cnt(rAfter(candidateId), -1) - cnt(rBefore(candidateId), -1)));
       allow delete: if isAdmin();
     }
 
@@ -167,10 +188,12 @@ service cloud.firestore {
       allow list: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
       allow create: if signedIn() && request.resource.data.u == request.auth.uid
         && reactionId == request.resource.data.c + '_' + request.auth.uid
-        && request.resource.data.v in [1, -1];
+        && request.resource.data.v in [1, -1]
+        && (request.resource.data.v != 1 || likeOk(request.resource.data.c));
       allow update: if isAdmin() || (signedIn() && request.resource.data.u == request.auth.uid
         && reactionId == request.resource.data.c + '_' + request.auth.uid
-        && request.resource.data.v in [1, -1]);
+        && request.resource.data.v in [1, -1]
+        && (request.resource.data.v != 1 || likeOk(request.resource.data.c)));
       allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
     }
 
@@ -181,10 +204,14 @@ service cloud.firestore {
       allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
     }
 
+    // likepick/<uid> = जिस प्रत्याशी को यूज़र ने Like किया है. हटाना तभी जब उसका Like भी हट चुका हो.
     match /likepick/{uid} {
       allow read: if isOwner(uid) || isAdmin();
-      allow create, update: if isOwner(uid);
-      allow delete: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid) || isAdmin();
+      allow update: if isAdmin();
+      allow delete: if isAdmin() || (isOwner(uid)
+        && (!existsAfter(/databases/$(database)/documents/reacts/$(resource.data.c + '_' + uid))
+            || getAfter(/databases/$(database)/documents/reacts/$(resource.data.c + '_' + uid)).data.v != 1));
     }
 
     // ---------- चौपाल (गेस्ट भी कर सकता है) ----------

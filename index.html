@@ -65,6 +65,11 @@ nav button{position:relative}.nbadge{position:absolute;top:3px;left:calc(50% + 6
 .kHomeWin{display:flex;align-items:center;gap:10px;background:#fff;border-radius:12px;padding:6px;margin-bottom:8px}.kHomeWin img{width:64px;height:64px;border-radius:12px;object-fit:cover}
 .kHomeScore{display:flex;justify-content:space-between;align-items:center;font-size:16px;margin-bottom:6px}.kHomeLesson{margin-top:8px;font-size:14px}.kHomeGo{margin-top:6px;text-align:right;font-weight:700;color:var(--g)}
 .noticeBar{background:#fff3cd;border:1px solid #f0d89b;color:#5c4400;border-radius:12px;padding:10px 12px;margin-bottom:10px;font-weight:600;white-space:pre-wrap}
+
+.nscHero{text-align:center;background:linear-gradient(180deg,#9fe0f7,#fbe3ee);border-radius:var(--rad);padding:14px 12px;margin-bottom:10px}.nscHero img{width:min(230px,62%);border-radius:18px;display:block;margin:0 auto 8px;box-shadow:0 6px 18px #0002}.nscHero p{margin:6px 0 8px;font-weight:600;color:#1d2a24}
+.nscHead{display:flex;align-items:center;gap:10px;margin-bottom:8px}.nscMini{width:54px;height:54px;border-radius:12px;object-fit:cover;object-position:top;flex:none;box-shadow:0 2px 8px #0002}
+.nscRules{margin:4px 0 0;padding-left:22px}.nscRules li{margin:5px 0}
+.nscForm label{display:block}.nscForm .rgPerm{display:flex;gap:8px;align-items:flex-start;background:#fff8e6;border-radius:10px;padding:8px;margin:2px 0 10px;color:var(--ink)}.nscForm .rgPerm input{width:auto;margin:4px 0 0}.rgPrev{width:84px;height:84px;object-fit:cover;border-radius:12px;margin:0 0 10px}.rgOk{text-align:center;background:#e9f7ee;border:1px solid #9fd8b4;border-radius:12px;padding:14px}
 </style>
 <style id="survey-css">
 .sv-btn{position:fixed;right:14px;bottom:76px;z-index:8;border:0;border-radius:999px;background:#1f4d3a;color:#fff;padding:11px 15px;font:700 15px Mukta;box-shadow:0 5px 18px #0003}
@@ -81,7 +86,7 @@ nav button{position:relative}.nbadge{position:absolute;top:3px;left:calc(50% + 6
 </head><body>
 <header><div class="br" id="appBrand">🏡 ग्राम पंचायत</div><input id="q" placeholder="🔍 प्रत्याशी / चिह्न / वार्ड खोजें" oninput="go('home')"><button id="instBtn" class="instBtn" onclick="installApp()" hidden>📲 इंस्टॉल</button></header>
 <main id="m"></main><div id="net" class="net">इंटरनेट कनेक्शन नहीं है। दोबारा कनेक्ट होने पर ऐप अपने आप चलेगा।</div><div id="load"><div class="loadbox"><img class="loadlogo" id="appLogo" src="./icon-192.png" alt="ग्राम पंचायत"><div class="spin"></div><div style="margin-top:8px;color:var(--mu);font-size:13px">ऐप लोड हो रहा है…</div></div></div>
-<nav><button data-t="home" onclick="go('home')"><i>🏡</i>होम</button><button data-t="kids" onclick="go('kids')"><i>🧒</i>बाल मंच</button><button data-t="prob" onclick="go('prob')"><i>📢</i>समस्याएँ</button><button data-t="chat" onclick="go('chat')"><i>💬</i>चैट<span class="nbadge" id="dmBadge" hidden></span></button><button class="electionNav navSmall" data-t="election" onclick="go('election')"><i>🗳️</i>वोट/प्रत्याशी</button><button data-t="me" onclick="go('me')"><i>👤</i>खाता</button></nav><div id="ts"></div>
+<nav><button data-t="home" onclick="go('home')"><i>🏡</i>होम</button><button data-t="kids" onclick="go('kids')"><i>⭐</i>NSC</button><button data-t="prob" onclick="go('prob')"><i>📢</i>समस्याएँ</button><button data-t="chat" onclick="go('chat')"><i>💬</i>चैट<span class="nbadge" id="dmBadge" hidden></span></button><button class="electionNav navSmall" data-t="election" onclick="go('election')"><i>🗳️</i>वोट/प्रत्याशी</button><button data-t="me" onclick="go('me')"><i>👤</i>खाता</button></nav><div id="ts"></div>
 <div id="md" class="md" hidden></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
@@ -454,17 +459,26 @@ const Survey={
 };
 if(window.__sf!==undefined)setSurveyFields(window.__sf||DEFAULT_SURVEY_FIELDS);else applySurveyFields();
 
-/* ===================== 🧒 बाल मंच: टीम स्कोरकार्ड + 30 दिन का नैतिक पाठ ===================== */
-const KIDS30=[{"t":"इंसानियत सबसे बड़ा गुण","l":"इंसान की पहचान उसके कपड़ों, पैसे, जाति या परिवार से नहीं, उसके व्यवहार से होती है। अच्छा इंसान दूसरों की इज्जत करता है, किसी को जानबूझकर दुख नहीं देता और जरूरतमंद की मदद करता है।","a":"कहानी \"दो दोस्त\": एक पढ़ाई में तेज़ पर कमजोर बच्चों का मजाक उड़ाता है, दूसरा सामान्य पर सबकी मदद करता है। रास्ते में बुजुर्ग गिरे तो दूसरे ने उठाया और परिवार को खबर दी। फिर हर बच्चा एक ऐसी बात बताए जिससे किसी को खुशी मिले।","s":"मैं हर व्यक्ति के साथ इंसानियत और सम्मान से व्यवहार करूँगा।","q":["दोनों लड़कों में किसका व्यवहार अच्छा था और क्यों?","क्या पढ़ाई में तेज़ होना ही अच्छा इंसान होने की पहचान है?"]},{"t":"माता-पिता का सम्मान","l":"माता-पिता हमारी देखभाल करते हैं और हमारे भविष्य के लिए प्रयास करते हैं, इसलिए उनका सम्मान जरूरी है। सम्मान का मतलब यह नहीं कि अपनी परेशानी न बताएँ — अपनी बात विनम्रता से रखना भी अच्छी आदत है।","a":"कहानी: रोज़ माँ से गुस्से में बात करने वाला बच्चा देखता है कि माँ बीमार होकर भी उसके लिए खाना बना रही हैं; वह माफी माँगकर घर के कामों में मदद करने लगता है। अभिनय: एक ही बात गुस्से में और सम्मान से कहकर अंतर समझें।","s":"मैं अपने माता-पिता से सम्मानपूर्वक बात करूँगा और अपनी परेशानी भी शांति से बताऊँगा।","q":["क्या गुस्से में माता-पिता को अपशब्द कहने चाहिए?","माता-पिता की बात समझ न आए तो क्या करें?"],"h":"घर में किसी एक काम में मदद करें और धन्यवाद कहें।"},{"t":"बड़ों का आदर और छोटों से प्यार","l":"उम्र में बड़े लोगों से आदर से बात करना और छोटे बच्चों से स्नेह से पेश आना अच्छे संस्कार हैं।","a":"अभिवादन, धन्यवाद और माफी माँगने का अभ्यास। याद रखें: बड़े का सम्मान करने का मतलब गलत या असुरक्षित व्यवहार चुपचाप सहना नहीं है — परेशानी हो तो भरोसेमंद व्यक्ति से मदद माँगें।","s":"मैं बड़ों से आदर और छोटों से प्यार से व्यवहार करूँगा।","q":["बुजुर्ग से मिलते समय हम कैसे अभिवादन कर सकते हैं?","छोटा बच्चा गलती करे तो क्या उसका मजाक उड़ाना चाहिए?"]},{"t":"सच बोलने की आदत","l":"सच बोलने से विश्वास बनता है। गलती होने पर सच स्वीकार करना बहादुरी है।","a":"कहानी: खेलते समय पड़ोसी का गमला टूटा, बच्चे ने डरकर झूठ बोला, भरोसा टूटा; अगले दिन उसने सच बताया, माफी माँगी और गमला ठीक करवाया। फिर छोटी काल्पनिक स्थितियों में \"ईमानदारी से क्या करें?\" बताएँ।","s":"मैं अपनी गलती छिपाने के बजाय उसे स्वीकार करने और सुधारने का प्रयास करूँगा।","q":["गलती होने पर झूठ बोलना क्या सही है?","सच बोलने में डर लगे तो क्या करना चाहिए?"]},{"t":"किसी का मजाक नहीं उड़ाना","l":"किसी की गरीबी, रंग, शरीर, बोलने के तरीके, पढ़ाई या कमजोरी का मजाक उड़ाना गलत है।","a":"दो अभिनय: एक में बच्चा दूसरे का मजाक उड़ाता है, दूसरे में उसका उत्साह बढ़ाता है। फिर चर्चा करें कि मजाक कब किसी को दुख पहुँचा सकता है।","s":"मैं किसी का अपमान नहीं करूँगा और किसी का मजाक उड़ता देखकर उचित तरीके से उसका साथ दूँगा।","q":["कोई बच्चा ठीक से बोल नहीं पाता तो हमारा व्यवहार कैसा हो?","खेल में कमजोर बच्चे को क्या टीम से बाहर करना चाहिए?"]},{"t":"दया और दूसरों की मदद","l":"दूसरों की परेशानी समझना और अपनी क्षमता के अनुसार मदद करना इंसानियत है। मदद के लिए ज्यादा पैसे नहीं, अच्छा मन चाहिए।","a":"हर बच्चा मदद करने के तीन तरीके बताए, जैसे साथी को पढ़ाई समझाना, नए बच्चे से परिचय करना, खेल का सामान सजाने में मदद करना।","s":"मैं हर दिन कम से कम एक अच्छा काम करने का प्रयास करूँगा।","q":["कोई बच्चा अकेला बैठा हो तो उसे कैसे शामिल करें?","क्या मदद करने के लिए बहुत पैसे होना जरूरी है?"]},{"t":"पहले सप्ताह की नैतिक परीक्षा","l":"आज याद करने से ज्यादा व्यवहार पर ध्यान दें — हमने इस सप्ताह जो सीखा उसे जीकर दिखाना है।","a":"सच-सम्मान-दया पर प्रश्नोत्तरी, नैतिक कहानी, अच्छे व्यवहार का अभिनय, बच्चों के अनुभव और प्रशंसा। पुरस्कार सिर्फ तेज़ उत्तर देने वाले को नहीं, अच्छे प्रयास, सहयोग और सुधार दिखाने वालों को भी।","s":"मैं इस सप्ताह सीखी अच्छी बातों को अपनाऊँगा।"},{"t":"लालच से बचना","l":"हर आकर्षक चीज पाना जरूरी नहीं। गलत तरीके से कुछ पाने से बेहतर ईमानदारी चुनना है।","a":"कहानी: बच्चे को रास्ते में पैसे मिले; उसने आसपास पूछकर मालिक तक पहुँचाए। चर्चा: ईमानदारी से हमें क्या लाभ होता है?","s":"मैं दूसरों की वस्तुओं का सम्मान करूँगा।","q":["रास्ते में पैसे मिलें तो क्या करना चाहिए?","किसी की वस्तु बिना अनुमति लेना क्या सही है?"]},{"t":"वादा निभाना","l":"वादा सोच-समझकर करना चाहिए। पूरा न हो सके तो समय रहते सच्चाई बता देनी चाहिए।","a":"परिस्थितियाँ दें — दोस्त से किताब लौटाने का वादा, टीम की जिम्मेदारी लेना — और बच्चे बताएँ कि वादा कैसे निभाएँगे।","s":"मैं बिना सोचे वादा नहीं करूँगा और अपनी जिम्मेदारी निभाने का प्रयास करूँगा।"},{"t":"दूसरों की चीजों की इज्जत","l":"किसी का सामान बिना पूछे लेना, छिपाना या नुकसान पहुँचाना गलत है।","a":"अभिनय: सामान माँगना, वापस करना और टूट जाने पर माफी माँगना।","s":"मैं दूसरों की वस्तुओं को अपनी वस्तुओं की तरह संभालने का प्रयास करूँगा।","q":["गलती से किसी की चीज टूट जाए तो क्या करें?","कोई हमारी चीज ले ले तो कैसे बात करें?"]},{"t":"मेहनत और ईमानदारी","l":"मेहनत हमें सीखने में मदद करती है। धोखा देकर जीतने से अच्छा है ईमानदारी से प्रयास करना।","a":"टीम पहेली: कोई नकल नहीं करेगा और हर सदस्य को योगदान का मौका मिलेगा।","s":"मैं सही तरीके से मेहनत करूँगा और अपनी गलतियों से सीखूँगा।","q":["धोखा देकर जीतें तो क्या वह असली जीत है?"]},{"t":"क्षमा माँगना और माफ करना","l":"गलती स्वीकार करके माफी माँगना अच्छा गुण है। माफ करने का मतलब यह नहीं कि गंभीर गलत व्यवहार को अनदेखा कर दें।","a":"काल्पनिक स्थितियों में माफी माँगने का अभ्यास। अच्छी माफी = गलती मानना + दूसरे की परेशानी समझना + सुधार का प्रयास।","s":"मैं गलती होने पर माफी माँगूँगा और दूसरों की भावनाओं का सम्मान करूँगा।"},{"t":"घमंड नहीं, विनम्रता","l":"अपनी उपलब्धि पर खुश होना अच्छा है, लेकिन दूसरों को छोटा समझना गलत है। हर व्यक्ति किसी न किसी चीज में अच्छा होता है।","a":"एक बच्चा विजेता, दूसरा प्रतिभागी बनकर एक-दूसरे से सम्मान से बात करने का अभ्यास करे।","s":"मैं अपनी सफलता पर खुश रहूँगा, लेकिन दूसरों का सम्मान भी करूँगा।","q":["प्रतियोगिता जीतें तो हारने वाले से कैसे बात करेंगे?","पढ़ाई में अच्छे हों तो दूसरों की मदद कैसे करेंगे?"]},{"t":"ईमानदारी और जिम्मेदारी दिवस","l":"आज तक सीखे गुणों — सच, वादा, लालच से बचना, गलती सुधारना और विनम्रता — को कहानी में ढालें।","a":"छोटी नैतिक कहानी प्रतियोगिता: बच्चे अपने शब्दों में कहानी सुनाएँ। पुरस्कार अच्छे विचार, स्पष्ट बोलने और रचनात्मकता को।","s":"मैं सच, जिम्मेदारी और विनम्रता को अपनी आदत बनाऊँगा।"},{"t":"जाति, धर्म और अमीरी-गरीबी से ऊपर इंसानियत","l":"हर व्यक्ति सम्मान का हकदार है। किसी के परिवार, जाति, धर्म या आर्थिक स्थिति के कारण उसका अपमान करना गलत है।","a":"सभी बच्चों को मिलाकर मिश्रित टीमें बनाएँ; हर टीम में सबको योगदान का अवसर मिले।","s":"मैं हर व्यक्ति के साथ समान सम्मान का व्यवहार करूँगा।","q":["क्या गरीब बच्चा अमीर बच्चे से कम है?","कोई बच्चा भेदभाव करे तो हम क्या कर सकते हैं?"]},{"t":"सच्ची मित्रता","l":"सच्चा दोस्त हमारी भलाई चाहता है और गलत काम के लिए मजबूर नहीं करता।","a":"दोस्ती से जुड़ी तीन परिस्थितियों का अभिनय — दोस्त झूठ बोलने या किसी का मजाक उड़ाने को कहे तो क्या करें?","s":"मैं ऐसे कामों में साथ नहीं दूँगा जिनसे किसी को नुकसान हो।","q":["क्या अच्छे दोस्त की बात से असहमत होना गलत है?"]},{"t":"चुगली, अफवाह और गलत बात फैलाना","l":"बिना सच्चाई जाने किसी के बारे में गलत बात फैलाना नुकसानदायक है। हर सुनी बात सच नहीं होती; किसी की निजी बात बिना अनुमति आगे न बताएँ। पर किसी को खतरा हो तो भरोसेमंद बड़े को बताना चुगली नहीं, सुरक्षा का सही कदम है।","a":"एक काल्पनिक अफवाह का उदाहरण दें और पूछें कि बिना जाँच आगे बढ़ाने से क्या नुकसान हो सकता है।","s":"मैं बिना सच्चाई जाने किसी के बारे में गलत बात नहीं फैलाऊँगा।"},{"t":"दूसरों की भावनाओं को समझना","l":"हमारे शब्द और व्यवहार दूसरों को खुशी या दुख पहुँचा सकते हैं।","a":"अलग-अलग भावनाओं वाली स्थितियाँ दें और सम्मानजनक प्रतिक्रिया पूछें।","s":"मैं बोलने-करने से पहले सोचूँगा कि इससे किसी को अनावश्यक दुख तो नहीं होगा।","q":["कोई आपके सामने रोने लगे तो क्या करेंगे?","कोई प्रतियोगिता हार जाए तो उसे कैसे प्रोत्साहित करेंगे?"]},{"t":"मदद दिखावे के लिए नहीं","l":"मदद का उद्देश्य किसी को नीचा दिखाना या प्रशंसा पाना नहीं होना चाहिए। मदद करते समय दूसरे की गरिमा और निजता का सम्मान करें।","a":"समूह में काल्पनिक सेवा योजना बनाएँ — जैसे किताबें व्यवस्थित करना या मैदान की सुरक्षित सफाई।","s":"मैं मदद करते समय दूसरे व्यक्ति की गरिमा और निजता का सम्मान करूँगा।","q":["क्या किसी की मदद की तस्वीर बिना अनुमति सार्वजनिक करनी चाहिए?","क्या छोटी मदद भी महत्वपूर्ण है?"]},{"t":"बड़ों का सम्मान, लेकिन सही-गलत की समझ","l":"बड़ों से सम्मान से बात करना अच्छा संस्कार है, पर अगर कोई बच्चे को डराए, धमकाए या असुरक्षित काम करने को कहे तो बच्चे को सुरक्षित तरीके से मना करके मदद लेनी चाहिए।","a":"अभिनय: सम्मान बनाए रखते हुए अपनी सुरक्षा के लिए मना करना — विनम्रता से कहें, गलत काम में साथ न दें, असहज लगे तो सुरक्षित जगह जाएँ, भरोसेमंद वयस्क से मदद माँगें।","s":"मैं सबका सम्मान करूँगा और अपनी सुरक्षा का भी ध्यान रखूँगा।"},{"t":"समानता और सहयोग दिवस","l":"समानता का मतलब है कि हर बच्चे को भाग लेने का बराबर मौका मिले।","a":"ऐसी समूह गतिविधि कराएँ जिसमें सब शामिल हों। फिर चर्चा: क्या हर बच्चे को मौका मिला? किसी को बाहर तो नहीं छोड़ा? अगली बार और बेहतर सहयोग कैसे करें? पुरस्कार सहयोग और निष्पक्षता को।","s":"मैं सबको साथ लेकर चलूँगा।"},{"t":"गुस्से पर नियंत्रण","l":"गुस्सा आना सामान्य है, पर गुस्से में किसी को चोट पहुँचाना या अपमान करना सही नहीं।","a":"चार कदम: 1) रुकें 2) धीरे-धीरे साँस लें 3) सोचें समस्या क्या है 4) शांत होकर बात करें या मदद लें। खेल में नियम टूटने की काल्पनिक स्थिति पर बिना मारपीट के समाधान सोचें।","s":"मैं गुस्से में तुरंत प्रतिक्रिया देने के बजाय शांत होने का प्रयास करूँगा।"},{"t":"नशे से दूर रहने का संकल्प","l":"तंबाकू, गुटखा, सिगरेट, शराब और अन्य नशीले पदार्थ स्वास्थ्य और जीवन को नुकसान पहुँचाते हैं। बच्चों को इनसे दूर रहना चाहिए।","a":"मना करने के सुरक्षित वाक्य बोलने का अभ्यास: \"नहीं, मैं इसका सेवन नहीं करूँगा।\" / \"मुझे इसमें रुचि नहीं है।\" / \"मैं यहाँ से जा रहा हूँ।\" / जरूरत हो तो भरोसेमंद बड़े से मदद लूँगा।","s":"मैं नशे से दूर रहूँगा और जरूरत पड़ने पर भरोसेमंद बड़े से मदद लूँगा।","q":["दोस्त नशे वाली चीज आजमाने को कहे तो क्या करेंगे?","कोई कहे \"इससे बड़े दिखोगे\" तो क्या जवाब देंगे?"]},{"t":"बुरी संगत और सही फैसला","l":"दोस्त चुनते समय देखें कि वह हमें अच्छे काम की ओर ले जाता है या गलत की ओर। गलत बात पर विनम्रता से \"ना\" कहना बहादुरी है।","a":"तीन स्थितियों का अभिनय: दोस्त क्लास छोड़ने को कहे / किसी का सामान छिपाने को कहे / झूठ बोलने को कहे — बच्चे \"ना\" कहना और भरोसेमंद बड़े को बताना सीखें।","s":"मैं गलत बात पर विनम्रता से मना करूँगा और सही फैसला लूँगा।"},{"t":"समय का महत्व","l":"समय लौटकर नहीं आता। पढ़ाई, खेल, घर के काम और आराम का समय तय करने से सब काम आसान होते हैं।","a":"बच्चे अपनी \"आदर्श दिनचर्या\" का चार्ट बनाएँ; टीमें 5 मिनट में सबसे अच्छी दिनचर्या बनाकर समझाएँ।","s":"मैं अपना समय अच्छे कामों में लगाऊँगा।"},{"t":"पैसे की समझ और बचत","l":"पैसा मेहनत से आता है। जरूरत और शौक में फर्क समझना, थोड़ा-थोड़ा बचाना और फिजूलखर्ची से बचना अच्छी आदत है।","a":"काल्पनिक ₹100 का बजट: जरूरत, बचत और मदद में बाँटें; हर टीम अपना बजट समझाए।","s":"मैं पैसे की कद्र करूँगा और थोड़ा-थोड़ा बचाऊँगा।"},{"t":"स्वच्छता और पर्यावरण","l":"साफ-सफाई स्वास्थ्य और गाँव की शान है। कचरा सही जगह डालना, पानी-बिजली बचाना और पेड़ लगाना हमारी जिम्मेदारी है।","a":"आँगन/कक्षा की सुरक्षित सफाई, पौधों को पानी और \"स्वच्छ गाँव\" पोस्टर (कोई तीखी या खतरनाक चीज बच्चों से न उठवाएँ)।","s":"मैं अपने आसपास सफाई रखूँगा और पानी-बिजली बचाऊँगा।"},{"t":"गाँव और देश से प्रेम","l":"अपने गाँव की सेवा, नियमों का सम्मान और सार्वजनिक चीजों (सड़क, हैंडपंप, स्कूल) की देखभाल सच्चा देशप्रेम है।","a":"बच्चे \"मेरा गाँव, मेरी जिम्मेदारी\" की तीन बातें बताएँ और सार्वजनिक चीजों की देखभाल पर चर्चा करें।","s":"मैं अपने गाँव और देश का नाम रोशन करूँगा।"},{"t":"आत्मविश्वास और सपने","l":"हर बच्चे में कोई खास प्रतिभा है। सपने देखना और उनके लिए रोज़ एक छोटा कदम उठाना ही आत्मविश्वास बनाता है।","a":"सपनों का पोस्टर और एक वाक्य: \"मैं बड़ा होकर … बनूँगा, इसके लिए आज से मैं …\" (शर्मीले बच्चे को मंच पर बोलने के लिए मजबूर न करें)।","s":"मैं अपने सपने के लिए रोज़ एक छोटा कदम उठाऊँगा।"},{"t":"समापन उत्सव — 30 दिन का सफर","l":"पिछले 30 दिनों में सीखी बातों को याद करें और उन्हें जीवन में अपनाने का संकल्प लें।","a":"प्रतिभा दिवस, प्रश्नोत्तरी, अभिनय, अभिभावकों की उपस्थिति, प्रमाणपत्र/छोटे पुरस्कार और सबसे अच्छी टीम की घोषणा। हर बच्चे की एक अच्छाई की प्रशंसा करें।","s":"मैं सीखी हुई अच्छी बातों को हर दिन अपनाऊँगा।"}];
+/* ===================== ⭐ नन्हे सितारे क्लब (NSC): टीम स्कोरकार्ड + नियम + रजिस्ट्रेशन ===================== */
 const KC=[
- {k:'game',i:'🎮',t:'खेल में सहयोग और सम्मान',d:'खेल में नियम मानना, टीम का साथ देना, हारने-जीतने पर सबका सम्मान'},
- {k:'respect',i:'🙏',t:'सम्मान',d:'बड़ों, साथियों और छोटों से आदर और प्यार से बात करना'},
- {k:'help',i:'🤝',t:'मदद करना',d:'किसी साथी, बुजुर्ग या जरूरतमंद की मदद करना'},
- {k:'study',i:'📖',t:'पढ़ाई / सीखना',d:'ध्यान से सुनना, अच्छा सवाल पूछना, पाठ याद करके आना'},
- {k:'listen',i:'👨‍👩‍👧',t:'घर वालों की बात मानना',d:'माता-पिता और बड़ों की सही बात मानना (घर से पुष्टि)'},
- {k:'home',i:'🏠',t:'घर के काम में हाथ बँटाना',d:'झाड़ू, पानी, बर्तन, छोटे भाई-बहन की देखभाल जैसे कामों में मदद'},
- {k:'bonus',i:'⭐',t:'बोनस / खास प्रयास',d:'ईमानदारी, गलती मानना, हारकर फिर कोशिश करना'}];
-var KS={teams:[],start:'',on:true},KSC=[],KW=[],kidsDay='',kidsLesson=0;
+ {k:'game',i:'🎮',t:'खेल में सहयोग और सम्मान',p:10,d:'खेल में नियम मानना, टीम का साथ देना, हारने-जीतने पर सबका सम्मान'},
+ {k:'respect',i:'🙏',t:'सम्मान',p:5,d:'बड़ों, साथियों और छोटों से आदर और प्यार से बात करना'},
+ {k:'help',i:'🤝',t:'मदद करना',p:10,d:'किसी साथी, बुजुर्ग या जरूरतमंद की मदद करना'},
+ {k:'study',i:'📖',t:'पढ़ाई / सीखना',p:5,d:'ध्यान से सुनना, अच्छा सवाल पूछना, पाठ याद करके आना'},
+ {k:'listen',i:'👨‍👩‍👧',t:'घर वालों की बात मानना',p:5,d:'माता-पिता और बड़ों की सही बात मानना (घर से पुष्टि)'},
+ {k:'home',i:'🏠',t:'घर के काम में हाथ बँटाना',p:5,d:'झाड़ू, पानी, बर्तन, छोटे भाई-बहन की देखभाल जैसे कामों में मदद'},
+ {k:'bonus',i:'⭐',t:'बोनस / खास प्रयास',p:15,d:'ईमानदारी, गलती मानना, हारकर फिर कोशिश करना'}];
+const NSC_RULES=[
+ 'क्लब का हर बच्चा एक खास सितारा है — सबके साथ प्यार और बराबरी से पेश आएँ।',
+ 'खेल में नियम मानें, टीम का साथ दें और हार-जीत में सबका सम्मान करें।',
+ 'किसी का मज़ाक न उड़ाएँ। मारपीट, गाली-गलौज और धक्का-मुक्की बिल्कुल नहीं।',
+ 'बड़ों और शिक्षकों की बात ध्यान से सुनें और विनम्रता से बात करें।',
+ 'समय पर आएँ, जगह साफ रखें और सबका सामान संभालकर रखें।',
+ 'सच बोलें। गलती हो जाए तो मान लें — सुधारने पर भी अंक मिलते हैं।',
+ 'अंक सिर्फ जुड़ते हैं, कभी काटे नहीं जाते। हर सोमवार से रविवार तक के कुल अंकों पर विजेता टीम चुनी जाती है।'];
+const NSC_CLASSES=['नर्सरी / LKG / UKG','कक्षा 1','कक्षा 2','कक्षा 3','कक्षा 4','कक्षा 5','कक्षा 6','कक्षा 7','कक्षा 8','कक्षा 9','कक्षा 10','कक्षा 11','कक्षा 12','स्कूल नहीं जाता'];
+const NSC_LOGO='./nsc-logo.jpg';
+var KS={teams:[],on:true},KSC=[],KW=[],kidsDay='';
 const kPad=n=>String(n).padStart(2,'0');
 const kYmd=d=>d.getFullYear()+'-'+kPad(d.getMonth()+1)+'-'+kPad(d.getDate());
 const kParse=s=>{const a=String(s).split('-').map(Number);return new Date(a[0],a[1]-1,a[2])};
@@ -476,58 +490,87 @@ function kTeams(){const base=[{id:'A',name:'टीम A',emoji:'🔥',color:'#d9
 function kSum(pred){const t={A:0,B:0};KSC.forEach(x=>{if(pred(x)&&(x.team=='A'||x.team=='B'))t[x.team]+=Number(x.pts)||0});return t}
 function kWeekRange(base){const ws=kWeekStart(base||new Date());return [kYmd(ws),kYmd(kAdd(ws,6))]}
 function kActiveWinner(){return KW.find(w=>(Number(w.showUntil)||0)>Date.now())||null}
-function kDayNum(){if(!KS.start)return 0;const n=Math.floor((kParse(kYmd(new Date()))-kParse(KS.start))/864e5)+1;return n}
 function kBar(a,b,A,B){const tot=a+b,pa=tot?Math.round(a*100/tot):50;return `<div class="kvs"><i style="width:${pa}%;background:${A.color}"></i><i style="width:${100-pa}%;background:${B.color}"></i></div>`}
 function kTeamBox(t,pts,sub){return `<div class="kteam" style="background:${t.color}">${t.photo?`<img class="kph" src="${t.photo}" alt="">`:`<div class="ke">${esc(t.emoji||'🏅')}</div>`}<b>${esc(t.name)}</b><div class="kp">${pts}</div><small>${sub||''}</small></div>`}
 function kLeadLine(a,b,A,B){return a==b?(a?'🤝 दोनों टीमें बराबरी पर हैं!':'अभी अंक जुड़ना बाकी है'):`${a>b?esc(A.name):esc(B.name)} <b>${Math.abs(a-b)}</b> अंक से आगे है ${a>b?A.emoji:B.emoji}`}
+function nscRules(){const t=(KS.rulesText||'').split('\n').map(x=>x.trim()).filter(Boolean);return t.length?t:NSC_RULES}
 
 function kidsHomeCard(){
  if(!window.__kidsReady||KS.on===false)return '';
- const [A,B]=kTeams(),[ws,we]=kWeekRange(),t=kSum(x=>x.day>=ws&&x.day<=we),w=kActiveWinner(),n=kDayNum(),L=n>=1&&n<=30?KIDS30[n-1]:null;
+ const [A,B]=kTeams(),[ws,we]=kWeekRange(),t=kSum(x=>x.day>=ws&&x.day<=we),w=kActiveWinner();
  return `<div class="kHome" onclick="go('kids')">
-  <div class="kHomeTop"><b>🧒 बाल मंच</b><span class="tag">खेल • संस्कार • इनाम</span></div>
+  <div class="nscHead"><img class="nscMini" src="${NSC_LOGO}" alt="NSC"><div><b>नन्हे सितारे क्लब (NSC)</b><br><small>Every Child is a Unique Star ⭐</small></div></div>
   ${w?`<div class="kHomeWin">${w.photo?`<img src="${w.photo}" alt="">`:''}<div><small>🏆 इस सप्ताह की विजेता टीम</small><br><b style="font-size:19px">${esc(w.emoji||'')} ${esc(w.name||'')}</b></div></div>`:''}
-  <div class="kHomeScore"><span style="color:${A.color}"><b>${esc(A.emoji)} ${esc(A.name)}</b> ${t.A}</span><span class="kvsT">VS</span><span style="color:${B.color}">${t.B} <b>${esc(B.name)} ${esc(B.emoji)}</b></span></div>
-  ${kBar(t.A,t.B,A,B)}
-  ${L?`<div class="kHomeLesson">📚 आज का पाठ (दिन ${n}): <b>${esc(L.t)}</b></div>`:''}
-  <div class="kHomeGo">पूरा स्कोरकार्ड देखें ➜</div></div>`;
+  ${KS.showScore!==false?`<div class="kHomeScore"><span style="color:${A.color}"><b>${esc(A.emoji)} ${esc(A.name)}</b> ${t.A}</span><span class="kvsT">VS</span><span style="color:${B.color}">${t.B} <b>${esc(B.name)} ${esc(B.emoji)}</b></span></div>${kBar(t.A,t.B,A,B)}`:''}
+  <div class="kHomeGo">${KS.showReg!==false?'📝 रजिस्ट्रेशन • ':''}स्कोर और नियम देखें ➜</div></div>`;
 }
 
 function renderKids(){
  const el=document.getElementById('kidsPage');if(!el)return;
+ // रजिस्ट्रेशन फॉर्म एक बार बनता है ताकि भरते समय री-रेंडर से मिट न जाए
+ if(!document.getElementById('kidsTop')){el.innerHTML='<div id="kidsTop"></div><div id="nscRegBox"></div><div id="kidsBottom"></div>';nscBuildForm()}
  const [A,B]=kTeams(),T={A,B},today=kYmd(new Date()),[ws,we]=kWeekRange(),wt=kSum(x=>x.day>=ws&&x.day<=we),w=kActiveWinner();
  const sel=kidsDay||today,dt=kSum(x=>x.day==sel);
- let h=`<div class="kHero"><h2>🧒 बाल मंच</h2><p>खेल, मज़ा, दोस्ती और अच्छे संस्कार — टीम बनाकर रोज़ अंक कमाओ, हर सप्ताह विजेता टीम का फोटो ऐप पर चमकेगा! 🏆</p></div>`;
+ let h=`<div class="nscHero"><img src="${NSC_LOGO}" alt="नन्हे सितारे क्लब"><p>खेल, मज़ा, दोस्ती और अच्छे संस्कार — टीम बनाकर अंक कमाओ, हर सप्ताह विजेता टीम का फोटो ऐप पर चमकेगा! 🏆</p>${KS.showReg!==false?`<button class="p" onclick="document.getElementById('nscRegBox').scrollIntoView({behavior:'smooth'})">📝 NSC में नाम लिखवाएँ</button>`:''}</div>`;
  if(w){const left=Math.max(1,Math.ceil((Number(w.showUntil)-Date.now())/864e5));
   h+=`<div class="kWin"><div class="kConf">🎉 🏆 🎉</div><small>इस सप्ताह की विजेता टीम (${kFmt(w.weekStart)} – ${kFmtY(w.weekEnd)})</small><h1 style="color:${esc(w.color||'#b8860b')}">${esc(w.emoji||'')} ${esc(w.name||'')}</h1>${w.photo?`<img src="${w.photo}" alt="विजेता टीम">`:''}<p>अंक: <b>${esc(w.nameA||'A')} ${Number(w.scoreA)||0}</b> • <b>${esc(w.nameB||'B')} ${Number(w.scoreB)||0}</b></p><small>यह फोटो ऐप पर ${left} दिन और रहेगा 🌟</small></div>`}
  else h+=`<div class="box kSoft">🏆 विजेता टीम की घोषणा सप्ताह के अंत में होगी। फोटो एक सप्ताह तक ऐप पर रहेगी!</div>`;
- h+=`<div class="box"><h3 style="margin:0 0 8px">📊 इस सप्ताह का स्कोर <small class="muted">(${kFmt(ws)} – ${kFmt(we)})</small></h3><div class="kteams">${kTeamBox(A,wt.A,'सप्ताह के अंक')}<div class="kvsT big">VS</div>${kTeamBox(B,wt.B,'सप्ताह के अंक')}</div>${kBar(wt.A,wt.B,A,B)}<p class="kLead">${kLeadLine(wt.A,wt.B,A,B)}</p><button class="p g" onclick="shareKids()">📲 WhatsApp पर स्कोर भेजें</button></div>`;
- // आज / चुनी तारीख का स्कोरकार्ड
- h+=`<div class="box"><div class="kNav"><button class="p g" onclick="kidsGoDay(-1)">◀</button><div><b>📅 ${sel==today?'आज का':'दैनिक'} स्कोरकार्ड</b><br><small>${kFmtY(sel)}</small></div><button class="p g" onclick="kidsGoDay(1)" ${sel>=today?'disabled':''}>▶</button></div><div class="kteams">${kTeamBox(A,dt.A,'इस दिन के अंक')}<div class="kvsT big">VS</div>${kTeamBox(B,dt.B,'इस दिन के अंक')}</div>`;
- ['A','B'].forEach(id=>{const rows=KSC.filter(x=>x.day==sel&&x.team==id);h+=`<div class="kRows"><div class="kRowH" style="border-color:${T[id].color}">${esc(T[id].emoji)} ${esc(T[id].name)}</div>`+(rows.length?rows.map(x=>{const c=KC.find(k=>k.k==x.cat)||KC[6];return `<div class="kRow"><span>${c.i}</span><b>+${Number(x.pts)||0}</b><span>${esc(x.note||c.t)}</span></div>`}).join(''):'<div class="kRow muted">इस दिन कोई अंक दर्ज नहीं</div>')+'</div>'});
- h+='</div>';
- // आज का पाठ
- const n=kDayNum(),cur=kidsLesson||(n>=1&&n<=30?n:1),L=KIDS30[cur-1];
- h+=`<div class="box kLesson"><div class="kNav"><button class="p g" onclick="kidsGoLesson(-1)" ${cur<=1?'disabled':''}>◀</button><div><b>📚 दिन ${cur} / 30</b>${cur==n?' <span class="tag">आज</span>':''}<br><small>${KS.start?(n<1?'कार्यक्रम '+kFmtY(KS.start)+' से शुरू':n>30?'30 दिन का कार्यक्रम पूरा हुआ 🎉':''):'शुरू होने की तारीख जल्द बताई जाएगी'}</small></div><button class="p g" onclick="kidsGoLesson(1)" ${cur>=30?'disabled':''}>▶</button></div>
- <h3 style="margin:8px 0 6px">${esc(L.t)}</h3>
- <div class="kSec"><b>📖 आज क्या सीखना है</b><p>${esc(L.l)}</p></div>
- <div class="kSec"><b>🎭 कहानी / गतिविधि</b><p>${esc(L.a)}</p></div>
- ${L.q?`<div class="kSec"><b>🗣️ सोचो और बोलो</b><ul>${L.q.map(q=>`<li>${esc(q)}</li>`).join('')}</ul></div>`:''}
- ${L.h?`<div class="kSec"><b>🏠 घर का अभ्यास</b><p>${esc(L.h)}</p></div>`:''}
- <div class="kPledge">🌟 आज का संकल्प<br><b>${esc(L.s)}</b></div>${cur!=n&&n>=1&&n<=30?`<button class="p g" onclick="kidsGoLesson(0)">आज के पाठ पर जाएँ</button>`:''}</div>`;
- // अंक कैसे मिलते हैं
- h+=`<div class="box"><h3 style="margin:0 0 6px">⭐ अंक कैसे मिलते हैं?</h3><div class="kGuide">${KC.map(c=>`<div><span>${c.i}</span><div><b>${c.t}</b><br><small>${c.d}</small></div></div>`).join('')}</div><p class="muted" style="margin:8px 0 0">💡 अंक अच्छे प्रयास पर मिलते हैं। गलती होने पर पुराने अंक कभी नहीं काटे जाते। हर बच्चे को चमकने का मौका है!</p></div>`;
- // पिछली विजेता टीमें
+ if(KS.showScore!==false){
+  h+=`<div class="box"><h3 style="margin:0 0 8px">📊 इस सप्ताह का स्कोर <small class="muted">(${kFmt(ws)} – ${kFmt(we)})</small></h3><div class="kteams">${kTeamBox(A,wt.A,'सप्ताह के अंक')}<div class="kvsT big">VS</div>${kTeamBox(B,wt.B,'सप्ताह के अंक')}</div>${kBar(wt.A,wt.B,A,B)}<p class="kLead">${kLeadLine(wt.A,wt.B,A,B)}</p><button class="p g" onclick="shareKids()">📲 WhatsApp पर स्कोर भेजें</button></div>`;
+  h+=`<div class="box"><div class="kNav"><button class="p g" onclick="kidsGoDay(-1)">◀</button><div><b>📅 ${sel==today?'आज का':'दैनिक'} स्कोरकार्ड</b><br><small>${kFmtY(sel)}</small></div><button class="p g" onclick="kidsGoDay(1)" ${sel>=today?'disabled':''}>▶</button></div><div class="kteams">${kTeamBox(A,dt.A,'इस दिन के अंक')}<div class="kvsT big">VS</div>${kTeamBox(B,dt.B,'इस दिन के अंक')}</div>`;
+  ['A','B'].forEach(id=>{const rows=KSC.filter(x=>x.day==sel&&x.team==id);h+=`<div class="kRows"><div class="kRowH" style="border-color:${T[id].color}">${esc(T[id].emoji)} ${esc(T[id].name)}</div>`+(rows.length?rows.map(x=>{const c=KC.find(k=>k.k==x.cat)||KC[6];return `<div class="kRow"><span>${c.i}</span><b>+${Number(x.pts)||0}</b><span>${esc(x.note||c.t)}</span></div>`}).join(''):'<div class="kRow muted">इस दिन कोई अंक दर्ज नहीं</div>')+'</div>'});
+  h+='</div>';
+ }
+ if(KS.showRules!==false){
+  h+=`<div class="box"><h3 style="margin:0 0 6px">📜 क्लब के नियम</h3><ol class="nscRules">${nscRules().map(r=>`<li>${esc(r)}</li>`).join('')}</ol></div>`;
+  h+=`<div class="box"><h3 style="margin:0 0 6px">⭐ अंक कैसे मिलेंगे?</h3><div class="kGuide">${KC.map(c=>`<div><span>${c.i}</span><div><b>${c.t}</b> <span class="tag">आमतौर पर +${c.p} अंक</span><br><small>${c.d}</small></div></div>`).join('')}</div><p class="muted" style="margin:8px 0 0">💡 अंक अच्छे प्रयास पर मिलते हैं। एडमिन अच्छे काम के हिसाब से कम-ज़्यादा अंक भी दे सकते हैं। गलती होने पर पुराने अंक कभी नहीं काटे जाते। हर बच्चे को चमकने का मौका है!</p></div>`;
+ }
+ document.getElementById('kidsTop').innerHTML=h;
+ const rb=document.getElementById('nscRegBox');if(rb)rb.hidden=KS.showReg===false;
  const past=KW.slice(0,8);
- h+=`<div class="box"><h3 style="margin:0 0 6px">🏅 पिछली विजेता टीमें</h3>${past.length?past.map(x=>`<div class="kPast"><b>${esc(x.emoji||'')} ${esc(x.name||'')}</b><small>${kFmt(x.weekStart)} – ${kFmtY(x.weekEnd)} • ${esc(x.nameA||'A')} ${Number(x.scoreA)||0} : ${Number(x.scoreB)||0} ${esc(x.nameB||'B')}</small></div>`).join(''):'<p class="muted">पहले सप्ताह के बाद यहाँ विजेता टीमें दिखेंगी।</p>'}</div>`;
- h+=`<p class="muted" style="text-align:center;font-size:12px">बच्चों की फोटो अभिभावकों की अनुमति से ही लगाई जाती है।</p>`;
- el.innerHTML=h;
+ document.getElementById('kidsBottom').innerHTML=`<div class="box"><h3 style="margin:0 0 6px">🏅 पिछली विजेता टीमें</h3>${past.length?past.map(x=>`<div class="kPast"><b>${esc(x.emoji||'')} ${esc(x.name||'')}</b><small>${kFmt(x.weekStart)} – ${kFmtY(x.weekEnd)} • ${esc(x.nameA||'A')} ${Number(x.scoreA)||0} : ${Number(x.scoreB)||0} ${esc(x.nameB||'B')}</small></div>`).join(''):'<p class="muted">पहले सप्ताह के बाद यहाँ विजेता टीमें दिखेंगी।</p>'}</div><p class="muted" style="text-align:center;font-size:12px">बच्चों की फोटो अभिभावकों की अनुमति से ही लगाई जाती है।</p>`;
 }
+
+/* ---- रजिस्ट्रेशन फॉर्म: नाम, उम्र, पिता का नाम, कक्षा, फोटो (वैकल्पिक) ---- */
+function nscBuildForm(){
+ const b=document.getElementById('nscRegBox');if(!b)return;
+ b.innerHTML=`<div class="box nscForm"><h3 style="margin:0 0 4px">📝 NSC रजिस्ट्रेशन फॉर्म</h3><p class="muted" style="margin:0 0 10px">नन्हे सितारे क्लब में शामिल होने के लिए जानकारी भरें।</p>
+ <div id="rgOk" hidden class="rgOk">🎉 <b>रजिस्ट्रेशन हो गया!</b><br>स्वागत है नन्हे सितारे क्लब में 🌟<br><button class="p g" type="button" onclick="nscAnother()">➕ दूसरे बच्चे का रजिस्ट्रेशन</button></div>
+ <div id="rgFields">
+ <label>बच्चे का नाम *</label><input id="rg_name" maxlength="60" autocomplete="off" placeholder="जैसे: आरव">
+ <label>उम्र (साल) *</label><input id="rg_age" type="number" inputmode="numeric" min="3" max="18" placeholder="जैसे: 9">
+ <label>पिता का नाम *</label><input id="rg_father" maxlength="60" autocomplete="off" placeholder="पिता का पूरा नाम">
+ <label>कक्षा *</label><select id="rg_cls"><option value="">— कक्षा चुनें —</option>${NSC_CLASSES.map(c=>`<option>${c}</option>`).join('')}</select>
+ <label>बच्चे का फोटो (वैकल्पिक)</label><input id="rg_photo" type="file" accept="image/*" onchange="nscPrev()">
+ <img id="rg_prev" class="rgPrev" hidden alt="">
+ <label class="rgPerm"><input id="rg_perm" type="checkbox"> मैं बच्चे का फोटो क्लब में इस्तेमाल करने की अनुमति देता/देती हूँ <small>(फोटो डालने पर ज़रूरी)</small></label>
+ <button class="p" id="rg_btn" type="button" onclick="nscSubmit()">✅ रजिस्ट्रेशन करें</button>
+ <p class="muted" style="font-size:12px;margin:8px 0 0">🔒 यह जानकारी सिर्फ क्लब के एडमिन को दिखती है, ऐप पर सबके सामने नहीं।</p></div></div>`;
+}
+async function nscPrev(){const f=document.getElementById('rg_photo').files[0],p=document.getElementById('rg_prev');if(!f){p.hidden=true;return}p.src=await img(f,200);p.hidden=false}
+function nscAnother(){nscBuildForm()}
+async function nscSubmit(){
+ const g=id=>document.getElementById(id);
+ const name=g('rg_name').value.trim(),age=parseInt(g('rg_age').value,10),father=g('rg_father').value.trim(),cls=g('rg_cls').value,f=g('rg_photo').files[0];
+ if(name.length<2)return alert('बच्चे का नाम लिखें।');
+ if(!(age>=3&&age<=18))return alert('उम्र 3 से 18 साल के बीच लिखें।');
+ if(father.length<2)return alert('पिता का नाम लिखें।');
+ if(!cls)return alert('कक्षा चुनें।');
+ if(f&&!g('rg_perm').checked)return alert('फोटो देने से पहले अनुमति वाला बॉक्स चुनें।');
+ try{const last=Number(localStorage.getItem('nscRegT')||0);if(Date.now()-last<8000)return alert('कृपया कुछ सेकंड रुककर दोबारा दबाएँ।')}catch(e){}
+ const btn=g('rg_btn');btn.disabled=true;btn.textContent='⏳ भेजा जा रहा है…';
+ try{
+  const photo=f?await img(f,400):'';
+  await db.collection('nscRegs').add({name:name.slice(0,60),age,father:father.slice(0,60),cls,photo,t:FV.serverTimestamp()});
+  try{localStorage.setItem('nscRegT',String(Date.now()))}catch(e){}
+  g('rgFields').hidden=true;g('rgOk').hidden=false;toast('🎉 रजिस्ट्रेशन हो गया');
+ }catch(e){btn.disabled=false;btn.textContent='✅ रजिस्ट्रेशन करें';alert('रजिस्ट्रेशन नहीं हुआ: '+(e.code||e.message)+'\nइंटरनेट जाँचकर दोबारा कोशिश करें।')}
+}
+
 function kidsGoDay(n){const t=kYmd(new Date());let d=kParse(kidsDay||t);d=kAdd(d,n);if(kYmd(d)>t)return;kidsDay=kYmd(d);renderKids()}
-function kidsGoLesson(n){const cur=kidsLesson||(kDayNum()>=1&&kDayNum()<=30?kDayNum():1);if(n==0){kidsLesson=0}else kidsLesson=Math.min(30,Math.max(1,cur+n));renderKids()}
-function shareKids(){const [A,B]=kTeams(),[ws,we]=kWeekRange(),t=kSum(x=>x.day>=ws&&x.day<=we);const txt='🧒 गढ़ी अहबरन बाल मंच\n📊 इस सप्ताह का स्कोर ('+kFmt(ws)+' – '+kFmt(we)+')\n'+A.emoji+' '+A.name+': '+t.A+'\n'+B.emoji+' '+B.name+': '+t.B+'\n\n'+location.href.split('#')[0];if(navigator.share){navigator.share({text:txt}).catch(()=>{})}else window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank')}
+function shareKids(){const [A,B]=kTeams(),[ws,we]=kWeekRange(),t=kSum(x=>x.day>=ws&&x.day<=we);const txt='⭐ नन्हे सितारे क्लब (NSC)\n📊 इस सप्ताह का स्कोर ('+kFmt(ws)+' – '+kFmt(we)+')\n'+A.emoji+' '+A.name+': '+t.A+'\n'+B.emoji+' '+B.name+': '+t.B+'\n\n'+location.href.split('#')[0];if(navigator.share){navigator.share({text:txt}).catch(()=>{})}else window.open('https://wa.me/?text='+encodeURIComponent(txt),'_blank')}
 function kidsNavVis(){const b=document.querySelector('nav [data-t=kids]');if(b)b.style.display=KS.on===false?'none':''}
-db.collection('settings').doc('kids').onSnapshot(s=>{KS={teams:[],start:'',on:true,...(s.exists?s.data():{})};kidsNavVis();upd()},e=>console.error('kids settings:',e));
+db.collection('settings').doc('kids').onSnapshot(s=>{KS={teams:[],on:true,...(s.exists?s.data():{})};kidsNavVis();upd()},e=>console.error('kids settings:',e));
 db.collection('kidsScores').orderBy('day','desc').limit(300).onSnapshot(s=>{KSC=s.docs.map(dd);upd()},e=>console.error('kidsScores:',e));
 db.collection('kidsWeeks').orderBy('weekStart','desc').limit(12).onSnapshot(s=>{KW=s.docs.map(dd);upd()},e=>console.error('kidsWeeks:',e));
 window.__kidsReady=true;

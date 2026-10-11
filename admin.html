@@ -51,7 +51,7 @@ input,textarea{width:100%;padding:10px;margin:4px 0 8px;border:1px solid #c9d0c4
 <script>
 $('#asel').innerHTML=symOpts();
 let DV=[],RCC=[],ST=[],tab='pend',RC=[],PRB=[],US=[],CA=[],CLM=[],VS=[],CMT=[],CHT=[],VSUR=[],on=0;
-const TB={dash:'📈 डैशबोर्ड',pend:'⏳ मंज़ूरी',cands:'👥 प्रत्याशी',claims:'✅ वादे पूरे',res:'📊 नतीजे',kids:'🧒 बाल मंच',posts:'📰 पोस्ट',mod:'🧹 चौपाल/टिप्पणी',users:'👤 यूज़र/डिवाइस',ban:'🚫 रोके गए',prob:'📢 समस्याएँ',survey:'📋 ग्राम सर्वे',settings:'⚙️ सेटिंग्स'};
+const TB={dash:'📈 डैशबोर्ड',pend:'⏳ मंज़ूरी',cands:'👥 प्रत्याशी',claims:'✅ वादे पूरे',res:'📊 नतीजे',kids:'⭐ NSC क्लब',nscreg:'📝 NSC रजिस्ट्रेशन',posts:'📰 पोस्ट',mod:'🧹 चौपाल/टिप्पणी',users:'👤 यूज़र/डिवाइस',ban:'🚫 रोके गए',prob:'📢 समस्याएँ',survey:'📋 ग्राम सर्वे',settings:'⚙️ सेटिंग्स'};
 $('#tb').innerHTML=Object.keys(TB).map(k=>`<button data-k="${k}" onclick="tab='${k}';draw()">${TB[k]}</button>`).join('');
 auth.onAuthStateChanged(u=>{const ok=u&&u.email=='admin@meragav.in';$('#lg').hidden=ok;$('#ap').hidden=!ok;if(ok&&!on++)start()});
 const sub=(c,f)=>db.collection(c).onSnapshot(s=>{f(s.docs.map(d=>({id:d.id,...d.data()})));draw()},e=>console.error(c,e));
@@ -344,17 +344,22 @@ async function dangerReacts(){if(!sure('⚠️ सभी प्रत्या�
 async function dangerPosts(){if(!sure('⚠️ सभी पोस्ट और पोस्ट-टिप्पणियाँ हट जाएँगी।'))return;try{const a=await wipeAll('posts'),b=await wipeAll('postComments');alert('✅ '+a+' पोस्ट, '+b+' टिप्पणियाँ हटीं।')}catch(e){alert(e.code||e.message)}}
 
 
-/* ===================== 🧒 बाल मंच (एडमिन) ===================== */
-let AKS=[],AKW=[];
+/* ===================== ⭐ NSC नन्हे सितारे क्लब (एडमिन) ===================== */
+let AKS=[],AKW=[],NR=[];
 const aYmd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const aParse=s=>{const a=String(s).split('-').map(Number);return new Date(a[0],a[1]-1,a[2])};
 const aAdd=(d,n)=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()+n);return x};
 const aWeek=d=>aAdd(d,-((d.getDay()+6)%7));
-const KCAT=[['game','🎮 खेल में सहयोग और सम्मान'],['respect','🙏 सम्मान'],['help','🤝 मदद करना'],['study','📖 पढ़ाई / सीखना'],['listen','👨‍👩‍👧 घर वालों की बात मानना'],['home','🏠 घर के काम में हाथ बँटाना'],['bonus','⭐ बोनस / खास प्रयास']];
+const KCAT=[['game','🎮 खेल में सहयोग और सम्मान',10],['respect','🙏 सम्मान',5],['help','🤝 मदद करना',10],['study','📖 पढ़ाई / सीखना',5],['listen','👨‍👩‍👧 घर वालों की बात मानना',5],['home','🏠 घर के काम में हाथ बँटाना',5],['bonus','⭐ बोनस / खास प्रयास',15]];
 function aTeams(){const base=[{id:'A',name:'टीम A',emoji:'🔥',color:'#d9534f'},{id:'B',name:'टीम B',emoji:'⚡',color:'#2f7ed8'}];const t=(ST.find(x=>x.id=='kids')||{}).teams||[];return base.map(x=>({...x,...(t.find(y=>y.id==x.id)||{})}))}
 function aSum(a,b){const t={A:0,B:0};AKS.forEach(x=>{if(x.day>=a&&x.day<=b&&(x.team=='A'||x.team=='B'))t[x.team]+=Number(x.pts)||0});return t}
 H.kids=()=>'';
+H.nscreg=()=>{const rows=NR.filter(x=>hit(x.name,x.father,x.cls,x.age));
+ return `<div class="box"><h2 style="margin:0">📝 NSC रजिस्ट्रेशन <span class="tag">कुल ${NR.length}</span></h2><p><small>ऊपर खोज-बॉक्स से नाम/पिता/कक्षा खोजें।</small></p><button class="b" onclick="exportNsc()">⬇️ CSV डाउनलोड</button> <button class="b o" onclick="window.print()">🖨️ प्रिंट</button></div>`+
+ (rows.map(x=>`<div class="box r">${x.photo?`<a href="${x.photo}" target="_blank"><img src="${x.photo}"></a>`:''}<div style="flex:1;min-width:200px"><b>${esc(x.name)}</b> <span class="tag">${esc(x.cls||'')}</span><br>उम्र: ${esc(x.age)} साल • पिता: ${esc(x.father)}<br><small>${x.t&&x.t.toDate?x.t.toDate().toLocaleString('hi-IN'):''}</small><br><button class="b d" onclick="del('nscRegs','${x.id}')">🗑️ हटाएँ</button></div></div>`).join('')||'<div class="box">अभी कोई रजिस्ट्रेशन नहीं।</div>')};
+function exportNsc(){const lines=[['क्रम','बच्चे का नाम','उम्र','पिता का नाम','कक्षा','फोटो','तारीख'].map(csvCell).join(',')].concat(NR.slice().reverse().map((x,i)=>[i+1,x.name,x.age,x.father,x.cls,x.photo?'हाँ':'नहीं',x.t&&x.t.toDate?x.t.toDate().toLocaleDateString('hi-IN'):''].map(csvCell).join(',')));dl('nsc-registrations.csv','\ufeff'+lines.join('\n'),'text/csv;charset=utf-8')}
 function startKidsAdmin(){
+ db.collection('nscRegs').orderBy('t','desc').limit(1000).onSnapshot(s=>{NR=s.docs.map(est);draw()},e=>console.error('nscRegs',e));
  db.collection('kidsScores').orderBy('day','desc').limit(400).onSnapshot(s=>{AKS=s.docs.map(est);draw()},e=>console.error('kidsScores',e));
  db.collection('kidsWeeks').orderBy('weekStart','desc').limit(20).onSnapshot(s=>{AKW=s.docs.map(est);draw()},e=>console.error('kidsWeeks',e));
 }
@@ -363,10 +368,16 @@ function renderKidsAdmin(force){
  const today=aYmd(new Date());
  if(!box.dataset.ok){box.dataset.ok=1;
   const tf=id=>`<div class="box" style="background:#fafafa"><b>टीम ${id}</b><label>नाम</label><input id="kn_${id}" placeholder="जैसे: टीम सूरज"><label>निशान (emoji)</label><input id="ke_${id}" placeholder="☀️"><label>रंग</label><input id="kc_${id}" type="color" style="height:44px;padding:2px"><label>टीम फोटो / लोगो (वैकल्पिक)</label><input id="kf_${id}" type="file" accept="image/*"></div>`;
-  box.innerHTML=`<h2>🧒 बाल मंच — टीम स्कोरकार्ड</h2><p class="tag">दो टीमें बनाएँ → रोज़ अंक जोड़ें → सप्ताह के अंत में विजेता टीम का फोटो डालें (फोटो ऐप पर 7 दिन दिखेगी)।</p>
-  <h3>⚙️ टीम सेटअप</h3><div oninput="document.getElementById('kidsSetup').dataset.dirty=1" id="kidsSetup">${tf('A')}${tf('B')}<label>कार्यक्रम शुरू होने की तारीख (दिन 1)</label><input id="kst" type="date"><label style="display:flex;gap:8px;align-items:center"><input id="kon" type="checkbox" checked style="width:auto;margin:0"> बाल मंच ऐप में दिखाएँ</label></div><button class="b" onclick="saveKidsSetup()">💾 सेटअप सेव करें</button>
+  box.innerHTML=`<h2>⭐ नन्हे सितारे क्लब (NSC)</h2><p class="tag">दो टीमें बनाएँ → रोज़ अंक जोड़ें → सप्ताह के अंत में विजेता टीम का फोटो डालें (फोटो ऐप पर 7 दिन दिखेगी)।</p>
+  <h3>⚙️ टीम सेटअप</h3><div oninput="document.getElementById('kidsSetup').dataset.dirty=1" id="kidsSetup">${tf('A')}${tf('B')}<h4 style="margin:10px 0 4px">👁️ क्या-क्या ऐप में दिखाना है (टिक हटाएँ = छिपाएँ)</h4>
+<label style="display:flex;gap:8px;align-items:center"><input id="kon" type="checkbox" checked style="width:auto;margin:0"> पूरा NSC सेक्शन (टैब + होम कार्ड)</label>
+<label style="display:flex;gap:8px;align-items:center"><input id="kshs" type="checkbox" checked style="width:auto;margin:0"> टीम स्कोर / स्कोरकार्ड</label>
+<label style="display:flex;gap:8px;align-items:center"><input id="kshr" type="checkbox" checked style="width:auto;margin:0"> नियम और अंक कैसे मिलेंगे</label>
+<label style="display:flex;gap:8px;align-items:center"><input id="kshg" type="checkbox" checked style="width:auto;margin:0"> रजिस्ट्रेशन फॉर्म</label>
+<label>क्लब के नियम (हर नियम नई लाइन में; खाली छोड़ें तो पहले से लिखे नियम दिखेंगे)</label><textarea id="krt" rows="6" placeholder="हर लाइन में एक नियम"></textarea>
+</div><button class="b" onclick="saveKidsSetup()">💾 सेटअप सेव करें</button>
   <hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3>➕ अंक जोड़ें</h3>
-  <label>तारीख</label><input id="kd" type="date" value="${today}" onchange="renderKidsAdmin(true)"><label>टीम</label><select id="ktm"></select><label>किस बात पर (श्रेणी)</label><select id="kcat">${KCAT.map(c=>`<option value="${c[0]}">${c[1]}</option>`).join('')}</select>
+  <label>तारीख</label><input id="kd" type="date" value="${today}" onchange="renderKidsAdmin(true)"><label>टीम</label><select id="ktm"></select><label>किस बात पर (श्रेणी)</label><select id="kcat" onchange="document.getElementById('kp').value=(KCAT.find(c=>c[0]==this.value)||[])[2]||10">${KCAT.map(c=>`<option value="${c[0]}">${c[1]} (+${c[2]})</option>`).join('')}</select>
   <label>अंक</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">${[5,10,15,20,25].map(n=>`<button class="b o" type="button" onclick="document.getElementById('kp').value=${n}">+${n}</button>`).join('')}</div><input id="kp" type="number" min="1" max="100" value="10"><label>टिप्पणी (किस अच्छे काम पर अंक मिले)</label><input id="knote" placeholder="जैसे: बुजुर्ग को रास्ता दिखाया">
   <button class="b" onclick="addKScore()">➕ अंक जोड़ें</button><div id="kList" style="margin-top:8px"></div>
   <hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3>🏆 सप्ताह का परिणाम (सोमवार–रविवार)</h3>
@@ -378,7 +389,7 @@ function renderKidsAdmin(force){
  const T=aTeams(),kt=ST.find(x=>x.id=='kids');
  const g=id=>document.getElementById(id);
  const su=g('kidsSetup');
- if(kt&&su&&!su.dataset.dirty){T.forEach(t=>{g('kn_'+t.id).value=t.name||'';g('ke_'+t.id).value=t.emoji||'';g('kc_'+t.id).value=(t.color&&/^#[0-9a-f]{6}$/i.test(t.color))?t.color:(t.id=='A'?'#d9534f':'#2f7ed8')});g('kst').value=kt.start||'';g('kon').checked=kt.on!==false}
+ if(kt&&su&&!su.dataset.dirty){T.forEach(t=>{g('kn_'+t.id).value=t.name||'';g('ke_'+t.id).value=t.emoji||'';g('kc_'+t.id).value=(t.color&&/^#[0-9a-f]{6}$/i.test(t.color))?t.color:(t.id=='A'?'#d9534f':'#2f7ed8')});g('kon').checked=kt.on!==false;g('kshs').checked=kt.showScore!==false;g('kshr').checked=kt.showRules!==false;g('kshg').checked=kt.showReg!==false;g('krt').value=kt.rulesText||''}
  const sel=g('ktm'),cur=sel.value||'A';sel.innerHTML=T.map(t=>`<option value="${t.id}">${esc(t.emoji)} ${esc(t.name)}</option>`).join('');sel.value=cur;
  const w=g('kwin'),wc=w.value;w.innerHTML=`<option value="auto">अंकों के हिसाब से अपने आप</option>`+T.map(t=>`<option value="${t.id}">${esc(t.emoji)} ${esc(t.name)}</option>`).join('');w.value=wc||'auto';
  const day=g('kd').value||today,rows=AKS.filter(x=>x.day==day),dt=aSum(day,day);
@@ -391,7 +402,7 @@ async function saveKidsSetup(){
  const g=id=>document.getElementById(id),old=(ST.find(x=>x.id=='kids')||{}).teams||[];
  try{
   const teams=[];for(const id of ['A','B']){const f=g('kf_'+id).files[0],o=old.find(x=>x.id==id)||{};teams.push({id,name:(g('kn_'+id).value||'').trim()||('टीम '+id),emoji:(g('ke_'+id).value||'').trim()||'🏅',color:g('kc_'+id).value||'#2f7ed8',photo:f?await img(f,300):(o.photo||'')})}
-  await db.collection('settings').doc('kids').set({teams,start:g('kst').value||'',on:g('kon').checked,updatedAt:FV.serverTimestamp()},{merge:true});
+  await db.collection('settings').doc('kids').set({teams,on:g('kon').checked,showScore:g('kshs').checked,showRules:g('kshr').checked,showReg:g('kshg').checked,rulesText:(g('krt').value||'').trim().slice(0,2000),start:FV.delete(),updatedAt:FV.serverTimestamp()},{merge:true});
   ['A','B'].forEach(id=>g('kf_'+id).value='');g('kidsSetup').dataset.dirty='';alert('✅ सेटअप सेव हो गया।');
  }catch(e){alert('सेव नहीं हुआ: '+(e.code||e.message))}
 }
@@ -415,8 +426,8 @@ async function declareKidsWeek(){
  }catch(e){alert('घोषणा नहीं हुई: '+(e.code||e.message))}
 }
 async function renewKWeek(id){try{await db.collection('kidsWeeks').doc(id).update({showUntil:Date.now()+7*864e5});alert('✅ अब 7 दिन और दिखेगी।')}catch(e){alert(e.code||e.message)}}
-async function clearKidsScores(){if(!sure('⚠️ बाल मंच के सभी अंक हट जाएँगे।'))return;try{alert('✅ '+(await wipeAll('kidsScores'))+' अंक हटे।')}catch(e){alert(e.code||e.message)}}
+async function clearKidsScores(){if(!sure('⚠️ NSC के सभी अंक हट जाएँगे।'))return;try{alert('✅ '+(await wipeAll('kidsScores'))+' अंक हटे।')}catch(e){alert(e.code||e.message)}}
 
 /* ---- draw: तेज़ (debounce) + खोज-बॉक्स ---- */
-{const _d0=draw;let _dt=null;draw=function(){const q=document.getElementById('adq');if(q)q.hidden=!['users','posts','mod','prob'].includes(tab);if(tab=='settings')renderExtra();const kb=document.getElementById('kidsBox');if(kb){kb.hidden=tab!='kids';if(tab=='kids')renderKidsAdmin()}clearTimeout(_dt);_dt=setTimeout(_d0,70)}}
+{const _d0=draw;let _dt=null;draw=function(){const q=document.getElementById('adq');if(q)q.hidden=!['users','posts','mod','prob','nscreg'].includes(tab);if(tab=='settings')renderExtra();const kb=document.getElementById('kidsBox');if(kb){kb.hidden=tab!='kids';if(tab=='kids')renderKidsAdmin()}clearTimeout(_dt);_dt=setTimeout(_d0,70)}}
 </script></body></html>

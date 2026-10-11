@@ -263,6 +263,18 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    // NSC (नन्हे सितारे क्लब) रजिस्ट्रेशन: कोई भी जमा कर सकता है (नियमों की जाँच के साथ), पढ़ना/बदलना/हटाना सिर्फ एडमिन
+    match /nscRegs/{regId} {
+      allow create: if request.resource.data.keys().hasOnly(['name','age','father','cls','photo','t'])
+        && request.resource.data.name is string && request.resource.data.name.size() >= 2 && request.resource.data.name.size() <= 60
+        && request.resource.data.age is int && request.resource.data.age >= 3 && request.resource.data.age <= 18
+        && request.resource.data.father is string && request.resource.data.father.size() >= 2 && request.resource.data.father.size() <= 60
+        && request.resource.data.cls is string && request.resource.data.cls.size() >= 1 && request.resource.data.cls.size() <= 30
+        && request.resource.data.photo is string && request.resource.data.photo.size() <= 200000
+        && request.resource.data.t == request.time;
+      allow read, update, delete: if isAdmin();
+    }
+
     match /settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();

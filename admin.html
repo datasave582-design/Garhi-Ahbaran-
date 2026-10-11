@@ -63,14 +63,14 @@ pend:()=>{const pv=US.filter(u=>u.status=='pending'&&u.role=='voter'),pc=CA.filt
  const cs=pc.map(c=>{const u=US.find(x=>x.id==c.id)||{};return `<div class="box r"><img src="${c.photo}">${u.idPhoto?`<a href="${u.idPhoto}" target="_blank"><img src="${u.idPhoto}"></a>`:''}<div><b>${esc(c.name)}</b> <span class="tag">प्रत्याशी</span><br>📱 ${esc(u.mobile||'-')} • ✉ ${esc(u.email||'-')} • वार्ड: ${esc(c.ward||'-')}<br>चिह्न: ${esc(c.symbol||'-')} • वादे: ${(c.works||[]).length}${c.mfImg?' • 📄 फोटो':''}<br><button class="b" onclick="cdec('${c.id}','approved')">✔ मंज़ूर</button><button class="b d" onclick="cdec('${c.id}','rejected')">✖ अस्वीकार</button></div></div>`}).join('');
  const vs=pv.map(u=>`<div class="box r"><img src="${u.photo}"><a href="${u.idPhoto}" target="_blank"><img src="${u.idPhoto}"></a><div><b>${esc(u.name)}</b> <span class="tag">मतदाता</span><br>📱 ${esc(u.mobile)} • ✉ ${esc(u.email||'-')} • वार्ड: ${esc(u.ward||'-')}<br><button class="b" onclick="dec('${u.id}','approved')">✔ मंज़ूर</button><button class="b d" onclick="dec('${u.id}','rejected')">✖ अस्वीकार</button></div></div>`).join('');
  return (cs?'<h3>🙋 प्रत्याशी आवेदन</h3>'+cs:'')+(vs?'<h3>🗳️ मतदाता आवेदन</h3>'+vs:'')||'<p>कोई आवेदन बाकी नहीं।</p>'},
-cands:()=>'<div class="box"><button class="b o" onclick="recountReacts()">🔄 Like/Dislike गिनती दोबारा बनाएँ (Recount)</button><br><small>पुराने Like/Dislike की गिनती ऐप में दिखाने के लिए एक बार दबाएँ। यह असली reactions से सबकी गिनती सही कर देगा।</small></div>'+CA.map(c=>`<div class="box r"><img src="${c.photo}"><div><b>${esc(c.name)}</b> <span class="tag">${c.status}</span><br>चिह्न: ${esc(c.symbol)} • वोट: ${VS.filter(v=>v.c==c.id).length} • 👍 ${RC.filter(r=>r.c==c.id&&r.v==1).length} 👎 ${RC.filter(r=>r.c==c.id&&r.v==-1).length} <small>(सार्वजनिक गिनती: 👍 ${(RCC.find(x=>x.id==c.id)||{}).likes||0} 👎 ${(RCC.find(x=>x.id==c.id)||{}).dislikes||0})</small><br><button class="b" onclick="who('${c.id}')">🔐 निजी Like/Dislike देखें</button><br>
-<button class="b" onclick="ed('${c.id}','name','नाम')">नाम</button><button class="b" onclick="ed('${c.id}','symbol','चिह्न')">चिह्न</button><button class="b" onclick="ed('${c.id}','ward','वार्ड')">वार्ड</button><button class="b d" onclick="resetReacts('${c.id}')">👍👎 रीसेट</button><button class="b" onclick="edW('${c.id}')">घोषणा पत्र</button><button class="b" onclick="ph('${c.id}','photo')">फोटो</button><button class="b" onclick="ph('${c.id}','mfImg',800)">घोषणा पत्र फोटो</button><button class="b" onclick="ph('${c.id}','symImg',120)">चिह्न फोटो</button>
+cands:()=>CA.map(c=>`<div class="box r"><img src="${c.photo}"><div><b>${esc(c.name)}</b> <span class="tag">${c.status}</span><br>चिह्न: ${esc(c.symbol)} • वोट: ${VS.filter(v=>v.c==c.id).length} • 👍 ${RC.filter(r=>r.c==c.id&&r.v==1).length} 👎 ${RC.filter(r=>r.c==c.id&&r.v==-1).length} <small>(सार्वजनिक गिनती: 👍 ${(RCC.find(x=>x.id==c.id)||{}).likes||0} 👎 ${(RCC.find(x=>x.id==c.id)||{}).dislikes||0})</small><br><br><button class="b o" onclick="addLikes('${c.id}')">➕ Like बढ़ाएँ</button><button class="b d" onclick="resetReacts('${c.id}')">🗑️ Like/Dislike हटाएँ</button><br>
+<button class="b" onclick="ed('${c.id}','name','नाम')">नाम</button><button class="b" onclick="ed('${c.id}','symbol','चिह्न')">चिह्न</button><button class="b" onclick="ed('${c.id}','ward','वार्ड')">वार्ड</button><button class="b" onclick="edW('${c.id}')">घोषणा पत्र</button><button class="b" onclick="ph('${c.id}','photo')">फोटो</button><button class="b" onclick="ph('${c.id}','mfImg',800)">घोषणा पत्र फोटो</button><button class="b" onclick="ph('${c.id}','symImg',120)">चिह्न फोटो</button>
 <button class="b o" onclick="st('${c.id}','${c.status=='approved'?'rejected':'approved'}')">${c.status=='approved'?'छुपाएँ':'दिखाएँ'}</button><button class="b d" onclick="del('candidates','${c.id}')">हटाएँ</button></div></div>`).join('')||'<p>कोई प्रत्याशी नहीं।</p>',
 claims:()=>CLM.slice().sort((a,b)=>(a.status=='pending'?0:1)-(b.status=='pending'?0:1)).map(x=>{const c=CA.find(k=>k.id==x.c)||{};return `<div class="box"><b>${esc(nm(x.c))}</b> <span class="tag">${x.status}</span><br>वादा: ${esc(((c.works||[])[x.i]||{}).t)}<br>दावा: ${esc(x.note)}${x.img?`<br><img src="${x.img}" style="max-width:220px;border-radius:8px">`:''}<br>${x.status!='approved'?`<button class="b" onclick="cst('${x.id}','approved')">✔ सत्यापित</button>`:''}<button class="b d" onclick="cst('${x.id}','rejected')">✖ अस्वीकार</button><button class="b d" onclick="del('claims','${x.id}')">🗑️ हटाएँ</button></div>`}).join('')||'<p>कोई दावा नहीं।</p>',
 res:()=>{const v=US.filter(u=>u.role=='voter'&&u.status=='approved').length;return `<div class="box">स्वीकृत मतदाता: <b>${v}</b> • कुल वोट: <b>${VS.length}</b><br><small>एडमिन किसी वोट को बदल या हटा सकता है।</small></div>`+VS.map(x=>{const u=US.find(k=>k.id==x.id)||{},c=CA.find(k=>k.id==x.c)||{};return `<div class="box"><b>${esc(u.name||x.id)}</b> → <b>${esc(c.name||x.c)}</b><br><small>बदलाव: ${x.n||0}</small><br><button class="b" onclick="editVote('${x.id}')">✏️ वोट बदलें</button><button class="b d" onclick="rv('${x.id}')">🗑️ वोट हटाएँ</button></div>`}).join('')||'<p>अभी कोई वोट दर्ज नहीं।</p>'},
 users:()=>guestBox()+US.map(u=>`<div class="box"><b>${esc(u.name)}</b> <span class="tag">${u.role=='candidate'?'प्रत्याशी':'मतदाता'} • ${u.status}</span><br>📱 ${esc(u.mobile)} • ✉ ${esc(u.email||'-')}<br><button class="b o" onclick="rd('${u.id}')">📱 डिवाइस रीसेट</button>${VS.some(v=>v.id==u.id)?`<button class="b d" onclick="rv('${u.id}')">🗳️ वोट रीसेट</button>`:''}</div>`).join('')||'<p>कोई खाता नहीं।</p>',
 prob:()=>PRB.slice().sort((a,b)=>((b.t&&b.t.seconds)||9e9)-((a.t&&a.t.seconds)||9e9)).map(p=>`<div class="box"><b>${esc(p.title)}</b> <span class="tag">${p.status=='solved'?'समाधान हुआ':'खुली'}</span><br><small>${esc(p.name)} • ${esc(p.ward||'')}</small><p>${esc(p.txt)}</p>${p.img?`<img src="${p.img}" style="max-width:200px;border-radius:8px">`:''}<br><button class="b" onclick="pst('${p.id}','${p.status=='solved'?'open':'solved'}')">${p.status=='solved'?'दोबारा खोलें':'✔ समाधान हुआ'}</button><button class="b d" onclick="del('problems','${p.id}')">हटाएँ</button></div>`).join('')||'<p>कोई समस्या नहीं।</p>',
-mod:()=>[['comments',CMT],['chat',CHT]].map(([k,a])=>`<h3>${k=='chat'?'गाँव चौपाल':'टिप्पणियाँ'}</h3>`+a.slice().sort((p,q)=>((q.t&&q.t.seconds)||9e9)-((p.t&&p.t.seconds)||9e9)).map(x=>`<div class="box"><b>${esc(x.name)}</b> <small>${admTime(x.t)}</small>: ${esc(x.txt)}<br><button class="b d" onclick="del('${k}','${x.id}')">हटाएँ</button></div>`).join('')).join('')};
+mod:()=>[['comments',CMT],['chat',CHT]].map(([k,a])=>`<h3>${k=='chat'?'गाँव चौपाल':'टिप्पणियाँ'}</h3>`+a.slice().sort((p,q)=>((q.t&&q.t.seconds)||9e9)-((p.t&&p.t.seconds)||9e9)).map(x=>`<div class="box"><b>${esc(x.name)}</b> <small>${admTime(x.t)}</small>: ${esc(x.txt)}${k=='chat'?'':`<br><button class="b d" onclick="del('${k}','${x.id}')">हटाएँ</button>`}</div>`).join('')).join('')};
 
 H.settings=()=>'';
 H.survey=()=>{
@@ -104,7 +104,6 @@ function exportSurveys(){
 const flag=k=>{const s=ST.find(x=>x.id=='vote');return !(s&&s[k]===false)};
 const tg=async k=>{const on=flag(k);if(confirm((k=='open'?'वोटिंग ':'वोट बदलना ')+(on?'बंद करें?':'चालू करें?')))await db.collection('settings').doc('vote').set({[k]:!on},{merge:true})};
 
-const DEFAULT_FIREBASE_CONFIG=(()=>{try{return JSON.parse(localStorage.getItem('garhiFirebaseConfig')||'null')}catch(e){return null}})();
 function currentBrand(){const s=ST.find(x=>x.id=='app')||{};return {name:s.panchayatName||'गढ़ी अहबरन',logo:s.logo||'./icon-192.png'};}
 const DEFAULT_ADMIN_SURVEY_FIELDS=[
 {id:'docs_aadhaar',label:'आधार उपलब्ध',group:'docs',type:'checkbox',key:'docs',value:'आधार उपलब्ध',enabled:true},
@@ -156,7 +155,6 @@ function loadSettingsForm(){
  const c=(()=>{try{return JSON.parse(localStorage.getItem('garhiFirebaseConfig')||'{}')}catch(e){return {}}})();
  ['apiKey','authDomain','projectId','storageBucket','messagingSenderId','appId','measurementId'].forEach(k=>$('#fc_'+k).value=c[k]||'');
 }
-function settingsHtml(){return '';}
 async function saveBrand(){
  const name=$('#setPanchayat').value.trim();
  if(!name)return alert('पंचायत का नाम लिखें।');
@@ -215,7 +213,6 @@ async function editVote(uid){const v=VS.find(x=>x.id==uid);if(!v)return;const op
 const rv=id=>confirm('इस मतदाता का वोट हटाएँ? वह दोबारा वोट दे सकेगा।')&&db.collection('votes').doc(id).delete();
 async function rd(id){if(!confirm('इस खाते का फोन-लॉक हटाएँ?'))return;const s=await db.collection('devices').where('uid','==',id).get(),b=db.batch();s.forEach(d=>b.delete(d.ref));b.update(db.collection('users').doc(id),{dev:''});await b.commit();alert('डिवाइस रीसेट हो गया')}
 const pst=(id,s)=>db.collection('problems').doc(id).update({status:s});
-function who(id){if(!auth.currentUser||auth.currentUser.email!='admin@meragav.in')return alert('केवल एडमिन देख सकता है।');const n=u=>{const x=US.find(k=>k.id==u);return x?x.name+' ('+x.mobile+')':u},L=RC.filter(r=>r.c==id&&r.v==1).map(r=>n(r.u)),D=RC.filter(r=>r.c==id&&r.v==-1).map(r=>n(r.u));alert('👍 लाइक:\n'+(L.join('\n')||'-')+'\n\n👎 डिसलाइक:\n'+(D.join('\n')||'-'))}
 async function cdec(id,s){const u=US.find(x=>x.id==id),b=db.batch();b.update(db.collection('candidates').doc(id),{status:s});if(u&&u.role=='candidate')b.update(db.collection('users').doc(id),{status:s});await b.commit()}
 async function dec(id,s){const u=US.find(x=>x.id==id),b=db.batch();b.update(db.collection('users').doc(id),{status:s});if(u.role=='candidate')b.update(db.collection('candidates').doc(id),{status:s});await b.commit()}
 const st=(id,s)=>db.collection('candidates').doc(id).update({status:s}),cst=(id,s)=>db.collection('claims').doc(id).update({status:s});
@@ -223,21 +220,6 @@ async function del(c,id){if(!confirm('पक्का हटाएँ?'))return;
 function guestBox(){const g=DV.filter(d=>d.guest);return '<div class="box"><b>👤 Guest डिवाइस लॉक: '+g.length+'</b><br><small>हर फोन पर एक ही गेस्ट बन सकता है। रीसेट करने पर वे फोन दोबारा गेस्ट बन सकेंगे।</small><br><button class="b d" onclick="resetGuests()">🧹 सभी Guest लॉक हटाएँ</button></div>'}
 async function resetGuests(){if(!confirm('सभी Guest डिवाइस लॉक हटाएँ?'))return;try{const b=db.batch();DV.filter(d=>d.guest).forEach(d=>b.delete(db.collection('devices').doc(d.id)));await b.commit();alert('✅ Guest लॉक हटा दिए गए।')}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
 function admTime(t){const d=t&&(t.toDate?t.toDate():(t.seconds?new Date(t.seconds*1000):null));return d?d.toLocaleString('hi-IN',{day:'numeric',month:'short',year:'numeric',hour:'numeric',minute:'2-digit',hour12:true}):'अभी'}
-async function recountReacts(){
- if(!confirm('सभी प्रत्याशियों की Like/Dislike गिनती असली reactions से दोबारा बनाएँ?'))return;
- try{
-  const snap=await db.collection('reacts').get(),m={},pick={};
-  snap.forEach(d=>{const r=d.data();if(!r.c)return;m[r.c]=m[r.c]||{likes:0,dislikes:0};if(r.v==1){m[r.c].likes++;if(!pick[r.u])pick[r.u]=r.c}else if(r.v==-1)m[r.c].dislikes++});
-  const ids=new Set([...CA.map(c=>c.id),...Object.keys(m)]);
-  const ops=[];
-  ids.forEach(id=>{const x=m[id]||{likes:0,dislikes:0};ops.push(b=>b.set(db.collection('reactCounts').doc(id),{likes:x.likes,dislikes:x.dislikes,updatedAt:FV.serverTimestamp()}))});
-  const lp=await db.collection('likepick').get();
-  lp.forEach(d=>{if(pick[d.id]!==d.data().c)ops.push(b=>b.delete(d.ref))});
-  Object.keys(pick).forEach(u=>ops.push(b=>b.set(db.collection('likepick').doc(u),{c:pick[u]})));
-  for(let i=0;i<ops.length;i+=400){const b=db.batch();ops.slice(i,i+400).forEach(f=>f(b));await b.commit()}
-  alert('✅ गिनती दोबारा बन गई ('+ids.size+' प्रत्याशी)। जिसने जितनी बार दबाया हो, अब हर यूज़र की सिर्फ एक गिनती है।');
- }catch(e){alert('Recount नहीं हुआ: '+(e.code||e.message)+'\nपहले नई firestore.rules Publish करें।')}
-}
 async function ed(id,f,l){const c=CA.find(x=>x.id==id),v=prompt(l,c[f]);if(v)await db.collection('candidates').doc(id).update({[f]:v})}
 async function edW(id){const c=CA.find(x=>x.id==id),v=prompt('वादे ( | से अलग करें; क्रम न बदलें)',(c.works||[]).map(w=>w.t).join(' | '));if(v)await db.collection('candidates').doc(id).update({works:v.split('|').map(s=>s.trim()).filter(Boolean).map(t=>({t}))})}
 function ph(id,f,mx){const i=document.createElement('input');i.type='file';i.accept='image/*';i.onchange=async()=>db.collection('candidates').doc(id).update({[f]:await img(i.files[0],mx||320)});i.click()}
@@ -277,12 +259,12 @@ H.posts=()=>PST.filter(p=>hit(p.name,p.txt)).map(p=>{
  return `<div class="box"><b>${esc(p.name)}</b> ${p.pinned?'<span class="tag">📌 पिन</span>':''} ${banTag(p.uid)}<br><small>${admTime(p.t)} • ${esc(p.ward||'')}</small><p style="white-space:pre-wrap">${esc(p.txt||'')}</p>${p.img?`<img src="${p.img}" style="max-width:220px;border-radius:8px">`:''}<br><button class="b o" onclick="pinPost('${p.id}',${!p.pinned})">${p.pinned?'📌 पिन हटाएँ':'📌 पिन करें'}</button><button class="b" onclick="editPost('${p.id}')">✏️ संपादित</button><button class="b d" onclick="delPost('${p.id}')">🗑️ हटाएँ</button>${banBtn(p.uid,p.name)}${cm.length?`<details style="margin-top:6px"><summary>💬 टिप्पणियाँ (${cm.length})</summary>${cm.map(c=>`<div style="padding:6px 0;border-top:1px dashed #ddd"><b>${esc(c.name)}</b> <small>${admTime(c.t)}</small><br>${esc(c.txt)}<br><button class="b" onclick="editTxt('postComments','${c.id}')">✏️</button><button class="b d" onclick="del('postComments','${c.id}')">🗑️</button>${banBtn(c.uid,c.name)}</div>`).join('')}</details>`:''}</div>`}).join('')||'<p>कोई पोस्ट नहीं।</p>';
 async function pinPost(id,v){try{await db.collection('posts').doc(id).update({pinned:v})}catch(e){alert(e.code||e.message)}}
 async function editPost(id){const p=PST.find(x=>x.id==id);if(!p)return;const v=prompt('पोस्ट का टेक्स्ट बदलें',p.txt||'');if(v===null)return;try{await db.collection('posts').doc(id).update({txt:v.trim(),edited:true})}catch(e){alert(e.code||e.message)}}
-async function delPost(id){if(!confirm('यह पोस्ट और उसकी सभी टिप्पणियाँ हटाएँ?'))return;try{const b=db.batch();b.delete(db.collection('posts').doc(id));PCM.filter(c=>c.p==id).forEach(c=>b.delete(db.collection('postComments').doc(c.id)));await b.commit()}catch(e){alert('नहीं हटी: '+(e.code||e.message))}}
+async function delPost(id){if(!confirm('यह पोस्ट और उसकी सभी टिप्पणियाँ हटाएँ?'))return;try{const b=db.batch();b.delete(db.collection('posts').doc(id));b.delete(db.collection('postLikeCounts').doc(id));PCM.filter(c=>c.p==id).forEach(c=>b.delete(db.collection('postComments').doc(c.id)));await b.commit()}catch(e){alert('नहीं हटी: '+(e.code||e.message))}}
 async function editTxt(col,id){const arr={chat:CHT,comments:CMT,postComments:PCM}[col]||[],x=arr.find(a=>a.id==id);if(!x)return;const v=prompt('संदेश बदलें',x.txt||'');if(v===null||!v.trim())return;try{await db.collection(col).doc(id).update({txt:v.trim(),edited:true,editedAt:FV.serverTimestamp()})}catch(e){alert(e.code||e.message)}}
 
 /* ---- चौपाल + टिप्पणियाँ ---- */
 H.mod=()=>{
- const sec=(title,k,a)=>`<h3>${title} (${a.length})</h3>`+a.slice().sort(bySecDesc).filter(x=>hit(x.name,x.txt)).map(x=>`<div class="box"><b>${esc(x.name)}</b> ${x.role=='guest'?'<span class="tag">अतिथि</span>':''} ${banTag(x.uid)} <small>${admTime(x.t)}</small>${x.edited?' <small>(संपादित)</small>':''}<br>${esc(x.txt)}<br><button class="b" onclick="editTxt('${k}','${x.id}')">✏️ संपादित</button><button class="b d" onclick="del('${k}','${x.id}')">🗑️ हटाएँ</button>${banBtn(x.uid,x.name)}</div>`).join('');
+ const sec=(title,k,a)=>`<h3>${title} (${a.length})</h3>`+a.slice().sort(bySecDesc).filter(x=>hit(x.name,x.txt)).map(x=>`<div class="box"><b>${esc(x.name)}</b> ${x.role=='guest'?'<span class="tag">अतिथि</span>':''} ${banTag(x.uid)} <small>${admTime(x.t)}</small>${x.edited?' <small>(संपादित)</small>':''}<br>${esc(x.txt)}<br>${k=='chat'?'':`<button class="b" onclick="editTxt('${k}','${x.id}')">✏️ संपादित</button><button class="b d" onclick="del('${k}','${x.id}')">🗑️ हटाएँ</button>`}${banBtn(x.uid,x.name)}</div>`).join('');
  return sec('गाँव चौपाल','chat',CHT)+sec('प्रत्याशी / समस्या टिप्पणियाँ','comments',CMT)+sec('पोस्ट टिप्पणियाँ','postComments',PCM)
 };
 
@@ -292,7 +274,7 @@ async function usEdit(id){const u=US.find(x=>x.id==id);if(!u)return;const name=p
  try{const b=db.batch();b.update(db.collection('users').doc(id),{name:name.trim(),mobile:mobile.trim(),ward:ward.trim()});b.set(db.collection('profiles').doc(id),{name:name.trim()},{merge:true});if(CA.some(c=>c.id==id))b.update(db.collection('candidates').doc(id),{name:name.trim(),ward:ward.trim()});await b.commit()}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
 async function usStatus(id){const v=prompt('नई स्थिति लिखें: approved / pending / rejected');if(!v)return;const s=v.trim().toLowerCase();if(!['approved','pending','rejected'].includes(s))return alert('सिर्फ approved, pending या rejected लिखें।');try{await dec(id,s)}catch(e){alert(e.code||e.message)}}
 async function wipeWhere(col,field,val){const s=await db.collection(col).where(field,'==',val).get();if(s.empty)return 0;let b=db.batch(),c=0;for(const d of s.docs){b.delete(d.ref);if(++c%400==0){await b.commit();b=db.batch()}}await b.commit();return s.size}
-async function usContent(id){if(!confirm('इस यूज़र के सभी पोस्ट, टिप्पणियाँ, चौपाल संदेश और समस्याएँ हटाएँ?'))return;try{let n=0;for(const [c,f] of [['posts','uid'],['postComments','uid'],['comments','uid'],['chat','uid'],['problems','uid']])n+=await wipeWhere(c,f,id);alert('✅ '+n+' आइटम हटाए गए।')}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
+async function usContent(id){if(!confirm('इस यूज़र के सभी पोस्ट, टिप्पणियाँ और समस्याएँ हटाएँ? (चौपाल संदेश नहीं हटेंगे)'))return;try{let n=0;for(const [c,f] of [['posts','uid'],['postComments','uid'],['comments','uid'],['problems','uid']])n+=await wipeWhere(c,f,id);alert('✅ '+n+' आइटम हटाए गए।')}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
 async function usDel(id){const u=US.find(x=>x.id==id)||{};if(!confirm((u.name||id)+' का खाता पूरी तरह हटाएँ? (वोट, प्रत्याशी आवेदन, प्रोफाइल, डिवाइस-लॉक भी हटेंगे)'))return;try{const b=db.batch();['users','profiles','presence','votes','likepick','candidates'].forEach(c=>b.delete(db.collection(c).doc(id)));const dv=await db.collection('devices').where('uid','==',id).get();dv.forEach(d=>b.delete(d.ref));const cl=await db.collection('claims').where('c','==',id).get();cl.forEach(d=>b.delete(d.ref));await b.commit();alert('✅ खाता हटा दिया गया। (वही Gmail दोबारा पंजीकरण कर सकता है; रोकना हो तो "🚫 रोकें" दबाएँ।)')}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
 H.ban=()=>'<h3>🚫 रोके गए ('+BAN.length+')</h3>'+(BAN.map(b=>`<div class="box"><b>${esc(b.name||'-')}</b> <small>${admTime(b.t)}</small><br><small>${esc(b.id)}</small><br><button class="b o" onclick="unban('${b.id}')">✅ रोक हटाएँ</button></div>`).join('')||'<p>कोई नहीं।</p>');
 
@@ -316,6 +298,9 @@ function exportUsers(){const rows=[['Name','Mobile','Email','Role','Status','War
 async function wipeAll(col,filter){const s=await db.collection(col).get();let b=db.batch(),c=0,n=0;for(const d of s.docs){if(filter&&!filter(d))continue;b.delete(d.ref);n++;if(++c%400==0){await b.commit();b=db.batch()}}await b.commit();return n}
 const sure=m=>(prompt(m+'\n\nपक्का करने के लिए "हाँ" लिखें')||'').trim()=='हाँ';
 async function clearVotes(){if(!sure('⚠️ सभी वोट हमेशा के लिए हट जाएँगे।'))return;try{const n=await wipeAll('votes');alert('✅ '+n+' वोट हटाए गए।')}catch(e){alert(e.code||e.message)}}
+/* एडमिन सिर्फ प्रत्याशी के Like बढ़ा या हटा सकता है (सार्वजनिक गिनती बदलकर) */
+async function addLikes(id){const v=prompt('इस प्रत्याशी के कितने Like बढ़ाने हैं? (संख्या लिखें)','10');if(v===null)return;const n=parseInt(v,10);if(!(n>=1&&n<=100000))return alert('1 से 100000 के बीच संख्या लिखें।');
+ try{await db.collection('reactCounts').doc(id).set({likes:FV.increment(n),dislikes:FV.increment(0),updatedAt:FV.serverTimestamp()},{merge:true});alert('✅ '+n+' Like बढ़ा दिए गए।')}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
 async function resetReacts(id){if(!confirm('इस प्रत्याशी के सभी Like/Dislike हटाएँ?'))return;try{const b=db.batch();(await db.collection('reacts').where('c','==',id).get()).forEach(d=>b.delete(d.ref));(await db.collection('likepick').where('c','==',id).get()).forEach(d=>b.delete(d.ref));b.set(db.collection('reactCounts').doc(id),{likes:0,dislikes:0,updatedAt:FV.serverTimestamp()});await b.commit();alert('✅ रीसेट हो गया।')}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
 
 /* ---- सर्वे संपादन ---- */
@@ -328,8 +313,8 @@ function renderExtra(){
  if(!el.dataset.ok){el.dataset.ok=1;el.innerHTML=`<hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3>📢 सूचना बैनर (होम पर सबको दिखेगा)</h3><textarea id="nt" rows="2" placeholder="जैसे: कल शाम 5 बजे ग्राम सभा है" oninput="this.dataset.dirty=1"></textarea><button class="b" onclick="saveNotice()">💾 सूचना सेव</button><button class="b d" onclick="clearNotice()">✖ सूचना हटाएँ</button>
 <hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3>💬 चौपाल चैट</h3><button class="b" id="chatTg" onclick="toggleChat()"></button>
 <hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3>✍️ एडमिन पोस्ट</h3><textarea id="apx" rows="3" placeholder="गाँव के लिए पोस्ट लिखें"></textarea><input id="api" type="file" accept="image/*"><label style="display:flex;gap:8px;align-items:center"><input id="apn" type="checkbox" style="width:auto;margin:0"> 📌 सबसे ऊपर पिन करें</label><button class="b" onclick="adminPost()">📢 पोस्ट प्रकाशित करें</button>
-<hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3>🧰 बैकअप / रिपोर्ट</h3><button class="b" onclick="backupAll()">⬇️ पूरा बैकअप (JSON)</button><button class="b" onclick="exportUsers()">⬇️ यूज़र CSV</button><button class="b" onclick="exportResults()">⬇️ नतीजे CSV</button><button class="b" onclick="recountReacts()">🔄 Like/Dislike Recount</button>
-<hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3 style="color:#b3261e">⚠️ खतरनाक काम</h3><button class="b d" onclick="dangerChat()">🧹 पूरी चौपाल साफ करें</button><button class="b d" onclick="clearVotes()">🗑️ सभी वोट हटाएँ</button><button class="b d" onclick="dangerReacts()">🗑️ सभी Like/Dislike रीसेट</button><button class="b d" onclick="dangerPosts()">🗑️ सभी पोस्ट+टिप्पणियाँ हटाएँ</button><div id="exStatus" style="margin-top:6px;font-size:13px"></div>`}
+<hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3>🧰 बैकअप / रिपोर्ट</h3><button class="b" onclick="backupAll()">⬇️ पूरा बैकअप (JSON)</button><button class="b" onclick="exportUsers()">⬇️ यूज़र CSV</button><button class="b" onclick="exportResults()">⬇️ नतीजे CSV</button>
+<hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3 style="color:#b3261e">⚠️ खतरनाक काम</h3><button class="b d" onclick="clearVotes()">🗑️ सभी वोट हटाएँ</button><button class="b d" onclick="dangerReacts()">🗑️ सभी Like/Dislike रीसेट</button><button class="b d" onclick="dangerPosts()">🗑️ सभी पोस्ट+टिप्पणियाँ हटाएँ</button><div id="exStatus" style="margin-top:6px;font-size:13px"></div>`}
  const nt=document.getElementById('nt');if(nt&&document.activeElement!==nt&&!nt.dataset.dirty)nt.value=app.notice||'';
  const tg=document.getElementById('chatTg');if(tg){tg.textContent=open?'🔓 चौपाल चालू है — बंद करें':'🔒 चौपाल बंद है — चालू करें';tg.style.background=open?'#1a8a4a':'#b3261e'}
 }
@@ -339,13 +324,12 @@ async function toggleChat(){const open=(ST.find(x=>x.id=='app')||{}).chatOpen!==
 async function adminPost(){const txt=document.getElementById('apx').value.trim(),f=document.getElementById('api').files[0];if(!txt&&!f)return alert('कुछ लिखें या फोटो चुनें।');try{const u=auth.currentUser;await db.collection('posts').add({uid:u.uid,name:'📢 एडमिन',photo:'',ward:'',txt,img:await img(f,900),pinned:document.getElementById('apn').checked,t:FV.serverTimestamp()});document.getElementById('apx').value='';document.getElementById('api').value='';alert('✅ पोस्ट प्रकाशित हो गई।')}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
 function clean(v){if(v==null)return v;if(typeof v=='string')return v.startsWith('data:')?'(image)':v;if(typeof v.toDate=='function')return v.toDate().toISOString();if(Array.isArray(v))return v.map(clean);if(typeof v=='object'){const o={};for(const k in v)o[k]=clean(v[k]);return o}return v}
 async function backupAll(){const st=document.getElementById('exStatus');st.textContent='⏳ बैकअप बन रहा है…';try{const out={exportedAt:new Date().toISOString()};for(const c of ['users','candidates','votes','claims','posts','postComments','comments','chat','problems','villageSurveys','settings','banned','reactCounts','reacts']){const s=await db.collection(c).get();out[c]=s.docs.map(d=>({id:d.id,...clean(d.data())}))}dl('garhi-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(out,null,1),'application/json');st.textContent='✅ बैकअप डाउनलोड हो गया (फोटो शामिल नहीं)।'}catch(e){st.textContent='❌ '+(e.code||e.message)}}
-async function dangerChat(){if(!sure('⚠️ पूरी चौपाल के सभी संदेश हट जाएँगे।'))return;try{alert('✅ '+(await wipeAll('chat'))+' संदेश हटे।')}catch(e){alert(e.code||e.message)}}
 async function dangerReacts(){if(!sure('⚠️ सभी प्रत्याशियों के Like/Dislike शून्य हो जाएँगे।'))return;try{await wipeAll('reacts');await wipeAll('likepick');await wipeAll('reactCounts');alert('✅ सब रीसेट हो गया।')}catch(e){alert(e.code||e.message)}}
-async function dangerPosts(){if(!sure('⚠️ सभी पोस्ट और पोस्ट-टिप्पणियाँ हट जाएँगी।'))return;try{const a=await wipeAll('posts'),b=await wipeAll('postComments');alert('✅ '+a+' पोस्ट, '+b+' टिप्पणियाँ हटीं।')}catch(e){alert(e.code||e.message)}}
+async function dangerPosts(){if(!sure('⚠️ सभी पोस्ट और पोस्ट-टिप्पणियाँ हट जाएँगी।'))return;try{const a=await wipeAll('posts'),b=await wipeAll('postComments');await wipeAll('postLikeCounts');alert('✅ '+a+' पोस्ट, '+b+' टिप्पणियाँ हटीं।')}catch(e){alert(e.code||e.message)}}
 
 
 /* ===================== ⭐ NSC नन्हे सितारे क्लब (एडमिन) ===================== */
-let AKS=[],AKW=[],NR=[];
+let AKS=[],AKW=[],NR=[],NRS=null,NRL=false,nrSyncing=false;
 const aYmd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
 const aParse=s=>{const a=String(s).split('-').map(Number);return new Date(a[0],a[1]-1,a[2])};
 const aAdd=(d,n)=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()+n);return x};
@@ -355,11 +339,16 @@ function aTeams(){const base=[{id:'A',name:'टीम A',emoji:'🔥',color:'#d9
 function aSum(a,b){const t={A:0,B:0};AKS.forEach(x=>{if(x.day>=a&&x.day<=b&&(x.team=='A'||x.team=='B'))t[x.team]+=Number(x.pts)||0});return t}
 H.kids=()=>'';
 H.nscreg=()=>{const rows=NR.filter(x=>hit(x.name,x.father,x.cls,x.age));
- return `<div class="box"><h2 style="margin:0">📝 NSC रजिस्ट्रेशन <span class="tag">कुल ${NR.length}</span></h2><p><small>ऊपर खोज-बॉक्स से नाम/पिता/कक्षा खोजें।</small></p><button class="b" onclick="exportNsc()">⬇️ CSV डाउनलोड</button> <button class="b o" onclick="window.print()">🖨️ प्रिंट</button></div>`+
- (rows.map(x=>`<div class="box r">${x.photo?`<a href="${x.photo}" target="_blank"><img src="${x.photo}"></a>`:''}<div style="flex:1;min-width:200px"><b>${esc(x.name)}</b> <span class="tag">${esc(x.cls||'')}</span><br>उम्र: ${esc(x.age)} साल • पिता: ${esc(x.father)}<br><small>${x.t&&x.t.toDate?x.t.toDate().toLocaleString('hi-IN'):''}</small><br><button class="b d" onclick="del('nscRegs','${x.id}')">🗑️ हटाएँ</button></div></div>`).join('')||'<div class="box">अभी कोई रजिस्ट्रेशन नहीं।</div>')};
+ return `<div class="box"><h2 style="margin:0">📝 NSC रजिस्ट्रेशन <span class="tag">कुल ${NR.length}</span>${nscTargetAdm()>0?` <span class="tag">बाकी ${Math.max(0,nscTargetAdm()-NR.length)} / ${nscTargetAdm()}</span>`:''}</h2><p><small>ऊपर खोज-बॉक्स से नाम/पिता/कक्षा खोजें।</small></p><button class="b" onclick="exportNsc()">⬇️ CSV डाउनलोड</button> <button class="b o" onclick="window.print()">🖨️ प्रिंट</button></div>`+
+ (rows.map(x=>`<div class="box r">${x.photo?`<a href="${x.photo}" target="_blank"><img src="${x.photo}"></a>`:''}<div style="flex:1;min-width:200px"><b>${esc(x.name)}</b> <span class="tag">${esc(x.cls||'')}</span><br>उम्र: ${esc(x.age)} साल • पिता: ${esc(x.father)}<br><small>${x.t&&x.t.toDate?x.t.toDate().toLocaleString('hi-IN'):''}</small><br><button class="b d" onclick="delNsc('${x.id}')">🗑️ हटाएँ</button></div></div>`).join('')||'<div class="box">अभी कोई रजिस्ट्रेशन नहीं।</div>')};
+const nscTargetAdm=()=>{const k=ST.find(x=>x.id=='kids')||{};return Math.max(0,Number(k.regTarget)||0)};
+/* ऐप में दिखने वाली गिनती (nscStats/count) को असली रजिस्ट्रेशन से मिलाए रखता है */
+async function syncNscCount(){if(nrSyncing||!NRL||NRS===null||NR.length>=1000||NRS===NR.length)return;nrSyncing=true;try{await db.collection('nscStats').doc('count').set({n:NR.length,last:'',updatedAt:FV.serverTimestamp()})}catch(e){console.error('nsc sync',e)}nrSyncing=false}
+async function delNsc(id){if(!confirm('यह रजिस्ट्रेशन हटाएँ?'))return;try{await db.collection('nscRegs').doc(id).delete();await syncNscCount()}catch(e){alert('नहीं हटा: '+(e.code||e.message))}}
 function exportNsc(){const lines=[['क्रम','बच्चे का नाम','उम्र','पिता का नाम','कक्षा','फोटो','तारीख'].map(csvCell).join(',')].concat(NR.slice().reverse().map((x,i)=>[i+1,x.name,x.age,x.father,x.cls,x.photo?'हाँ':'नहीं',x.t&&x.t.toDate?x.t.toDate().toLocaleDateString('hi-IN'):''].map(csvCell).join(',')));dl('nsc-registrations.csv','\ufeff'+lines.join('\n'),'text/csv;charset=utf-8')}
 function startKidsAdmin(){
- db.collection('nscRegs').orderBy('t','desc').limit(1000).onSnapshot(s=>{NR=s.docs.map(est);draw()},e=>console.error('nscRegs',e));
+ db.collection('nscRegs').orderBy('t','desc').limit(1000).onSnapshot(s=>{NR=s.docs.map(est);NRL=true;draw();syncNscCount()},e=>console.error('nscRegs',e));
+ db.collection('nscStats').doc('count').onSnapshot(s=>{NRS=s.exists?Number(s.data().n||0):0;syncNscCount()},e=>console.error('nscStats',e));
  db.collection('kidsScores').orderBy('day','desc').limit(400).onSnapshot(s=>{AKS=s.docs.map(est);draw()},e=>console.error('kidsScores',e));
  db.collection('kidsWeeks').orderBy('weekStart','desc').limit(20).onSnapshot(s=>{AKW=s.docs.map(est);draw()},e=>console.error('kidsWeeks',e));
 }
@@ -374,7 +363,8 @@ function renderKidsAdmin(force){
 <label style="display:flex;gap:8px;align-items:center"><input id="kshs" type="checkbox" checked style="width:auto;margin:0"> टीम स्कोर / स्कोरकार्ड</label>
 <label style="display:flex;gap:8px;align-items:center"><input id="kshr" type="checkbox" checked style="width:auto;margin:0"> नियम और अंक कैसे मिलेंगे</label>
 <label style="display:flex;gap:8px;align-items:center"><input id="kshg" type="checkbox" checked style="width:auto;margin:0"> रजिस्ट्रेशन फॉर्म</label>
-<label>क्लब के नियम (हर नियम नई लाइन में; खाली छोड़ें तो पहले से लिखे नियम दिखेंगे)</label><textarea id="krt" rows="6" placeholder="हर लाइन में एक नियम"></textarea>
+<label>NSC में कुल कितने बच्चों की जगह है? (0 = कोई सीमा नहीं; बाकी जगह ऐप में दिखेगी)</label><input id="krtg" type="number" min="0" max="100000" placeholder="जैसे: 100">
+ <label>क्लब के नियम (हर नियम नई लाइन में; खाली छोड़ें तो पहले से लिखे नियम दिखेंगे)</label><textarea id="krt" rows="6" placeholder="हर लाइन में एक नियम"></textarea>
 </div><button class="b" onclick="saveKidsSetup()">💾 सेटअप सेव करें</button>
   <hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3>➕ अंक जोड़ें</h3>
   <label>तारीख</label><input id="kd" type="date" value="${today}" onchange="renderKidsAdmin(true)"><label>टीम</label><select id="ktm"></select><label>किस बात पर (श्रेणी)</label><select id="kcat" onchange="document.getElementById('kp').value=(KCAT.find(c=>c[0]==this.value)||[])[2]||10">${KCAT.map(c=>`<option value="${c[0]}">${c[1]} (+${c[2]})</option>`).join('')}</select>
@@ -389,7 +379,7 @@ function renderKidsAdmin(force){
  const T=aTeams(),kt=ST.find(x=>x.id=='kids');
  const g=id=>document.getElementById(id);
  const su=g('kidsSetup');
- if(kt&&su&&!su.dataset.dirty){T.forEach(t=>{g('kn_'+t.id).value=t.name||'';g('ke_'+t.id).value=t.emoji||'';g('kc_'+t.id).value=(t.color&&/^#[0-9a-f]{6}$/i.test(t.color))?t.color:(t.id=='A'?'#d9534f':'#2f7ed8')});g('kon').checked=kt.on!==false;g('kshs').checked=kt.showScore!==false;g('kshr').checked=kt.showRules!==false;g('kshg').checked=kt.showReg!==false;g('krt').value=kt.rulesText||''}
+ if(kt&&su&&!su.dataset.dirty){T.forEach(t=>{g('kn_'+t.id).value=t.name||'';g('ke_'+t.id).value=t.emoji||'';g('kc_'+t.id).value=(t.color&&/^#[0-9a-f]{6}$/i.test(t.color))?t.color:(t.id=='A'?'#d9534f':'#2f7ed8')});g('kon').checked=kt.on!==false;g('kshs').checked=kt.showScore!==false;g('kshr').checked=kt.showRules!==false;g('kshg').checked=kt.showReg!==false;g('krt').value=kt.rulesText||'';g('krtg').value=Number(kt.regTarget)||0}
  const sel=g('ktm'),cur=sel.value||'A';sel.innerHTML=T.map(t=>`<option value="${t.id}">${esc(t.emoji)} ${esc(t.name)}</option>`).join('');sel.value=cur;
  const w=g('kwin'),wc=w.value;w.innerHTML=`<option value="auto">अंकों के हिसाब से अपने आप</option>`+T.map(t=>`<option value="${t.id}">${esc(t.emoji)} ${esc(t.name)}</option>`).join('');w.value=wc||'auto';
  const day=g('kd').value||today,rows=AKS.filter(x=>x.day==day),dt=aSum(day,day);
@@ -402,7 +392,7 @@ async function saveKidsSetup(){
  const g=id=>document.getElementById(id),old=(ST.find(x=>x.id=='kids')||{}).teams||[];
  try{
   const teams=[];for(const id of ['A','B']){const f=g('kf_'+id).files[0],o=old.find(x=>x.id==id)||{};teams.push({id,name:(g('kn_'+id).value||'').trim()||('टीम '+id),emoji:(g('ke_'+id).value||'').trim()||'🏅',color:g('kc_'+id).value||'#2f7ed8',photo:f?await img(f,300):(o.photo||'')})}
-  await db.collection('settings').doc('kids').set({teams,on:g('kon').checked,showScore:g('kshs').checked,showRules:g('kshr').checked,showReg:g('kshg').checked,rulesText:(g('krt').value||'').trim().slice(0,2000),start:FV.delete(),updatedAt:FV.serverTimestamp()},{merge:true});
+  await db.collection('settings').doc('kids').set({teams,on:g('kon').checked,showScore:g('kshs').checked,showRules:g('kshr').checked,showReg:g('kshg').checked,regTarget:Math.max(0,Math.min(100000,parseInt(g('krtg').value,10)||0)),rulesText:(g('krt').value||'').trim().slice(0,2000),start:FV.delete(),updatedAt:FV.serverTimestamp()},{merge:true});
   ['A','B'].forEach(id=>g('kf_'+id).value='');g('kidsSetup').dataset.dirty='';alert('✅ सेटअप सेव हो गया।');
  }catch(e){alert('सेव नहीं हुआ: '+(e.code||e.message))}
 }

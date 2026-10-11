@@ -47,6 +47,15 @@ service cloud.firestore {
     function lpath() {
       return /databases/$(database)/documents/likepick/$(request.auth.uid);
     }
+    // ---------- पोस्ट Like की गिनती के सहायक नियम ----------
+    function plPath(pid) {
+      return /databases/$(database)/documents/postLikes/$(pid + '_' + request.auth.uid);
+    }
+    // इस transaction में इस यूज़र का Like जुड़ा (+1) या हटा (-1)
+    function plDelta(pid) {
+      return (existsAfter(plPath(pid)) ? 1 : 0) - (exists(plPath(pid)) ? 1 : 0);
+    }
+
     // इस यूज़र की प्रतिक्रिया (1 / -1 / 0) लिखने से पहले और बाद में
     function rBefore(cid) {
       return exists(rpath(cid)) ? get(rpath(cid)).data.v : 0;
@@ -148,7 +157,22 @@ service cloud.firestore {
     match /postLikes/{likeId} {
       allow read: if signedIn() && (resource == null || resource.data.u == request.auth.uid);
       allow create, update: if signedIn() && request.resource.data.u == request.auth.uid;
-      allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
+      allow delete: if signedIn() && resource.data.u == request.auth.uid;
+    }
+
+    // सार्वजनिक सिर्फ कुल गिनती (किसने Like किया यह कहीं नहीं रखा जाता)
+    match /postLikeCounts/{postId} {
+      allow read: if true;
+      // एडमिन पोस्ट-Like नहीं बदल सकता; गिनती सिर्फ यूज़र के अपने Like के साथ ही बदलती है
+      allow create: if signedIn()
+        && request.resource.data.keys().hasOnly(['n', 'updatedAt'])
+        && request.resource.data.n == plDelta(postId)
+        && request.resource.data.n >= 0;
+      allow update: if signedIn()
+        && request.resource.data.keys().hasOnly(['n', 'updatedAt'])
+        && stepOk(request.resource.data.n, resource.data.n, plDelta(postId));
+      // पोस्ट हटने पर एडमिन सिर्फ बची हुई गिनती साफ कर सकता है
+      allow delete: if isAdmin();
     }
 
     match /postComments/{commentId} {
@@ -201,7 +225,7 @@ service cloud.firestore {
       allow read: if signedIn() && (resource == null || resource.data.u == request.auth.uid);
       allow create: if signedIn() && request.resource.data.u == request.auth.uid;
       allow update: if signedIn() && request.resource.data.u == request.auth.uid;
-      allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
+      allow delete: if signedIn() && resource.data.u == request.auth.uid;
     }
 
     // likepick/<uid> = जिस प्रत्याशी को यूज़र ने Like किया है. हटाना तभी जब उसका Like भी हट चुका हो.
@@ -221,9 +245,8 @@ service cloud.firestore {
         && settingOn('app', 'chatOpen')
         && request.resource.data.txt is string && request.resource.data.txt.size() > 0 && request.resource.data.txt.size() <= 1000
         && (!isGuest() || request.resource.data.role == 'guest');
-      allow update: if isAdmin() || (signedInAny() && resource.data.uid == request.auth.uid && request.resource.data.uid == resource.data.uid
-        && request.resource.data.get('role', '') == resource.data.get('role', ''));
-      allow delete: if isAdmin() || (signedInAny() && resource.data.uid == request.auth.uid);
+      // चौपाल संदेश न संपादित हो सकते हैं, न हट सकते हैं (एडमिन से भी नहीं)
+      allow update, delete: if false;
     }
 
     // ---------- निजी चैट (सिर्फ असली यूज़र) ----------
@@ -232,7 +255,7 @@ service cloud.firestore {
       allow create: if signedIn() && request.auth.uid in request.resource.data.members;
       allow update: if signedIn() && request.auth.uid in resource.data.members
         && request.resource.data.members == resource.data.members;
-      allow delete: if isAdmin();
+      allow delete: if false;
 
       match /messages/{messageId} {
         allow read: if signedIn()
@@ -240,8 +263,8 @@ service cloud.firestore {
         allow create: if signedIn() && notBanned()
           && request.resource.data.from == request.auth.uid
           && request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.members;
-        allow update: if signedIn() && request.auth.uid == resource.data.from && request.resource.data.from == resource.data.from;
-        allow delete: if isAdmin() || (signedIn() && request.auth.uid == resource.data.from);
+        // निजी चैट संदेश न संपादित हो सकते हैं, न हट सकते हैं
+        allow update, delete: if false;
       }
     }
 
@@ -273,6 +296,24 @@ service cloud.firestore {
         && request.resource.data.photo is string && request.resource.data.photo.size() <= 200000
         && request.resource.data.t == request.time;
       allow read, update, delete: if isAdmin();
+    }
+
+    // NSC में कितने बच्चे रजिस्टर हुए (सार्वजनिक गिनती). यूज़र सिर्फ तभी +1 कर सकता है जब उसी साथ एक नया nscRegs दस्तावेज़ बन रहा हो
+    match /nscStats/{statId} {
+      allow read: if true;
+      allow create: if isAdmin() || (statId == 'count'
+        && request.resource.data.keys().hasOnly(['n', 'last', 'updatedAt'])
+        && request.resource.data.n == 1
+        && request.resource.data.last is string && request.resource.data.last.size() > 0
+        && existsAfter(/databases/$(database)/documents/nscRegs/$(request.resource.data.last))
+        && !exists(/databases/$(database)/documents/nscRegs/$(request.resource.data.last)));
+      allow update: if isAdmin() || (statId == 'count'
+        && request.resource.data.keys().hasOnly(['n', 'last', 'updatedAt'])
+        && request.resource.data.n == resource.data.n + 1
+        && request.resource.data.last is string && request.resource.data.last.size() > 0
+        && existsAfter(/databases/$(database)/documents/nscRegs/$(request.resource.data.last))
+        && !exists(/databases/$(database)/documents/nscRegs/$(request.resource.data.last)));
+      allow delete: if isAdmin();
     }
 
     match /settings/{settingId} {

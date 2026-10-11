@@ -12,7 +12,6 @@ const AUTH_PERSISTENCE=firebase.auth.Auth.Persistence.LOCAL;
 auth.setPersistence(AUTH_PERSISTENCE).catch(e=>console.error('Auth persistence:',e));
 const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
-const mail=m=>m+'@meragav.in';
 // फोटो को छोटा करके base64 बनाता है (Storage की ज़रूरत नहीं)
 function img(file,max=320){return new Promise(r=>{if(!file)return r('');const f=new FileReader();f.onerror=()=>r('');f.onload=e=>{const i=new Image();i.onerror=()=>r('');i.onload=()=>{const k=Math.min(1,max/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(i.width*k));c.height=Math.max(1,Math.round(i.height*k));c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.65))};i.src=e.target.result};f.readAsDataURL(file)})}
 

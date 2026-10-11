@@ -1,4 +1,4 @@
-const V='mg40';
+const V='mg42';
 const ASSETS=['./','./index.html','./fb.js','./manifest.json','./icon-192.png','./icon-512.png','./nsc-logo.jpg'];
 const CDN=['www.gstatic.com','fonts.googleapis.com','fonts.gstatic.com'];
 self.addEventListener('install',event=>{

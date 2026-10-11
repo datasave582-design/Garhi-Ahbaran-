@@ -252,6 +252,17 @@ service cloud.firestore {
       allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
 
+    // बाल मंच: टीम स्कोरकार्ड और साप्ताहिक विजेता — सब पढ़ सकते हैं, सिर्फ एडमिन लिख सकता है
+    match /kidsScores/{scoreId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
+    match /kidsWeeks/{weekId} {
+      allow read: if true;
+      allow write: if isAdmin();
+    }
+
     match /settings/{settingId} {
       allow read: if true;
       allow write: if isAdmin();

@@ -14,7 +14,7 @@ input,textarea{width:100%;padding:10px;margin:4px 0 8px;border:1px solid #c9d0c4
 <div id="ap" hidden>
 <header><b id="adminBrand">🏡 गढ़ी अहबरन – एडमिन पैनल</b><div><button class="b" id="vo" onclick="tg('open')"></button> <button class="b" id="vt" onclick="tg('change')"></button> <button class="b o" onclick="auth.signOut()">लॉगआउट</button></div></header>
 <div class="tabs" id="tb"></div>
-<main><div id="settingsBox" class="box" hidden>
+<main><div id="kidsBox" class="box" hidden></div><div id="settingsBox" class="box" hidden>
 <h2>⚙️ ऐप सेटिंग्स</h2><div id="adminExtra"></div>
 <p class="tag">इन सेटिंग्स को केवल Admin बदल सकता है। Firebase बदलने के बाद ऐप reload होगा और नया project इस्तेमाल करेगा।</p>
 <label>ग्राम पंचायत का नाम</label><input id="setPanchayat" placeholder="जैसे: गढ़ी अहबरन">
@@ -51,7 +51,7 @@ input,textarea{width:100%;padding:10px;margin:4px 0 8px;border:1px solid #c9d0c4
 <script>
 $('#asel').innerHTML=symOpts();
 let DV=[],RCC=[],ST=[],tab='pend',RC=[],PRB=[],US=[],CA=[],CLM=[],VS=[],CMT=[],CHT=[],VSUR=[],on=0;
-const TB={dash:'📈 डैशबोर्ड',pend:'⏳ मंज़ूरी',cands:'👥 प्रत्याशी',claims:'✅ वादे पूरे',res:'📊 नतीजे',posts:'📰 पोस्ट',mod:'🧹 चौपाल/टिप्पणी',users:'👤 यूज़र/डिवाइस',ban:'🚫 रोके गए',prob:'📢 समस्याएँ',survey:'📋 ग्राम सर्वे',settings:'⚙️ सेटिंग्स'};
+const TB={dash:'📈 डैशबोर्ड',pend:'⏳ मंज़ूरी',cands:'👥 प्रत्याशी',claims:'✅ वादे पूरे',res:'📊 नतीजे',kids:'🧒 बाल मंच',posts:'📰 पोस्ट',mod:'🧹 चौपाल/टिप्पणी',users:'👤 यूज़र/डिवाइस',ban:'🚫 रोके गए',prob:'📢 समस्याएँ',survey:'📋 ग्राम सर्वे',settings:'⚙️ सेटिंग्स'};
 $('#tb').innerHTML=Object.keys(TB).map(k=>`<button data-k="${k}" onclick="tab='${k}';draw()">${TB[k]}</button>`).join('');
 auth.onAuthStateChanged(u=>{const ok=u&&u.email=='admin@meragav.in';$('#lg').hidden=ok;$('#ap').hidden=!ok;if(ok&&!on++)start()});
 const sub=(c,f)=>db.collection(c).onSnapshot(s=>{f(s.docs.map(d=>({id:d.id,...d.data()})));draw()},e=>console.error(c,e));
@@ -253,7 +253,7 @@ const isBan=id=>BAN.some(b=>b.id==id);
 const bySecDesc=(a,b)=>((b.t&&b.t.seconds)||9e9)-((a.t&&a.t.seconds)||9e9);
 const safe=s=>String(s||'').replace(/['"\\<>]/g,'');
 const est=d=>({id:d.id,...d.data({serverTimestamps:'estimate'})});
-function startExtra(){
+function startExtra(){startKidsAdmin();
  db.collection('posts').orderBy('t','desc').limit(100).onSnapshot(s=>{PST=s.docs.map(est);draw()},e=>console.error('posts',e));
  db.collection('postComments').onSnapshot(s=>{PCM=s.docs.map(est);draw()},e=>console.error('postComments',e));
  db.collection('chat').orderBy('t','desc').limit(150).onSnapshot(s=>{CHT=s.docs.map(est);draw()},e=>console.error('chat',e));
@@ -343,6 +343,80 @@ async function dangerChat(){if(!sure('⚠️ पूरी चौपाल के
 async function dangerReacts(){if(!sure('⚠️ सभी प्रत्याशियों के Like/Dislike शून्य हो जाएँगे।'))return;try{await wipeAll('reacts');await wipeAll('likepick');await wipeAll('reactCounts');alert('✅ सब रीसेट हो गया।')}catch(e){alert(e.code||e.message)}}
 async function dangerPosts(){if(!sure('⚠️ सभी पोस्ट और पोस्ट-टिप्पणियाँ हट जाएँगी।'))return;try{const a=await wipeAll('posts'),b=await wipeAll('postComments');alert('✅ '+a+' पोस्ट, '+b+' टिप्पणियाँ हटीं।')}catch(e){alert(e.code||e.message)}}
 
+
+/* ===================== 🧒 बाल मंच (एडमिन) ===================== */
+let AKS=[],AKW=[];
+const aYmd=d=>d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+const aParse=s=>{const a=String(s).split('-').map(Number);return new Date(a[0],a[1]-1,a[2])};
+const aAdd=(d,n)=>{const x=new Date(d.getFullYear(),d.getMonth(),d.getDate());x.setDate(x.getDate()+n);return x};
+const aWeek=d=>aAdd(d,-((d.getDay()+6)%7));
+const KCAT=[['game','🎮 खेल में सहयोग और सम्मान'],['respect','🙏 सम्मान'],['help','🤝 मदद करना'],['study','📖 पढ़ाई / सीखना'],['listen','👨‍👩‍👧 घर वालों की बात मानना'],['home','🏠 घर के काम में हाथ बँटाना'],['bonus','⭐ बोनस / खास प्रयास']];
+function aTeams(){const base=[{id:'A',name:'टीम A',emoji:'🔥',color:'#d9534f'},{id:'B',name:'टीम B',emoji:'⚡',color:'#2f7ed8'}];const t=(ST.find(x=>x.id=='kids')||{}).teams||[];return base.map(x=>({...x,...(t.find(y=>y.id==x.id)||{})}))}
+function aSum(a,b){const t={A:0,B:0};AKS.forEach(x=>{if(x.day>=a&&x.day<=b&&(x.team=='A'||x.team=='B'))t[x.team]+=Number(x.pts)||0});return t}
+H.kids=()=>'';
+function startKidsAdmin(){
+ db.collection('kidsScores').orderBy('day','desc').limit(400).onSnapshot(s=>{AKS=s.docs.map(est);draw()},e=>console.error('kidsScores',e));
+ db.collection('kidsWeeks').orderBy('weekStart','desc').limit(20).onSnapshot(s=>{AKW=s.docs.map(est);draw()},e=>console.error('kidsWeeks',e));
+}
+function renderKidsAdmin(force){
+ const box=document.getElementById('kidsBox');if(!box)return;
+ const today=aYmd(new Date());
+ if(!box.dataset.ok){box.dataset.ok=1;
+  const tf=id=>`<div class="box" style="background:#fafafa"><b>टीम ${id}</b><label>नाम</label><input id="kn_${id}" placeholder="जैसे: टीम सूरज"><label>निशान (emoji)</label><input id="ke_${id}" placeholder="☀️"><label>रंग</label><input id="kc_${id}" type="color" style="height:44px;padding:2px"><label>टीम फोटो / लोगो (वैकल्पिक)</label><input id="kf_${id}" type="file" accept="image/*"></div>`;
+  box.innerHTML=`<h2>🧒 बाल मंच — टीम स्कोरकार्ड</h2><p class="tag">दो टीमें बनाएँ → रोज़ अंक जोड़ें → सप्ताह के अंत में विजेता टीम का फोटो डालें (फोटो ऐप पर 7 दिन दिखेगी)।</p>
+  <h3>⚙️ टीम सेटअप</h3><div oninput="document.getElementById('kidsSetup').dataset.dirty=1" id="kidsSetup">${tf('A')}${tf('B')}<label>कार्यक्रम शुरू होने की तारीख (दिन 1)</label><input id="kst" type="date"><label style="display:flex;gap:8px;align-items:center"><input id="kon" type="checkbox" checked style="width:auto;margin:0"> बाल मंच ऐप में दिखाएँ</label></div><button class="b" onclick="saveKidsSetup()">💾 सेटअप सेव करें</button>
+  <hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3>➕ अंक जोड़ें</h3>
+  <label>तारीख</label><input id="kd" type="date" value="${today}" onchange="renderKidsAdmin(true)"><label>टीम</label><select id="ktm"></select><label>किस बात पर (श्रेणी)</label><select id="kcat">${KCAT.map(c=>`<option value="${c[0]}">${c[1]}</option>`).join('')}</select>
+  <label>अंक</label><div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:6px">${[5,10,15,20,25].map(n=>`<button class="b o" type="button" onclick="document.getElementById('kp').value=${n}">+${n}</button>`).join('')}</div><input id="kp" type="number" min="1" max="100" value="10"><label>टिप्पणी (किस अच्छे काम पर अंक मिले)</label><input id="knote" placeholder="जैसे: बुजुर्ग को रास्ता दिखाया">
+  <button class="b" onclick="addKScore()">➕ अंक जोड़ें</button><div id="kList" style="margin-top:8px"></div>
+  <hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3>🏆 सप्ताह का परिणाम (सोमवार–रविवार)</h3>
+  <label>सप्ताह चुनें (उस सप्ताह की कोई भी तारीख)</label><input id="kwd" type="date" value="${today}" onchange="renderKidsAdmin(true)"><div id="kWeekInfo" class="box" style="background:#fffbe8"></div>
+  <label>विजेता</label><select id="kwin"><option value="auto">अंकों के हिसाब से अपने आप</option><option value="A">टीम A</option><option value="B">टीम B</option></select><label>विजेता टीम का फोटो</label><input id="kwf" type="file" accept="image/*"><label style="display:flex;gap:8px;align-items:center"><input id="kperm" type="checkbox" style="width:auto;margin:0"> बच्चों के अभिभावकों से फोटो लगाने की अनुमति ले ली है</label>
+  <button class="b" onclick="declareKidsWeek()">🏆 विजेता घोषित करें (7 दिन ऐप पर दिखेगा)</button><div id="kWeeks" style="margin-top:8px"></div>
+  <hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><button class="b d" onclick="clearKidsScores()">🗑️ सभी अंक हटाएँ</button>`;
+ }
+ const T=aTeams(),kt=ST.find(x=>x.id=='kids');
+ const g=id=>document.getElementById(id);
+ const su=g('kidsSetup');
+ if(kt&&su&&!su.dataset.dirty){T.forEach(t=>{g('kn_'+t.id).value=t.name||'';g('ke_'+t.id).value=t.emoji||'';g('kc_'+t.id).value=(t.color&&/^#[0-9a-f]{6}$/i.test(t.color))?t.color:(t.id=='A'?'#d9534f':'#2f7ed8')});g('kst').value=kt.start||'';g('kon').checked=kt.on!==false}
+ const sel=g('ktm'),cur=sel.value||'A';sel.innerHTML=T.map(t=>`<option value="${t.id}">${esc(t.emoji)} ${esc(t.name)}</option>`).join('');sel.value=cur;
+ const w=g('kwin'),wc=w.value;w.innerHTML=`<option value="auto">अंकों के हिसाब से अपने आप</option>`+T.map(t=>`<option value="${t.id}">${esc(t.emoji)} ${esc(t.name)}</option>`).join('');w.value=wc||'auto';
+ const day=g('kd').value||today,rows=AKS.filter(x=>x.day==day),dt=aSum(day,day);
+ g('kList').innerHTML=`<b>${day} के अंक:</b> ${esc(T[0].name)} <b>${dt.A}</b> • ${esc(T[1].name)} <b>${dt.B}</b>`+(rows.map(x=>{const c=KCAT.find(k=>k[0]==x.cat)||KCAT[6];const tm=T.find(t=>t.id==x.team)||{};return `<div class="box" style="padding:6px 8px;margin:4px 0"><b>${esc(tm.emoji||'')} ${esc(tm.name||x.team)}</b> +${Number(x.pts)||0} • ${c[1]}<br><small>${esc(x.note||'')}</small> <button class="b d" onclick="del('kidsScores','${x.id}')">🗑️</button></div>`}).join('')||'<p><small>इस तारीख में अभी कोई अंक नहीं।</small></p>');
+ const ws=aYmd(aWeek(aParse(g('kwd').value||today))),we=aYmd(aAdd(aParse(ws),6)),wt=aSum(ws,we);
+ g('kWeekInfo').innerHTML=`<b>सप्ताह ${ws} से ${we}</b><br>${esc(T[0].emoji)} ${esc(T[0].name)}: <b>${wt.A}</b> अंक • ${esc(T[1].emoji)} ${esc(T[1].name)}: <b>${wt.B}</b> अंक<br><small>${wt.A==wt.B?'दोनों बराबर — ऊपर से विजेता चुनें':(wt.A>wt.B?T[0].name:T[1].name)+' आगे है'}</small>`;
+ g('kWeeks').innerHTML='<b>घोषित सप्ताह:</b>'+(AKW.map(x=>{const live=(Number(x.showUntil)||0)>Date.now();return `<div class="box" style="padding:6px 8px;margin:4px 0;display:flex;gap:8px;align-items:center">${x.photo?`<img src="${x.photo}" style="width:54px;height:54px;object-fit:cover;border-radius:8px">`:''}<div style="flex:1"><b>${esc(x.emoji||'')} ${esc(x.name||'')}</b> ${live?'<span class="tag">ऐप पर दिख रही</span>':'<span class="tag" style="background:#eee">समय पूरा</span>'}<br><small>${x.weekStart} – ${x.weekEnd} • ${esc(x.nameA||'A')} ${Number(x.scoreA)||0} : ${Number(x.scoreB)||0} ${esc(x.nameB||'B')}</small><br><button class="b" onclick="renewKWeek('${x.id}')">🔁 7 दिन फिर दिखाएँ</button><button class="b d" onclick="del('kidsWeeks','${x.id}')">🗑️</button></div></div>`}).join('')||' <small>अभी कोई नहीं</small>');
+}
+async function saveKidsSetup(){
+ const g=id=>document.getElementById(id),old=(ST.find(x=>x.id=='kids')||{}).teams||[];
+ try{
+  const teams=[];for(const id of ['A','B']){const f=g('kf_'+id).files[0],o=old.find(x=>x.id==id)||{};teams.push({id,name:(g('kn_'+id).value||'').trim()||('टीम '+id),emoji:(g('ke_'+id).value||'').trim()||'🏅',color:g('kc_'+id).value||'#2f7ed8',photo:f?await img(f,300):(o.photo||'')})}
+  await db.collection('settings').doc('kids').set({teams,start:g('kst').value||'',on:g('kon').checked,updatedAt:FV.serverTimestamp()},{merge:true});
+  ['A','B'].forEach(id=>g('kf_'+id).value='');g('kidsSetup').dataset.dirty='';alert('✅ सेटअप सेव हो गया।');
+ }catch(e){alert('सेव नहीं हुआ: '+(e.code||e.message))}
+}
+async function addKScore(){
+ const g=id=>document.getElementById(id),day=g('kd').value,team=g('ktm').value,cat=g('kcat').value,pts=Math.round(Number(g('kp').value)),note=(g('knote').value||'').trim().slice(0,120);
+ if(!day)return alert('तारीख चुनें।');if(!(pts>=1&&pts<=100))return alert('अंक 1 से 100 के बीच लिखें।');
+ try{await db.collection('kidsScores').add({day,week:aYmd(aWeek(aParse(day))),team,cat,pts,note,t:FV.serverTimestamp()});g('knote').value=''}catch(e){alert('अंक नहीं जुड़े: '+(e.code||e.message))}
+}
+async function declareKidsWeek(){
+ const g=id=>document.getElementById(id),T=aTeams(),ws=aYmd(aWeek(aParse(g('kwd').value||aYmd(new Date())))),we=aYmd(aAdd(aParse(ws),6)),wt=aSum(ws,we);
+ let win=g('kwin').value;
+ if(win=='auto'){if(wt.A==wt.B)return alert('दोनों टीमों के अंक बराबर हैं — ऊपर "विजेता" में टीम चुनें।');win=wt.A>wt.B?'A':'B'}
+ const f=g('kwf').files[0],ex=AKW.find(x=>x.id==ws);
+ if(!f&&!(ex&&ex.photo))return alert('विजेता टीम का फोटो चुनें।');
+ if(f&&!g('kperm').checked)return alert('फोटो लगाने से पहले अभिभावकों की अनुमति की पुष्टि का बॉक्स चुनें।');
+ const tw=T.find(x=>x.id==win);
+ try{
+  const photo=f?await img(f,800):ex.photo;
+  await db.collection('kidsWeeks').doc(ws).set({weekStart:ws,weekEnd:we,team:win,name:tw.name,emoji:tw.emoji,color:tw.color,photo,scoreA:wt.A,scoreB:wt.B,nameA:T[0].name,nameB:T[1].name,showUntil:Date.now()+7*864e5,publishedAt:FV.serverTimestamp()});
+  g('kwf').value='';g('kperm').checked=false;alert('🏆 '+tw.name+' विजेता घोषित! फोटो ऐप पर 7 दिन दिखेगी।');
+ }catch(e){alert('घोषणा नहीं हुई: '+(e.code||e.message))}
+}
+async function renewKWeek(id){try{await db.collection('kidsWeeks').doc(id).update({showUntil:Date.now()+7*864e5});alert('✅ अब 7 दिन और दिखेगी।')}catch(e){alert(e.code||e.message)}}
+async function clearKidsScores(){if(!sure('⚠️ बाल मंच के सभी अंक हट जाएँगे।'))return;try{alert('✅ '+(await wipeAll('kidsScores'))+' अंक हटे।')}catch(e){alert(e.code||e.message)}}
+
 /* ---- draw: तेज़ (debounce) + खोज-बॉक्स ---- */
-{const _d0=draw;let _dt=null;draw=function(){const q=document.getElementById('adq');if(q)q.hidden=!['users','posts','mod','prob'].includes(tab);if(tab=='settings')renderExtra();clearTimeout(_dt);_dt=setTimeout(_d0,70)}}
+{const _d0=draw;let _dt=null;draw=function(){const q=document.getElementById('adq');if(q)q.hidden=!['users','posts','mod','prob'].includes(tab);if(tab=='settings')renderExtra();const kb=document.getElementById('kidsBox');if(kb){kb.hidden=tab!='kids';if(tab=='kids')renderKidsAdmin()}clearTimeout(_dt);_dt=setTimeout(_d0,70)}}
 </script></body></html>

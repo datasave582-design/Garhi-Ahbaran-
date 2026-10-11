@@ -9,28 +9,13 @@ main{padding:12px;max-width:900px;margin:auto}.box{background:#fff;border:1px so
 button.p,.b{background:#1f4d3a;color:#fff;border:0;border-radius:8px;padding:8px 12px;font:600 14px Mukta;margin:3px 3px 0 0}.b.d{background:#b3261e}.b.o{background:#e8871e}
 input,textarea{width:100%;padding:10px;margin:4px 0 8px;border:1px solid #c9d0c4;border-radius:8px;font:inherit}.tag{font-size:12px;padding:2px 8px;border-radius:10px;background:#fde7c8}
 .bar{height:10px;background:#e8871e;border-radius:5px}#lg{max-width:360px;margin:60px auto}
-
-/* V20 polish: clearer admin controls, mobile-friendly tabs and cards */
-body{background:linear-gradient(145deg,#f3f7f2 0%,#eef3ec 100%)}
-header{background:linear-gradient(115deg,#123d2e,#28684c);box-shadow:0 4px 18px #123d2e20}
-.tabs{position:sticky;top:0;z-index:8;box-shadow:0 4px 12px #182d1d0a;scrollbar-width:thin}
-.tabs button{transition:background .18s,color .18s}
-.tabs button:hover,.tabs button.on{background:#f2f8f2}
-main{max-width:1100px;padding:16px}
-.box{border-radius:16px;box-shadow:0 5px 20px #203c2510;border-color:#e2e9df;transition:box-shadow .18s}
-.box:hover{box-shadow:0 8px 24px #203c2517}
-button.p,.b{cursor:pointer;transition:transform .15s,filter .15s;box-shadow:0 2px 5px #102d1b12}
-button.p:hover,.b:hover{filter:brightness(1.07);transform:translateY(-1px)}
-input,textarea{border-color:#d8e0d4}
-input:focus,textarea:focus{outline:2px solid #d7eadb;border-color:#28684c}
-@media(max-width:600px){header{padding:12px}main{padding:10px}.tabs button{padding:10px 12px;font-size:14px}.box{padding:12px;border-radius:13px}.r{gap:7px}.r img{width:72px;height:72px}}
 </style></head><body>
 <div id="lg" class="box" hidden><h2>एडमिन लॉगिन</h2><input id="em" value="admin@meragav.in"><input id="pw" type="password" placeholder="पासवर्ड"><button class="p" onclick="auth.signInWithEmailAndPassword($('#em').value,$('#pw').value).catch(e=>alert('लॉगिन नहीं हुआ'))">लॉगिन</button></div>
 <div id="ap" hidden>
 <header><b id="adminBrand">🏡 गढ़ी अहबरन – एडमिन पैनल</b><div><button class="b" id="vo" onclick="tg('open')"></button> <button class="b" id="vt" onclick="tg('change')"></button> <button class="b o" onclick="auth.signOut()">लॉगआउट</button></div></header>
 <div class="tabs" id="tb"></div>
 <main><div id="settingsBox" class="box" hidden>
-<h2>⚙️ ऐप सेटिंग्स</h2>
+<h2>⚙️ ऐप सेटिंग्स</h2><div id="adminExtra"></div>
 <p class="tag">इन सेटिंग्स को केवल Admin बदल सकता है। Firebase बदलने के बाद ऐप reload होगा और नया project इस्तेमाल करेगा।</p>
 <label>ग्राम पंचायत का नाम</label><input id="setPanchayat" placeholder="जैसे: गढ़ी अहबरन">
 <label>पंचायत / ऐप लोगो</label><input id="setLogo" type="file" accept="image/*">
@@ -58,7 +43,7 @@ input:focus,textarea:focus{outline:2px solid #d7eadb;border-color:#28684c}
 <button class="b d" onclick="resetFirebaseConfig()">↩️ Default Firebase</button>
 </div>
 <div id="fcStatus" style="margin-top:8px;font-size:13px"></div>
-</div><div id="addf" class="box" hidden><h3>नया प्रत्याशी जोड़ें</h3><input id="an" placeholder="नाम"><select id="asel" onchange="if(this.value)$('#as').value=this.value"></select><input id="as" placeholder="चुनाव चिह्न (वैकल्पिक)"><input id="aw" placeholder="वार्ड / मोहल्ला">फोटो <input id="ap1" type="file" accept="image/*">चिह्न की फोटो <input id="ap2" type="file" accept="image/*"><textarea id="am" rows="4" placeholder="घोषणा पत्र (वैकल्पिक) – हर वादा नई लाइन में"></textarea>घोषणा पत्र की फोटो (वैकल्पिक) <input id="ap3" type="file" accept="image/*"><button class="p" onclick="addCand()">जोड़ें (सीधे स्वीकृत)</button></div><div id="lst"></div></main></div>
+</div><div id="addf" class="box" hidden><h3>नया प्रत्याशी जोड़ें</h3><input id="an" placeholder="नाम"><select id="asel" onchange="if(this.value)$('#as').value=this.value"></select><input id="as" placeholder="चुनाव चिह्न (वैकल्पिक)"><input id="aw" placeholder="वार्ड / मोहल्ला">फोटो <input id="ap1" type="file" accept="image/*">चिह्न की फोटो <input id="ap2" type="file" accept="image/*"><textarea id="am" rows="4" placeholder="घोषणा पत्र (वैकल्पिक) – हर वादा नई लाइन में"></textarea>घोषणा पत्र की फोटो (वैकल्पिक) <input id="ap3" type="file" accept="image/*"><button class="p" onclick="addCand()">जोड़ें (सीधे स्वीकृत)</button></div><input id="adq" placeholder="🔍 खोजें (नाम / मोबाइल / टेक्स्ट)" oninput="draw()" hidden><div id="lst"></div></main></div>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
@@ -66,12 +51,12 @@ input:focus,textarea:focus{outline:2px solid #d7eadb;border-color:#28684c}
 <script>
 $('#asel').innerHTML=symOpts();
 let DV=[],RCC=[],ST=[],tab='pend',RC=[],PRB=[],US=[],CA=[],CLM=[],VS=[],CMT=[],CHT=[],VSUR=[],on=0;
-const TB={pend:'⏳ मंज़ूरी',cands:'👥 प्रत्याशी',claims:'✅ वादे पूरे',res:'📊 नतीजे',mod:'🧹 टिप्पणी/चौपाल',users:'📱 डिवाइस',prob:'📢 समस्याएँ',survey:'📋 ग्राम सर्वे',settings:'⚙️ सेटिंग्स'};
+const TB={dash:'📈 डैशबोर्ड',pend:'⏳ मंज़ूरी',cands:'👥 प्रत्याशी',claims:'✅ वादे पूरे',res:'📊 नतीजे',posts:'📰 पोस्ट',mod:'🧹 चौपाल/टिप्पणी',users:'👤 यूज़र/डिवाइस',ban:'🚫 रोके गए',prob:'📢 समस्याएँ',survey:'📋 ग्राम सर्वे',settings:'⚙️ सेटिंग्स'};
 $('#tb').innerHTML=Object.keys(TB).map(k=>`<button data-k="${k}" onclick="tab='${k}';draw()">${TB[k]}</button>`).join('');
 auth.onAuthStateChanged(u=>{const ok=u&&u.email=='admin@meragav.in';$('#lg').hidden=ok;$('#ap').hidden=!ok;if(ok&&!on++)start()});
 const sub=(c,f)=>db.collection(c).onSnapshot(s=>{f(s.docs.map(d=>({id:d.id,...d.data()})));draw()},e=>console.error(c,e));
-function start(){
- sub('users',a=>US=a);sub('candidates',a=>CA=a);sub('claims',a=>CLM=a);sub('votes',a=>VS=a);sub('comments',a=>CMT=a);sub('chat',a=>CHT=a);sub('settings',a=>{ST=a;const b=currentBrand();$('#adminBrand').textContent='🏡 '+b.name+' – एडमिन पैनल';document.title='एडमिन – '+b.name;draw()});sub('reacts',a=>RC=a);sub('reactCounts',a=>RCC=a);sub('devices',a=>DV=a);sub('problems',a=>PRB=a);sub('villageSurveys',a=>VSUR=a)}
+function start(){startExtra();
+ sub('users',a=>US=a);sub('candidates',a=>CA=a);sub('claims',a=>CLM=a);sub('votes',a=>VS=a);sub('comments',a=>CMT=a);sub('settings',a=>{ST=a;const b=currentBrand();$('#adminBrand').textContent='🏡 '+b.name+' – एडमिन पैनल';document.title='एडमिन – '+b.name;draw()});sub('reacts',a=>RC=a);sub('reactCounts',a=>RCC=a);sub('devices',a=>DV=a);sub('problems',a=>PRB=a);sub('villageSurveys',a=>VSUR=a)}
 const nm=id=>(CA.find(c=>c.id==id)||{}).name||'?';
 const H={
 pend:()=>{const pv=US.filter(u=>u.status=='pending'&&u.role=='voter'),pc=CA.filter(c=>c.status=='pending');
@@ -79,9 +64,9 @@ pend:()=>{const pv=US.filter(u=>u.status=='pending'&&u.role=='voter'),pc=CA.filt
  const vs=pv.map(u=>`<div class="box r"><img src="${u.photo}"><a href="${u.idPhoto}" target="_blank"><img src="${u.idPhoto}"></a><div><b>${esc(u.name)}</b> <span class="tag">मतदाता</span><br>📱 ${esc(u.mobile)} • ✉ ${esc(u.email||'-')} • वार्ड: ${esc(u.ward||'-')}<br><button class="b" onclick="dec('${u.id}','approved')">✔ मंज़ूर</button><button class="b d" onclick="dec('${u.id}','rejected')">✖ अस्वीकार</button></div></div>`).join('');
  return (cs?'<h3>🙋 प्रत्याशी आवेदन</h3>'+cs:'')+(vs?'<h3>🗳️ मतदाता आवेदन</h3>'+vs:'')||'<p>कोई आवेदन बाकी नहीं।</p>'},
 cands:()=>'<div class="box"><button class="b o" onclick="recountReacts()">🔄 Like/Dislike गिनती दोबारा बनाएँ (Recount)</button><br><small>पुराने Like/Dislike की गिनती ऐप में दिखाने के लिए एक बार दबाएँ। यह असली reactions से सबकी गिनती सही कर देगा।</small></div>'+CA.map(c=>`<div class="box r"><img src="${c.photo}"><div><b>${esc(c.name)}</b> <span class="tag">${c.status}</span><br>चिह्न: ${esc(c.symbol)} • वोट: ${VS.filter(v=>v.c==c.id).length} • 👍 ${RC.filter(r=>r.c==c.id&&r.v==1).length} 👎 ${RC.filter(r=>r.c==c.id&&r.v==-1).length} <small>(सार्वजनिक गिनती: 👍 ${(RCC.find(x=>x.id==c.id)||{}).likes||0} 👎 ${(RCC.find(x=>x.id==c.id)||{}).dislikes||0})</small><br><button class="b" onclick="who('${c.id}')">🔐 निजी Like/Dislike देखें</button><br>
-<button class="b" onclick="ed('${c.id}','name','नाम')">नाम</button><button class="b" onclick="ed('${c.id}','symbol','चिह्न')">चिह्न</button><button class="b" onclick="edW('${c.id}')">घोषणा पत्र</button><button class="b" onclick="ph('${c.id}','photo')">फोटो</button><button class="b" onclick="ph('${c.id}','mfImg',800)">घोषणा पत्र फोटो</button><button class="b" onclick="ph('${c.id}','symImg',120)">चिह्न फोटो</button>
+<button class="b" onclick="ed('${c.id}','name','नाम')">नाम</button><button class="b" onclick="ed('${c.id}','symbol','चिह्न')">चिह्न</button><button class="b" onclick="ed('${c.id}','ward','वार्ड')">वार्ड</button><button class="b d" onclick="resetReacts('${c.id}')">👍👎 रीसेट</button><button class="b" onclick="edW('${c.id}')">घोषणा पत्र</button><button class="b" onclick="ph('${c.id}','photo')">फोटो</button><button class="b" onclick="ph('${c.id}','mfImg',800)">घोषणा पत्र फोटो</button><button class="b" onclick="ph('${c.id}','symImg',120)">चिह्न फोटो</button>
 <button class="b o" onclick="st('${c.id}','${c.status=='approved'?'rejected':'approved'}')">${c.status=='approved'?'छुपाएँ':'दिखाएँ'}</button><button class="b d" onclick="del('candidates','${c.id}')">हटाएँ</button></div></div>`).join('')||'<p>कोई प्रत्याशी नहीं।</p>',
-claims:()=>CLM.slice().sort((a,b)=>(a.status=='pending'?0:1)-(b.status=='pending'?0:1)).map(x=>{const c=CA.find(k=>k.id==x.c)||{};return `<div class="box"><b>${esc(nm(x.c))}</b> <span class="tag">${x.status}</span><br>वादा: ${esc(((c.works||[])[x.i]||{}).t)}<br>दावा: ${esc(x.note)}${x.img?`<br><img src="${x.img}" style="max-width:220px;border-radius:8px">`:''}<br>${x.status!='approved'?`<button class="b" onclick="cst('${x.id}','approved')">✔ सत्यापित</button>`:''}<button class="b d" onclick="cst('${x.id}','rejected')">✖ अस्वीकार</button></div>`}).join('')||'<p>कोई दावा नहीं।</p>',
+claims:()=>CLM.slice().sort((a,b)=>(a.status=='pending'?0:1)-(b.status=='pending'?0:1)).map(x=>{const c=CA.find(k=>k.id==x.c)||{};return `<div class="box"><b>${esc(nm(x.c))}</b> <span class="tag">${x.status}</span><br>वादा: ${esc(((c.works||[])[x.i]||{}).t)}<br>दावा: ${esc(x.note)}${x.img?`<br><img src="${x.img}" style="max-width:220px;border-radius:8px">`:''}<br>${x.status!='approved'?`<button class="b" onclick="cst('${x.id}','approved')">✔ सत्यापित</button>`:''}<button class="b d" onclick="cst('${x.id}','rejected')">✖ अस्वीकार</button><button class="b d" onclick="del('claims','${x.id}')">🗑️ हटाएँ</button></div>`}).join('')||'<p>कोई दावा नहीं।</p>',
 res:()=>{const v=US.filter(u=>u.role=='voter'&&u.status=='approved').length;return `<div class="box">स्वीकृत मतदाता: <b>${v}</b> • कुल वोट: <b>${VS.length}</b><br><small>एडमिन किसी वोट को बदल या हटा सकता है।</small></div>`+VS.map(x=>{const u=US.find(k=>k.id==x.id)||{},c=CA.find(k=>k.id==x.c)||{};return `<div class="box"><b>${esc(u.name||x.id)}</b> → <b>${esc(c.name||x.c)}</b><br><small>बदलाव: ${x.n||0}</small><br><button class="b" onclick="editVote('${x.id}')">✏️ वोट बदलें</button><button class="b d" onclick="rv('${x.id}')">🗑️ वोट हटाएँ</button></div>`}).join('')||'<p>अभी कोई वोट दर्ज नहीं।</p>'},
 users:()=>guestBox()+US.map(u=>`<div class="box"><b>${esc(u.name)}</b> <span class="tag">${u.role=='candidate'?'प्रत्याशी':'मतदाता'} • ${u.status}</span><br>📱 ${esc(u.mobile)} • ✉ ${esc(u.email||'-')}<br><button class="b o" onclick="rd('${u.id}')">📱 डिवाइस रीसेट</button>${VS.some(v=>v.id==u.id)?`<button class="b d" onclick="rv('${u.id}')">🗳️ वोट रीसेट</button>`:''}</div>`).join('')||'<p>कोई खाता नहीं।</p>',
 prob:()=>PRB.slice().sort((a,b)=>((b.t&&b.t.seconds)||9e9)-((a.t&&a.t.seconds)||9e9)).map(p=>`<div class="box"><b>${esc(p.title)}</b> <span class="tag">${p.status=='solved'?'समाधान हुआ':'खुली'}</span><br><small>${esc(p.name)} • ${esc(p.ward||'')}</small><p>${esc(p.txt)}</p>${p.img?`<img src="${p.img}" style="max-width:200px;border-radius:8px">`:''}<br><button class="b" onclick="pst('${p.id}','${p.status=='solved'?'open':'solved'}')">${p.status=='solved'?'दोबारा खोलें':'✔ समाधान हुआ'}</button><button class="b d" onclick="del('problems','${p.id}')">हटाएँ</button></div>`).join('')||'<p>कोई समस्या नहीं।</p>',
@@ -95,7 +80,7 @@ H.survey=()=>{
  
   const freq={}; VSUR.forEach(x=>[...(x.basic||[]),...(x.needs||[]),...(x.farm||[])].forEach(v=>freq[v]=(freq[v]||0)+1));
  const top=Object.entries(freq).sort((a,b)=>b[1]-a[1]).slice(0,10);
- const rows=VSUR.slice().sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).map(x=>`<tr><td>${esc(x.surveyId||x.id)}</td><td>${esc(x.name||'-')}<br>📱 ${esc(x.mobile||'-')}</td><td>${esc(x.ward||'-')}</td><td>${x.members||0}</td><td>${x.children||0}</td><td>${x.unemployed||0}</td><td><button class="b" onclick="surveyView('${x.id}')">देखें</button></td></tr>`).join('');
+ const rows=VSUR.slice().sort((a,b)=>(b.createdAt?.seconds||0)-(a.createdAt?.seconds||0)).map(x=>`<tr><td>${esc(x.surveyId||x.id)}</td><td>${esc(x.name||'-')}<br>📱 ${esc(x.mobile||'-')}</td><td>${esc(x.ward||'-')}</td><td>${x.members||0}</td><td>${x.children||0}</td><td>${x.unemployed||0}</td><td><button class="b" onclick="surveyView('${x.id}')">देखें</button><button class="b" onclick="svEdit('${x.id}')">✏️</button><button class="b d" onclick="del('villageSurveys','${x.id}')">🗑️</button></td></tr>`).join('');
  return `<div class="box"><h2>📋 ग्राम सर्वे रिपोर्ट</h2>
  <div class="r"><div class="box"><b>कुल परिवार</b><h2>${totalFamilies}</h2></div><div class="box"><b>कुल बच्चे</b><h2>${totalChildren}</h2></div><div class="box"><b>बेरोजगार युवा</b><h2>${totalYouth}</h2></div></div>
  <h3>सबसे अधिक दर्ज आवश्यकताएँ</h3>${top.map(x=>`<div style="margin:6px 0">${esc(x[0])} <b>(${x[1]})</b><div class="bar" style="width:${Math.max(4,Math.min(100,x[1]*100/Math.max(1,totalFamilies)))}%"></div></div>`).join('')||'<p>अभी कोई सर्वे नहीं।</p>'}
@@ -255,4 +240,105 @@ function ph(id,f,mx){const i=document.createElement('input');i.type='file';i.acc
 async function addCand(){const g=i=>$('#'+i).value.trim();if(!g('an')||!$('#ap1').files[0])return alert('नाम और फोटो ज़रूरी हैं (चिह्न और घोषणा पत्र वैकल्पिक हैं)');
  await db.collection('candidates').add({status:'approved',name:g('an'),symbol:g('as'),ward:g('aw'),photo:await img($('#ap1').files[0]),symImg:await img($('#ap2').files[0],120),mfImg:await img($('#ap3').files[0],800),works:g('am').split('\n').map(s=>s.trim()).filter(Boolean).map(t=>({t}))});
  ['an','as','aw','am'].forEach(i=>$('#'+i).value='');alert('जुड़ गया')}
+
+/* ===================== v20: एडमिन फुल कंट्रोल ===================== */
+let PST=[],PCM=[],BAN=[];
+const adq=()=>(document.getElementById('adq').value||'').trim().toLowerCase();
+const hit=(...v)=>{const q=adq();return !q||v.join(' ').toLowerCase().includes(q)};
+const isBan=id=>BAN.some(b=>b.id==id);
+const bySecDesc=(a,b)=>((b.t&&b.t.seconds)||9e9)-((a.t&&a.t.seconds)||9e9);
+const safe=s=>String(s||'').replace(/['"\\<>]/g,'');
+const est=d=>({id:d.id,...d.data({serverTimestamps:'estimate'})});
+function startExtra(){
+ db.collection('posts').orderBy('t','desc').limit(100).onSnapshot(s=>{PST=s.docs.map(est);draw()},e=>console.error('posts',e));
+ db.collection('postComments').onSnapshot(s=>{PCM=s.docs.map(est);draw()},e=>console.error('postComments',e));
+ db.collection('chat').orderBy('t','desc').limit(150).onSnapshot(s=>{CHT=s.docs.map(est);draw()},e=>console.error('chat',e));
+ db.collection('banned').onSnapshot(s=>{BAN=s.docs.map(est);draw()},e=>console.error('banned',e));
+}
+function banBtn(uid,name){if(!uid)return'';return isBan(uid)?`<button class="b o" onclick="unban('${uid}')">✅ रोक हटाएँ</button>`:`<button class="b d" onclick="banUser('${uid}','${safe(name)}')">🚫 रोकें</button>`}
+const banTag=uid=>isBan(uid)?'<span class="tag" style="background:#f6c6c2">🚫 रोका गया</span>':'';
+async function banUser(uid,name){if(!confirm((name||uid)+' को चौपाल/पोस्ट/टिप्पणी/चैट से रोकें?'))return;try{await db.collection('banned').doc(uid).set({name:name||'',t:FV.serverTimestamp()})}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
+async function unban(uid){try{await db.collection('banned').doc(uid).delete()}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
+
+/* ---- डैशबोर्ड ---- */
+H.dash=()=>{
+ const pend=US.filter(u=>u.status=='pending').length;
+ const card=(n,l,k)=>`<div class="box" style="flex:1;min-width:120px;text-align:center;cursor:pointer" onclick="tab='${k}';draw()"><h2 style="margin:0">${n}</h2><small>${l}</small></div>`;
+ return '<div class="r" style="gap:8px">'+card(US.length,'कुल यूज़र','users')+card(US.filter(u=>u.role=='voter'&&u.status=='approved').length,'स्वीकृत मतदाता','users')+card(pend,'मंज़ूरी बाकी','pend')+card(CA.filter(c=>c.status=='approved').length,'प्रत्याशी','cands')+card(VS.length,'कुल वोट','res')+card(PST.length+(PST.length>=100?'+':''),'पोस्ट','posts')+card(CHT.length+(CHT.length>=150?'+':''),'चौपाल संदेश','mod')+card(PRB.filter(p=>p.status!='solved').length+'/'+PRB.length,'खुली/कुल समस्याएँ','prob')+card(VSUR.length,'सर्वे','survey')+card(DV.filter(d=>d.guest).length,'गेस्ट डिवाइस','users')+card(BAN.length,'रोके गए','ban')+'</div>'
+};
+
+/* ---- पोस्ट ---- */
+H.posts=()=>PST.filter(p=>hit(p.name,p.txt)).map(p=>{
+ const cm=PCM.filter(c=>c.p==p.id).sort((a,b)=>-bySecDesc(a,b));
+ return `<div class="box"><b>${esc(p.name)}</b> ${p.pinned?'<span class="tag">📌 पिन</span>':''} ${banTag(p.uid)}<br><small>${admTime(p.t)} • ${esc(p.ward||'')}</small><p style="white-space:pre-wrap">${esc(p.txt||'')}</p>${p.img?`<img src="${p.img}" style="max-width:220px;border-radius:8px">`:''}<br><button class="b o" onclick="pinPost('${p.id}',${!p.pinned})">${p.pinned?'📌 पिन हटाएँ':'📌 पिन करें'}</button><button class="b" onclick="editPost('${p.id}')">✏️ संपादित</button><button class="b d" onclick="delPost('${p.id}')">🗑️ हटाएँ</button>${banBtn(p.uid,p.name)}${cm.length?`<details style="margin-top:6px"><summary>💬 टिप्पणियाँ (${cm.length})</summary>${cm.map(c=>`<div style="padding:6px 0;border-top:1px dashed #ddd"><b>${esc(c.name)}</b> <small>${admTime(c.t)}</small><br>${esc(c.txt)}<br><button class="b" onclick="editTxt('postComments','${c.id}')">✏️</button><button class="b d" onclick="del('postComments','${c.id}')">🗑️</button>${banBtn(c.uid,c.name)}</div>`).join('')}</details>`:''}</div>`}).join('')||'<p>कोई पोस्ट नहीं।</p>';
+async function pinPost(id,v){try{await db.collection('posts').doc(id).update({pinned:v})}catch(e){alert(e.code||e.message)}}
+async function editPost(id){const p=PST.find(x=>x.id==id);if(!p)return;const v=prompt('पोस्ट का टेक्स्ट बदलें',p.txt||'');if(v===null)return;try{await db.collection('posts').doc(id).update({txt:v.trim(),edited:true})}catch(e){alert(e.code||e.message)}}
+async function delPost(id){if(!confirm('यह पोस्ट और उसकी सभी टिप्पणियाँ हटाएँ?'))return;try{const b=db.batch();b.delete(db.collection('posts').doc(id));PCM.filter(c=>c.p==id).forEach(c=>b.delete(db.collection('postComments').doc(c.id)));await b.commit()}catch(e){alert('नहीं हटी: '+(e.code||e.message))}}
+async function editTxt(col,id){const arr={chat:CHT,comments:CMT,postComments:PCM}[col]||[],x=arr.find(a=>a.id==id);if(!x)return;const v=prompt('संदेश बदलें',x.txt||'');if(v===null||!v.trim())return;try{await db.collection(col).doc(id).update({txt:v.trim(),edited:true,editedAt:FV.serverTimestamp()})}catch(e){alert(e.code||e.message)}}
+
+/* ---- चौपाल + टिप्पणियाँ ---- */
+H.mod=()=>{
+ const sec=(title,k,a)=>`<h3>${title} (${a.length})</h3>`+a.slice().sort(bySecDesc).filter(x=>hit(x.name,x.txt)).map(x=>`<div class="box"><b>${esc(x.name)}</b> ${x.role=='guest'?'<span class="tag">अतिथि</span>':''} ${banTag(x.uid)} <small>${admTime(x.t)}</small>${x.edited?' <small>(संपादित)</small>':''}<br>${esc(x.txt)}<br><button class="b" onclick="editTxt('${k}','${x.id}')">✏️ संपादित</button><button class="b d" onclick="del('${k}','${x.id}')">🗑️ हटाएँ</button>${banBtn(x.uid,x.name)}</div>`).join('');
+ return sec('गाँव चौपाल','chat',CHT)+sec('प्रत्याशी / समस्या टिप्पणियाँ','comments',CMT)+sec('पोस्ट टिप्पणियाँ','postComments',PCM)
+};
+
+/* ---- यूज़र ---- */
+H.users=()=>guestBox()+US.filter(u=>hit(u.name,u.mobile,u.email,u.ward)).map(u=>`<div class="box r">${u.photo?`<img src="${u.photo}">`:''}${u.idPhoto?`<a href="${u.idPhoto}" target="_blank"><img src="${u.idPhoto}"></a>`:''}<div style="flex:1;min-width:200px"><b>${esc(u.name)}</b> <span class="tag">${u.role=='candidate'?'प्रत्याशी':'मतदाता'} • ${u.status}</span> ${banTag(u.id)}<br>📱 ${esc(u.mobile||'-')} • ✉ ${esc(u.email||'-')}<br>वार्ड: ${esc(u.ward||'-')}<br><button class="b" onclick="usEdit('${u.id}')">✏️ संपादित</button><button class="b o" onclick="usStatus('${u.id}')">🔁 स्थिति</button><button class="b o" onclick="rd('${u.id}')">📱 डिवाइस रीसेट</button>${VS.some(v=>v.id==u.id)?`<button class="b d" onclick="rv('${u.id}')">🗳️ वोट रीसेट</button>`:''}${banBtn(u.id,u.name)}<button class="b d" onclick="usContent('${u.id}')">🧹 इनकी सामग्री हटाएँ</button><button class="b d" onclick="usDel('${u.id}')">🗑️ खाता हटाएँ</button></div></div>`).join('')||'<p>कोई खाता नहीं।</p>';
+async function usEdit(id){const u=US.find(x=>x.id==id);if(!u)return;const name=prompt('नाम',u.name||'');if(name===null)return;const mobile=prompt('मोबाइल (10 अंक)',u.mobile||'');if(mobile===null)return;if(mobile&&!/^[0-9]{10}$/.test(mobile))return alert('मोबाइल 10 अंक का होना चाहिए।');const ward=prompt('वार्ड / मोहल्ला',u.ward||'');if(ward===null)return;
+ try{const b=db.batch();b.update(db.collection('users').doc(id),{name:name.trim(),mobile:mobile.trim(),ward:ward.trim()});b.set(db.collection('profiles').doc(id),{name:name.trim()},{merge:true});if(CA.some(c=>c.id==id))b.update(db.collection('candidates').doc(id),{name:name.trim(),ward:ward.trim()});await b.commit()}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
+async function usStatus(id){const v=prompt('नई स्थिति लिखें: approved / pending / rejected');if(!v)return;const s=v.trim().toLowerCase();if(!['approved','pending','rejected'].includes(s))return alert('सिर्फ approved, pending या rejected लिखें।');try{await dec(id,s)}catch(e){alert(e.code||e.message)}}
+async function wipeWhere(col,field,val){const s=await db.collection(col).where(field,'==',val).get();if(s.empty)return 0;let b=db.batch(),c=0;for(const d of s.docs){b.delete(d.ref);if(++c%400==0){await b.commit();b=db.batch()}}await b.commit();return s.size}
+async function usContent(id){if(!confirm('इस यूज़र के सभी पोस्ट, टिप्पणियाँ, चौपाल संदेश और समस्याएँ हटाएँ?'))return;try{let n=0;for(const [c,f] of [['posts','uid'],['postComments','uid'],['comments','uid'],['chat','uid'],['problems','uid']])n+=await wipeWhere(c,f,id);alert('✅ '+n+' आइटम हटाए गए।')}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
+async function usDel(id){const u=US.find(x=>x.id==id)||{};if(!confirm((u.name||id)+' का खाता पूरी तरह हटाएँ? (वोट, प्रत्याशी आवेदन, प्रोफाइल, डिवाइस-लॉक भी हटेंगे)'))return;try{const b=db.batch();['users','profiles','presence','votes','likepick','candidates'].forEach(c=>b.delete(db.collection(c).doc(id)));const dv=await db.collection('devices').where('uid','==',id).get();dv.forEach(d=>b.delete(d.ref));const cl=await db.collection('claims').where('c','==',id).get();cl.forEach(d=>b.delete(d.ref));await b.commit();alert('✅ खाता हटा दिया गया। (वही Gmail दोबारा पंजीकरण कर सकता है; रोकना हो तो "🚫 रोकें" दबाएँ।)')}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
+H.ban=()=>'<h3>🚫 रोके गए ('+BAN.length+')</h3>'+(BAN.map(b=>`<div class="box"><b>${esc(b.name||'-')}</b> <small>${admTime(b.t)}</small><br><small>${esc(b.id)}</small><br><button class="b o" onclick="unban('${b.id}')">✅ रोक हटाएँ</button></div>`).join('')||'<p>कोई नहीं।</p>');
+
+/* ---- समस्याएँ ---- */
+H.prob=()=>PRB.slice().sort(bySecDesc).filter(p=>hit(p.title,p.txt,p.name,p.ward)).map(p=>{const n=CMT.filter(c=>c.c==p.id).length;return `<div class="box"><b>${esc(p.title)}</b> <span class="tag">${p.status=='solved'?'समाधान हुआ':'खुली'}</span> ${banTag(p.uid)}<br><small>${esc(p.name)} • ${esc(p.ward||'')} • ${admTime(p.t)} • 💬 ${n}</small><p style="white-space:pre-wrap">${esc(p.txt)}</p>${p.img?`<img src="${p.img}" style="max-width:200px;border-radius:8px">`:''}<br><button class="b" onclick="pst('${p.id}','${p.status=='solved'?'open':'solved'}')">${p.status=='solved'?'दोबारा खोलें':'✔ समाधान हुआ'}</button><button class="b" onclick="probEdit('${p.id}')">✏️ संपादित</button><button class="b d" onclick="probDel('${p.id}')">🗑️ हटाएँ</button>${banBtn(p.uid,p.name)}</div>`}).join('')||'<p>कोई समस्या नहीं।</p>';
+async function probEdit(id){const p=PRB.find(x=>x.id==id);if(!p)return;const t=prompt('शीर्षक',p.title||'');if(t===null)return;const x=prompt('विवरण',p.txt||'');if(x===null)return;const w=prompt('वार्ड',p.ward||'');if(w===null)return;try{await db.collection('problems').doc(id).update({title:t.trim(),txt:x.trim(),ward:w.trim()})}catch(e){alert(e.code||e.message)}}
+async function probDel(id){if(!confirm('यह समस्या और उसकी टिप्पणियाँ हटाएँ?'))return;try{const b=db.batch();b.delete(db.collection('problems').doc(id));CMT.filter(c=>c.c==id).forEach(c=>b.delete(db.collection('comments').doc(c.id)));await b.commit()}catch(e){alert(e.code||e.message)}}
+
+/* ---- नतीजे ---- */
+H.res=()=>{
+ const ap=CA.filter(c=>c.status=='approved'),tot=VS.length||1,cnt=id=>RCC.find(x=>x.id==id)||{};
+ const vr=US.filter(u=>u.role=='voter'&&u.status=='approved').length;
+ const head=`<div class="box">स्वीकृत मतदाता: <b>${vr}</b> • कुल वोट: <b>${VS.length}</b> • मतदान प्रतिशत: <b>${vr?Math.round(VS.length*100/vr):0}%</b><br><button class="b" onclick="exportResults()">⬇️ नतीजे CSV</button><button class="b" onclick="window.print()">🖨️ प्रिंट</button><button class="b d" onclick="clearVotes()">🗑️ सभी वोट हटाएँ</button></div>`;
+ const tally=ap.slice().sort((x,y)=>VS.filter(v=>v.c==y.id).length-VS.filter(v=>v.c==x.id).length).map(c=>{const v=VS.filter(x=>x.c==c.id).length;return `<div class="box"><b>${esc(c.name)}</b> • वोट: <b>${v}</b> (${Math.round(v*100/tot)}%) • 👍 ${cnt(c.id).likes||0} 👎 ${cnt(c.id).dislikes||0}<div class="bar" style="width:${Math.max(2,v*100/tot)}%"></div></div>`}).join('');
+ const voters=VS.map(x=>{const u=US.find(k=>k.id==x.id)||{},c=CA.find(k=>k.id==x.c)||{};return `<div class="box"><b>${esc(u.name||x.id)}</b> → <b>${esc(c.name||x.c)}</b> <small>• बदलाव: ${x.n||0} • ${admTime(x.t)}</small><br><button class="b" onclick="editVote('${x.id}')">✏️ वोट बदलें</button><button class="b d" onclick="rv('${x.id}')">🗑️ वोट हटाएँ</button></div>`}).join('')||'<p>अभी कोई वोट दर्ज नहीं।</p>';
+ return head+'<h3>📊 प्रत्याशी-वार नतीजे</h3>'+(tally||'<p>कोई प्रत्याशी नहीं।</p>')+'<h3>🗳️ वोटों की सूची</h3>'+voters
+};
+function dl(name,text,mime){const u=URL.createObjectURL(new Blob([text],{type:mime||'text/plain;charset=utf-8'})),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),2000)}
+function exportResults(){const rows=[['Candidate','Ward','Symbol','Votes','Likes','Dislikes']].concat(CA.map(c=>{const k=RCC.find(x=>x.id==c.id)||{};return [c.name,c.ward||'',c.symbol||'',VS.filter(v=>v.c==c.id).length,k.likes||0,k.dislikes||0]}));dl('election-results.csv','\ufeff'+rows.map(r=>r.map(csvCell).join(',')).join('\n'),'text/csv;charset=utf-8')}
+function exportUsers(){const rows=[['Name','Mobile','Email','Role','Status','Ward']].concat(US.map(u=>[u.name,u.mobile,u.email,u.role,u.status,u.ward||'']));dl('users.csv','\ufeff'+rows.map(r=>r.map(csvCell).join(',')).join('\n'),'text/csv;charset=utf-8')}
+async function wipeAll(col,filter){const s=await db.collection(col).get();let b=db.batch(),c=0,n=0;for(const d of s.docs){if(filter&&!filter(d))continue;b.delete(d.ref);n++;if(++c%400==0){await b.commit();b=db.batch()}}await b.commit();return n}
+const sure=m=>(prompt(m+'\n\nपक्का करने के लिए "हाँ" लिखें')||'').trim()=='हाँ';
+async function clearVotes(){if(!sure('⚠️ सभी वोट हमेशा के लिए हट जाएँगे।'))return;try{const n=await wipeAll('votes');alert('✅ '+n+' वोट हटाए गए।')}catch(e){alert(e.code||e.message)}}
+async function resetReacts(id){if(!confirm('इस प्रत्याशी के सभी Like/Dislike हटाएँ?'))return;try{const b=db.batch();(await db.collection('reacts').where('c','==',id).get()).forEach(d=>b.delete(d.ref));(await db.collection('likepick').where('c','==',id).get()).forEach(d=>b.delete(d.ref));b.set(db.collection('reactCounts').doc(id),{likes:0,dislikes:0,updatedAt:FV.serverTimestamp()});await b.commit();alert('✅ रीसेट हो गया।')}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
+
+/* ---- सर्वे संपादन ---- */
+async function svEdit(id){const x=VSUR.find(a=>a.id==id);if(!x)return;const up={};for(const [k,l,num] of [['name','नाम'],['ward','वार्ड'],['members','कुल सदस्य',1],['priority','प्राथमिकता'],['suggestion','सुझाव']]){const v=prompt(l+' (छोड़ने के लिए Cancel)',x[k]==null?'':x[k]);if(v===null)continue;up[k]=num?Number(v)||0:v.trim()}if(!Object.keys(up).length)return;try{await db.collection('villageSurveys').doc(id).update(up)}catch(e){alert(e.code||e.message)}}
+
+/* ---- सेटिंग्स का अतिरिक्त हिस्सा ---- */
+function renderExtra(){
+ const el=document.getElementById('adminExtra');if(!el)return;
+ const app=ST.find(x=>x.id=='app')||{},open=app.chatOpen!==false;
+ if(!el.dataset.ok){el.dataset.ok=1;el.innerHTML=`<hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3>📢 सूचना बैनर (होम पर सबको दिखेगा)</h3><textarea id="nt" rows="2" placeholder="जैसे: कल शाम 5 बजे ग्राम सभा है" oninput="this.dataset.dirty=1"></textarea><button class="b" onclick="saveNotice()">💾 सूचना सेव</button><button class="b d" onclick="clearNotice()">✖ सूचना हटाएँ</button>
+<hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3>💬 चौपाल चैट</h3><button class="b" id="chatTg" onclick="toggleChat()"></button>
+<hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3>✍️ एडमिन पोस्ट</h3><textarea id="apx" rows="3" placeholder="गाँव के लिए पोस्ट लिखें"></textarea><input id="api" type="file" accept="image/*"><label style="display:flex;gap:8px;align-items:center"><input id="apn" type="checkbox" style="width:auto;margin:0"> 📌 सबसे ऊपर पिन करें</label><button class="b" onclick="adminPost()">📢 पोस्ट प्रकाशित करें</button>
+<hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3>🧰 बैकअप / रिपोर्ट</h3><button class="b" onclick="backupAll()">⬇️ पूरा बैकअप (JSON)</button><button class="b" onclick="exportUsers()">⬇️ यूज़र CSV</button><button class="b" onclick="exportResults()">⬇️ नतीजे CSV</button><button class="b" onclick="recountReacts()">🔄 Like/Dislike Recount</button>
+<hr style="border:0;border-top:1px solid #ddd;margin:14px 0"><h3 style="color:#b3261e">⚠️ खतरनाक काम</h3><button class="b d" onclick="dangerChat()">🧹 पूरी चौपाल साफ करें</button><button class="b d" onclick="clearVotes()">🗑️ सभी वोट हटाएँ</button><button class="b d" onclick="dangerReacts()">🗑️ सभी Like/Dislike रीसेट</button><button class="b d" onclick="dangerPosts()">🗑️ सभी पोस्ट+टिप्पणियाँ हटाएँ</button><div id="exStatus" style="margin-top:6px;font-size:13px"></div>`}
+ const nt=document.getElementById('nt');if(nt&&document.activeElement!==nt&&!nt.dataset.dirty)nt.value=app.notice||'';
+ const tg=document.getElementById('chatTg');if(tg){tg.textContent=open?'🔓 चौपाल चालू है — बंद करें':'🔒 चौपाल बंद है — चालू करें';tg.style.background=open?'#1a8a4a':'#b3261e'}
+}
+async function saveNotice(){try{await db.collection('settings').doc('app').set({notice:document.getElementById('nt').value.trim(),updatedAt:FV.serverTimestamp()},{merge:true});document.getElementById('nt').dataset.dirty='';alert('✅ सूचना सेव हो गई।')}catch(e){alert(e.code||e.message)}}
+async function clearNotice(){try{await db.collection('settings').doc('app').set({notice:'',updatedAt:FV.serverTimestamp()},{merge:true});const n=document.getElementById('nt');n.value='';n.dataset.dirty='';alert('सूचना हटा दी गई।')}catch(e){alert(e.code||e.message)}}
+async function toggleChat(){const open=(ST.find(x=>x.id=='app')||{}).chatOpen!==false;if(!confirm(open?'चौपाल चैट बंद करें?':'चौपाल चैट चालू करें?'))return;try{await db.collection('settings').doc('app').set({chatOpen:!open,updatedAt:FV.serverTimestamp()},{merge:true})}catch(e){alert(e.code||e.message)}}
+async function adminPost(){const txt=document.getElementById('apx').value.trim(),f=document.getElementById('api').files[0];if(!txt&&!f)return alert('कुछ लिखें या फोटो चुनें।');try{const u=auth.currentUser;await db.collection('posts').add({uid:u.uid,name:'📢 एडमिन',photo:'',ward:'',txt,img:await img(f,900),pinned:document.getElementById('apn').checked,t:FV.serverTimestamp()});document.getElementById('apx').value='';document.getElementById('api').value='';alert('✅ पोस्ट प्रकाशित हो गई।')}catch(e){alert('नहीं हुआ: '+(e.code||e.message))}}
+function clean(v){if(v==null)return v;if(typeof v=='string')return v.startsWith('data:')?'(image)':v;if(typeof v.toDate=='function')return v.toDate().toISOString();if(Array.isArray(v))return v.map(clean);if(typeof v=='object'){const o={};for(const k in v)o[k]=clean(v[k]);return o}return v}
+async function backupAll(){const st=document.getElementById('exStatus');st.textContent='⏳ बैकअप बन रहा है…';try{const out={exportedAt:new Date().toISOString()};for(const c of ['users','candidates','votes','claims','posts','postComments','comments','chat','problems','villageSurveys','settings','banned','reactCounts','reacts']){const s=await db.collection(c).get();out[c]=s.docs.map(d=>({id:d.id,...clean(d.data())}))}dl('garhi-backup-'+new Date().toISOString().slice(0,10)+'.json',JSON.stringify(out,null,1),'application/json');st.textContent='✅ बैकअप डाउनलोड हो गया (फोटो शामिल नहीं)।'}catch(e){st.textContent='❌ '+(e.code||e.message)}}
+async function dangerChat(){if(!sure('⚠️ पूरी चौपाल के सभी संदेश हट जाएँगे।'))return;try{alert('✅ '+(await wipeAll('chat'))+' संदेश हटे।')}catch(e){alert(e.code||e.message)}}
+async function dangerReacts(){if(!sure('⚠️ सभी प्रत्याशियों के Like/Dislike शून्य हो जाएँगे।'))return;try{await wipeAll('reacts');await wipeAll('likepick');await wipeAll('reactCounts');alert('✅ सब रीसेट हो गया।')}catch(e){alert(e.code||e.message)}}
+async function dangerPosts(){if(!sure('⚠️ सभी पोस्ट और पोस्ट-टिप्पणियाँ हट जाएँगी।'))return;try{const a=await wipeAll('posts'),b=await wipeAll('postComments');alert('✅ '+a+' पोस्ट, '+b+' टिप्पणियाँ हटीं।')}catch(e){alert(e.code||e.message)}}
+
+/* ---- draw: तेज़ (debounce) + खोज-बॉक्स ---- */
+{const _d0=draw;let _dt=null;draw=function(){const q=document.getElementById('adq');if(q)q.hidden=!['users','posts','mod','prob'].includes(tab);if(tab=='settings')renderExtra();clearTimeout(_dt);_dt=setTimeout(_d0,70)}}
 </script></body></html>

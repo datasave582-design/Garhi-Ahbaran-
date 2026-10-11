@@ -3,7 +3,8 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // signedIn() = असली (Gmail) यूज़र. गेस्ट (anonymous) इसमें शामिल नहीं — गेस्ट सिर्फ चौपाल चैट कर सकता है.
+    // ---------- सहायक नियम ----------
+    // signedIn() = असली (Gmail/एडमिन) यूज़र. गेस्ट (anonymous) शामिल नहीं.
     function signedIn() {
       return request.auth != null && request.auth.token.firebase.sign_in_provider != 'anonymous';
     }
@@ -17,23 +18,41 @@ service cloud.firestore {
     }
 
     function isAdmin() {
-      return signedIn()
-        && request.auth.token.email == 'admin@meragav.in';
+      return signedIn() && request.auth.token.email == 'admin@meragav.in';
     }
 
     function isOwner(uid) {
       return signedIn() && request.auth.uid == uid;
     }
 
-    // User records contain private data such as voter-ID image.
+    // एडमिन ने जिसे "रोका" है (banned/{uid}) वह कुछ भेज/पोस्ट नहीं कर सकता
+    function notBanned() {
+      return !exists(/databases/$(database)/documents/banned/$(request.auth.uid));
+    }
+
+    // settings/<id> में key false नहीं है (या doc ही नहीं है) तो ON माना जाएगा
+    function settingOn(id, key) {
+      return !exists(/databases/$(database)/documents/settings/$(id))
+        || get(/databases/$(database)/documents/settings/$(id)).data.get(key, true) != false;
+    }
+
+    function myUser() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    // ---------- खाते / प्रोफाइल ----------
     match /users/{uid} {
       allow read: if isOwner(uid) || isAdmin();
-      allow create: if isOwner(uid);
-      allow update: if isOwner(uid) || isAdmin();
+      allow create: if isOwner(uid)
+        && request.resource.data.status == 'pending'
+        && request.resource.data.role in ['voter', 'candidate'];
+      // यूज़र अपना status/role खुद नहीं बदल सकता
+      allow update: if isAdmin() || (isOwner(uid)
+        && request.resource.data.status == resource.data.status
+        && request.resource.data.role == resource.data.role);
       allow delete: if isAdmin();
     }
 
-    // Public-safe profile only: never store voter-ID here.
     match /profiles/{uid} {
       allow read: if true;
       allow create, update: if isOwner(uid) || isAdmin();
@@ -46,61 +65,83 @@ service cloud.firestore {
       allow delete: if isOwner(uid) || isAdmin();
     }
 
+    // जिन्हें एडमिन ने रोका है
+    match /banned/{uid} {
+      allow read: if isAdmin() || (signedInAny() && request.auth.uid == uid);
+      allow write: if isAdmin();
+    }
+
+    // ---------- प्रत्याशी / वादे ----------
     match /candidates/{candidateId} {
       allow read: if true;
       allow create: if isAdmin() || (isOwner(candidateId) && request.resource.data.status == 'pending');
-      allow update: if isAdmin() || isOwner(candidateId);
+      // प्रत्याशी खुद को approved नहीं कर सकता (सिर्फ pending भेज सकता है)
+      allow update: if isAdmin() || (isOwner(candidateId)
+        && (request.resource.data.status == resource.data.status || request.resource.data.status == 'pending'));
       allow delete: if isAdmin();
     }
 
     match /claims/{claimId} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.c == request.auth.uid;
-      allow update, delete: if isAdmin() || (signedIn() && resource.data.c == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.c == request.auth.uid
+        && request.resource.data.status == 'pending' && notBanned();
+      allow update: if isAdmin();
+      allow delete: if isAdmin() || (signedIn() && resource.data.c == request.auth.uid);
     }
 
-    // Votes are private records. Admin can read/edit/delete; voter can create/read/update own vote.
+    // ---------- वोट ----------
+    // पहला वोट n==0; बदलाव पर n सिर्फ +1, अधिकतम 3 बार; वोटिंग/बदलाव बंद हो तो रुकेगा;
+    // वोट हटाना सिर्फ एडमिन (वरना हटाकर दोबारा वोट देने का रास्ता खुल जाता)
     match /votes/{uid} {
       allow read: if isOwner(uid) || isAdmin();
-      allow create: if isOwner(uid);
-      allow update: if isOwner(uid) || isAdmin();
-      allow delete: if isAdmin() || isOwner(uid);
+      allow create: if isAdmin() || (isOwner(uid)
+        && settingOn('vote', 'open')
+        && myUser().get('status', '') == 'approved'
+        && myUser().get('role', '') == 'voter'
+        && request.resource.data.n == 0);
+      allow update: if isAdmin() || (isOwner(uid)
+        && settingOn('vote', 'open')
+        && settingOn('vote', 'change')
+        && resource.data.get('n', 0) < 3
+        && request.resource.data.n == resource.data.get('n', 0) + 1
+        && request.resource.data.c != resource.data.c);
+      allow delete: if isAdmin();
     }
 
-    // Village social feed posts. Public to read; only owner/admin can edit/delete.
+    // ---------- सोशल फीड ----------
     match /posts/{postId} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
-      allow update: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid && notBanned()
+        && (isAdmin() || !('pinned' in request.resource.data));
+      allow update: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid
+        && request.resource.data.get('pinned', false) == resource.data.get('pinned', false));
       allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
 
-    // Post Likes are private: a user can read/write only their own reaction.
     match /postLikes/{likeId} {
       allow read: if signedIn() && (resource == null || resource.data.u == request.auth.uid);
       allow create, update: if signedIn() && request.resource.data.u == request.auth.uid;
       allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
     }
 
-    // Post comments are public, while edits/deletes are limited to the author/admin.
     match /postComments/{commentId} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid && notBanned();
       allow update: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
       allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
 
     match /comments/{commentId} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid && notBanned();
       allow update: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
       allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
 
-    // Public aggregate counts only; individual reactions remain private.
+    // ---------- प्रत्याशी Like / Dislike ----------
+    // सार्वजनिक सिर्फ कुल गिनती
     match /reactCounts/{candidateId} {
       allow read: if true;
-      // एक बार में सिर्फ ±1 बदलाव मान्य (कोई मनमानी संख्या नहीं डाल सकता); एडमिन recount कर सकता है
       allow create: if isAdmin() || (signedIn()
         && request.resource.data.keys().hasOnly(['likes', 'dislikes', 'updatedAt'])
         && request.resource.data.likes is number
@@ -120,23 +161,19 @@ service cloud.firestore {
       allow delete: if isAdmin();
     }
 
-    // Reactions are PRIVATE: a user can only read their own Like/Dislike.
+    // निजी प्रतिक्रिया: doc-id = प्रत्याशी_uid (एक यूज़र की एक प्रत्याशी पर एक ही प्रतिक्रिया); दोबारा दबाने पर हट जाती है
     match /reacts/{reactionId} {
       allow get: if isAdmin() || (signedIn() && (resource == null || resource.data.u == request.auth.uid));
       allow list: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
-      // doc-id = प्रत्याशी_uid → एक यूज़र की एक प्रत्याशी पर एक ही प्रतिक्रिया
       allow create: if signedIn() && request.resource.data.u == request.auth.uid
         && reactionId == request.resource.data.c + '_' + request.auth.uid
         && request.resource.data.v in [1, -1];
-      // Dislike (-1) अंतिम है: उसके बाद बदलाव/हटाना नहीं (सिर्फ एडमिन)
       allow update: if isAdmin() || (signedIn() && request.resource.data.u == request.auth.uid
-        && resource.data.v == 1
         && reactionId == request.resource.data.c + '_' + request.auth.uid
         && request.resource.data.v in [1, -1]);
-      allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid && resource.data.v == 1);
+      allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
     }
 
-    // Problem Likes are PRIVATE too. Do not expose counts or names to other users.
     match /plikes/{likeId} {
       allow read: if signedIn() && (resource == null || resource.data.u == request.auth.uid);
       allow create: if signedIn() && request.resource.data.u == request.auth.uid;
@@ -144,16 +181,17 @@ service cloud.firestore {
       allow delete: if isAdmin() || (signedIn() && resource.data.u == request.auth.uid);
     }
 
-    // The selected candidate Like is private to the owner.
     match /likepick/{uid} {
       allow read: if isOwner(uid) || isAdmin();
       allow create, update: if isOwner(uid);
       allow delete: if isOwner(uid) || isAdmin();
     }
 
+    // ---------- चौपाल (गेस्ट भी कर सकता है) ----------
     match /chat/{messageId} {
       allow read: if true;
-      allow create: if signedInAny() && request.resource.data.uid == request.auth.uid
+      allow create: if signedInAny() && request.resource.data.uid == request.auth.uid && notBanned()
+        && settingOn('app', 'chatOpen')
         && request.resource.data.txt is string && request.resource.data.txt.size() > 0 && request.resource.data.txt.size() <= 1000
         && (!isGuest() || request.resource.data.role == 'guest');
       allow update: if isAdmin() || (signedInAny() && resource.data.uid == request.auth.uid && request.resource.data.uid == resource.data.uid
@@ -161,6 +199,7 @@ service cloud.firestore {
       allow delete: if isAdmin() || (signedInAny() && resource.data.uid == request.auth.uid);
     }
 
+    // ---------- निजी चैट (सिर्फ असली यूज़र) ----------
     match /directChats/{chatId} {
       allow read: if signedIn() && request.auth.uid in resource.data.members;
       allow create: if signedIn() && request.auth.uid in request.resource.data.members;
@@ -171,7 +210,7 @@ service cloud.firestore {
       match /messages/{messageId} {
         allow read: if signedIn()
           && request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.members;
-        allow create: if signedIn()
+        allow create: if signedIn() && notBanned()
           && request.resource.data.from == request.auth.uid
           && request.auth.uid in get(/databases/$(database)/documents/directChats/$(chatId)).data.members;
         allow update: if signedIn() && request.auth.uid == resource.data.from && request.resource.data.from == resource.data.from;
@@ -181,7 +220,7 @@ service cloud.firestore {
 
     match /problems/{problemId} {
       allow read: if true;
-      allow create: if signedIn() && request.resource.data.uid == request.auth.uid;
+      allow create: if signedIn() && request.resource.data.uid == request.auth.uid && notBanned();
       allow update: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
       allow delete: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);
     }
@@ -191,10 +230,7 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
-
     // ग्राम सुविधा सर्वे: सार्वजनिक create, केवल एडमिन read/update/delete.
-    // mobileHash document ID एक ही मोबाइल के लिए deterministic ID है, इसलिए duplicate
-    // create Firestore के स्तर पर already-exists से रुकता है।
     match /villageSurveys/{surveyId} {
       allow create: if request.resource.data.mobileHash == surveyId
         && request.resource.data.name is string
@@ -202,9 +238,9 @@ service cloud.firestore {
       allow read, update, delete: if isAdmin();
     }
 
+    // फोन-लॉक: असली यूज़र का doc-id = फोन ID; गेस्ट का guest_<फोन ID> (एक फोन = एक गेस्ट)
     match /devices/{deviceId} {
       allow read: if isAdmin() || (signedInAny() && (resource == null || resource.data.uid == request.auth.uid));
-      // गेस्ट सिर्फ अपना guest_<फोन-ID> रिकॉर्ड बना सकता है (एक फोन = एक गेस्ट)
       allow create: if (signedIn() && request.resource.data.uid == request.auth.uid)
         || (isGuest() && deviceId.matches('guest_.*') && request.resource.data.uid == request.auth.uid && request.resource.data.guest == true);
       allow update: if isAdmin() || (signedIn() && resource.data.uid == request.auth.uid);

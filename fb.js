@@ -5,6 +5,8 @@ try{const saved=JSON.parse(localStorage.getItem("garhiFirebaseConfig")||"null");
 // admin पेज का लॉगिन अलग रखा है ताकि यूज़र-ऐप का लॉगिन/लॉगआउट उसे न छेड़े
 const app=/admin/.test(location.pathname)?firebase.initializeApp(CFG,"admin"):firebase.initializeApp(CFG);
 const auth=app.auth(),db=app.firestore(),FV=firebase.firestore.FieldValue;
+// तेज़ लोडिंग: डेटा फोन में cache रहेगा (दूसरी बार ऐप तुरंत खुलेगा, ऑफलाइन भी पुराना डेटा दिखेगा)
+db.enablePersistence({synchronizeTabs:true}).catch(e=>console.warn('Firestore cache:',e.code));
 // Login ko device par tab tak persistent rakho jab tak user khud logout na kare.
 const AUTH_PERSISTENCE=firebase.auth.Auth.Persistence.LOCAL;
 auth.setPersistence(AUTH_PERSISTENCE).catch(e=>console.error('Auth persistence:',e));
@@ -12,7 +14,7 @@ const $=s=>document.querySelector(s);
 const esc=s=>String(s==null?'':s).replace(/[&<>"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
 const mail=m=>m+'@meragav.in';
 // फोटो को छोटा करके base64 बनाता है (Storage की ज़रूरत नहीं)
-function img(file,max=320){return new Promise(r=>{if(!file)return r('');const f=new FileReader();f.onload=e=>{const i=new Image();i.onload=()=>{const k=Math.min(1,max/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=i.width*k;c.height=i.height*k;c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.6))};i.src=e.target.result};f.readAsDataURL(file)})}
+function img(file,max=320){return new Promise(r=>{if(!file)return r('');const f=new FileReader();f.onerror=()=>r('');f.onload=e=>{const i=new Image();i.onerror=()=>r('');i.onload=()=>{const k=Math.min(1,max/Math.max(i.width,i.height)),c=document.createElement('canvas');c.width=Math.max(1,Math.round(i.width*k));c.height=Math.max(1,Math.round(i.height*k));c.getContext('2d').drawImage(i,0,0,c.width,c.height);r(c.toDataURL('image/jpeg',.65))};i.src=e.target.result};f.readAsDataURL(file)})}
 
 const SYM=['🔔 घंटी','🪑 कुर्सी','🔑 चाबी','💡 बल्ब','☂️ छाता','🪁 पतंग','🏏 बल्ला','🍎 सेब','🚜 ट्रैक्टर','🪭 पंखा','☕ कप-प्लेट','⚽ फुटबॉल','✈️ हवाई जहाज़','🔒 ताला','🧢 टोपी','🎈 गुब्बारा','✂️ कैंची','⏰ घड़ी','🪣 बाल्टी','☎️ टेलीफोन','💻 लैपटॉप'];
 const symOpts=()=>'<option value="">— चिह्न चुनें —</option>'+SYM.map(x=>`<option>${x}</option>`).join('')+'<option value="">अन्य (नीचे खुद लिखें)</option>';
